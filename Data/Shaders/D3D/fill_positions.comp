@@ -1,0 +1,49 @@
+#include "include/ubos.hlsli"
+
+struct IndirectDraw
+{
+	uint indexCount;
+	uint instanceCount;
+	uint firstIndex;
+	uint baseVertex;
+	uint baseInstance;
+};
+
+struct Voxel
+{
+	float3 pos;
+	float pad;
+};
+
+RWTexture3D<float> voxelTexture : register(u0);
+RWStructuredBuffer<IndirectDraw> indirectBuffer : register(u1);
+RWStructuredBuffer<Voxel> voxelBuffer : register(u2);
+
+[numthreads(4,4,4)]
+void CS(uint3 dispatchID : SV_DispatchThreadID)
+{
+	// Flat global index
+	uint index = dispatchID.z * 4 * numWorkGroups.x * 4 * numWorkGroups.y +
+					dispatchID.y * 4 * numWorkGroups.x +
+					dispatchID.x;
+	
+	// Reset the instanceCount every first invocation, so we don't keep increasing instanceCount
+	if (index == 0)
+	{
+		indirectBuffer[0].indexCount = 36;
+		//atomicExchange(indDraw[0].instanceCount, 0);
+		uint original = 0;
+		InterlockedExchange(indirectBuffer[0].instanceCount, 0, original);
+	}
+	
+	//float a = imageLoad(voxelTexture, ivec3(gl_GlobalInvocationID)).a;
+	float a = voxelTexture[dispatchID * 4 + 3];		// +3 to access the alpha
+	if (a > 0.0)
+	{
+		//uint index = atomicAdd(indDraw[0].instanceCount, 1);		// We can use instanceCount as the index. But use the return value which gives the value before the add so we start at 0 instead of 1. If we used the global index, the data
+		//voxels[index].pos = vec3(gl_GlobalInvocationID);				// would be spread out in the buffer, only where the alpha was more than 0, but we want the place the positions tightly packed ready to be used for instancing
+		uint index = 0;
+		InterlockedAdd(indirectBuffer[0].instanceCount, 1, index);
+		voxelBuffer[index].pos = float3(dispatchID);
+	}
+}

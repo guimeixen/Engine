@@ -1,0 +1,105 @@
+digraph framegraph{
+rankdir="LR";
+node[shape=rectangle];
+cloudsPass[style=filled fillcolor=grey];
+cloudsLowRes[style=filled fillcolor=darkorange];
+cloudsReprojectionPass[style=filled fillcolor=grey];
+cloudsTexture[style=filled fillcolor=darkorange];
+csm[style=filled fillcolor=grey];
+shadowMap[style=filled fillcolor=darkorange];
+voxelization[style=filled fillcolor=grey];
+voxelTexture[style=filled fillcolor=darkorange];
+voxelMipMaps[style=filled fillcolor=grey];
+voxelTextureMipmapped[style=filled fillcolor=darkorange];
+fillPositions[style=filled fillcolor=grey];
+voxelPositionsBuffer[style=filled fillcolor=darksalmon];
+voxelsIndirectBuffer[style=filled fillcolor=darksalmon];
+frustumsPass[style=filled fillcolor=grey];
+frustumsBuffer[style=filled fillcolor=darksalmon];
+depthPrepass[style=filled fillcolor=grey];
+depthPrepassOutput[style=filled fillcolor=darkorange];
+lightCullingPass[style=filled fillcolor=grey];
+lightGrid[style=filled fillcolor=darkorange];
+refraction[style=filled fillcolor=grey];
+refractionTex[style=filled fillcolor=darkorange];
+refractionDepth[style=filled fillcolor=darkorange];
+reflection[style=filled fillcolor=grey];
+reflectionTex[style=filled fillcolor=darkorange];
+reflectionDepth[style=filled fillcolor=darkorange];
+base[style=filled fillcolor=grey];
+color[style=filled fillcolor=darkorange];
+depth[style=filled fillcolor=darkorange];
+BrightPass[style=filled fillcolor=grey];
+brightPass[style=filled fillcolor=darkorange];
+DownsamplePass4[style=filled fillcolor=grey];
+downsample4[style=filled fillcolor=darkorange];
+DownsamplePass8[style=filled fillcolor=grey];
+downsample8[style=filled fillcolor=darkorange];
+DownsamplePass16[style=filled fillcolor=grey];
+downsample16[style=filled fillcolor=darkorange];
+Upsample8[style=filled fillcolor=grey];
+upsample8[style=filled fillcolor=darkorange];
+Upsample4[style=filled fillcolor=grey];
+upsample4[style=filled fillcolor=darkorange];
+postProcessPass[style=filled fillcolor=grey];
+final[style=filled fillcolor=darkorange];
+
+cloudsPass->cloudsLowRes;
+cloudsReprojectionPass->cloudsTexture;
+csm->shadowMap;
+voxelization->voxelTexture;
+voxelMipMaps->voxelTextureMipmapped;
+fillPositions->voxelPositionsBuffer;
+fillPositions->voxelsIndirectBuffer;
+frustumsPass->frustumsBuffer;
+depthPrepass->depthPrepassOutput;
+lightCullingPass->lightGrid;
+refraction->refractionTex;
+refraction->refractionDepth;
+reflection->reflectionTex;
+reflection->reflectionDepth;
+base->color;
+base->depth;
+BrightPass->brightPass;
+DownsamplePass4->downsample4;
+DownsamplePass8->downsample8;
+DownsamplePass16->downsample16;
+Upsample8->upsample8;
+Upsample4->upsample4;
+postProcessPass->final;
+color->postProcessPass;
+brightPass->postProcessPass;
+upsample4->postProcessPass;
+cloudsTexture->postProcessPass;
+depth->postProcessPass
+upsample8->Upsample4;
+downsample4->Upsample4;
+downsample16->Upsample8;
+downsample8->Upsample8;
+downsample8->DownsamplePass16;
+downsample4->DownsamplePass8;
+brightPass->DownsamplePass4;
+color->BrightPass;
+reflectionTex->base;
+refractionTex->base;
+voxelTextureMipmapped->"voxelTextureMipmapped Barrier RAW";
+"voxelTextureMipmapped Barrier RAW"->base;
+lightGrid->"lightGrid Barrier RAW";
+"lightGrid Barrier RAW"->base;
+voxelsIndirectBuffer->"voxelsIndirectBuffer Barrier RAW";
+"voxelsIndirectBuffer Barrier RAW"->base;
+voxelPositionsBuffer->"voxelPositionsBuffer Barrier RAW";
+"voxelPositionsBuffer Barrier RAW"->base;
+shadowMap->base
+refractionDepth->base
+shadowMap->refraction
+frustumsBuffer->"frustumsBuffer Barrier RAW";
+"frustumsBuffer Barrier RAW"->lightCullingPass;
+depthPrepassOutput->lightCullingPass
+voxelTextureMipmapped->"voxelTextureMipmapped Barrier RAW";
+"voxelTextureMipmapped Barrier RAW"->fillPositions;
+voxelTexture->"voxelTexture Barrier RAW";
+"voxelTexture Barrier RAW"->voxelMipMaps;
+shadowMap->voxelization
+cloudsLowRes->cloudsReprojectionPass;
+}

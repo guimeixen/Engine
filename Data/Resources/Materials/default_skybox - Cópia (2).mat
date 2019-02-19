@@ -1,0 +1,2 @@
+baseMat=Data/Resources/Materials/default_skybox_mat.lua
+skybox=Data/Resources/Textures/cubemap_yokohama_bc3_unorm.ktx

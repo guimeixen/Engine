@@ -1,0 +1,166 @@
+#version 450
+#extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
+#include "include/forward_plus.glsl"
+
+layout(std140, set = 0, binding = FRUSTUMS_BINDING) readonly buffer FrustumSSBO
+{
+	Frustum frustums[];
+};
+
+layout(std140, set = 0, binding = O_LIGHT_INDEX_LIST) writeonly buffer OpaqueLightIndexList
+{
+	uint oLightIndexList[];
+};
+
+layout(set = 0, binding = LIGHT_GRID_BINDING, rg32ui) uniform writeonly uimage2D oLightGrid;
+
+shared uint uMinDepth;
+shared uint uMaxDepth;
+shared Frustum groupFrustum;			// Since the frustum to perform culling is just one, we can keep it as a shared variable
+// Opaque geometry light lists
+shared uint oLightCount;					// Num of lights that are intersecting the current tile frustum
+shared uint oLightIndexStartOffset;	// Offste into the global light index list
+shared uint oLightList[256];				// Allows us to store 256 lights per tile
+
+layout(push_constant) uniform PushConstants
+{
+	uint numLights;
+};
+
+vec3 ClipToView(vec4 clipPos)
+{
+	vec4 p = invProj * clipPos;
+	p.xyz /= p.w;
+	return p.xyz;
+}
+
+// Add the light to the visible light list for opaque geometry.
+void oAppendLight(uint lightIndex)
+{
+	uint index; // Index into the visible lights array
+	index = atomicAdd(oLightCount, 1);
+	if (index < 256)
+	{
+		oLightList[index] = lightIndex;
+	}
+}
+
+// Check to see if a sphere is fully behind (inside the negative halfspace of) a plane
+bool SphereInsidePlane(Sphere s, Plane p)
+{
+	return dot(p.normal, s.center) - p.d < -s.radius;
+}
+
+bool SphereInsideFrustum(Sphere s, Frustum f, float zNear, float zFar)
+{
+	bool result = true;
+	
+	// First check depth
+    // Note: Here, the view vector points in the -Z axis so the 
+    // far depth value will be approaching -infinity.
+	if (s.center.z - s.radius > zNear || s.center.z + s.radius < zFar)
+		result = false;
+	
+	// Then check the frustum planes
+	for (int i = 0; i < 4 && result; i++)
+	{
+		if (SphereInsidePlane(s, f.planes[i]))
+			result = false;
+	}
+	
+	return result;
+}
+
+
+layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
+void main()
+{
+	/*if(gl_GlobalInvocationID.x > 50 || gl_GlobalInvocationID.y > 29)
+		return;*/
+		
+	// set buffer to zero through code?
+	if(gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0)
+		atomicExchange(oLightIndexCounter[0], 0);
+
+	vec2 uv = gl_GlobalInvocationID.xy / screenRes;
+	float depth = texture(depthTextureVS, uv).r;
+	depth = ClipToView(vec4(uv * 2.0 - 1.0, depth, 1.0)).z;
+
+	//depth = (0.5 * proj[3][2]) / (depth + 0.5 * proj[2][2] - 0.5);
+
+	uint uDepth = floatBitsToUint(depth);					// Like this we can perform the atomicMin/Max comparisons
+	
+	if (gl_LocalInvocationIndex == 0)
+	{
+		uMinDepth = 0xffffffff;
+		uMaxDepth = 0;
+		oLightCount = 0;
+		groupFrustum = frustums[gl_WorkGroupID.y * gl_NumWorkGroups.x + gl_WorkGroupID.x];
+	}
+	
+	// Ensure that any writes to group shared memory have completed
+	// and thread execution for all threads in a group have reached this point
+	barrier();
+	
+	atomicMin(uMinDepth, uDepth);
+	atomicMax(uMaxDepth, uDepth);
+
+	barrier();
+	
+	float minDepthVS = uintBitsToFloat(uMinDepth);
+	float maxDepthVS = uintBitsToFloat(uMaxDepth);
+	
+	float nearDepthVS = -nearFarPlane.x;		// negative near plane for right handed coordinate system
+	
+	// Clipping plane for the minimum depth value
+	// Used for testing lights withing the bounds of opaque geometry
+	Plane minPlane;
+	minPlane.normal = vec3(0.0, 0.0, -1.0);
+	minPlane.d = -minDepthVS;
+	
+	// Cull lights
+	// Each thread in a group will cull 1 light until all lights have been culled
+	for (uint i = gl_LocalInvocationIndex; i < numLights; i += BLOCK_SIZE * BLOCK_SIZE)
+	{
+		Light light = lights[i];
+		
+		/*switch (light.type)
+		{
+			case POINT_LIGHT:*/
+				Sphere s;
+				s.center = light.posAndIntensityVS.xyz;
+				s.radius = light.colorAndRadius.w;
+				
+				// Check if the lights is within the tile frustum using the near plane and the max depth
+				if (SphereInsideFrustum(s, groupFrustum, nearDepthVS, maxDepthVS))
+				{
+					if (!SphereInsidePlane(s, minPlane))
+						oAppendLight(i);
+				}			
+		/*	break;
+		}*/
+	}
+	
+	// Wait until all threads in the group have caught up
+	barrier();
+	
+	// Update global memory with the visiblt light buffer
+	// First update the light grid (only thread 0 in group needs to do this)
+	if (gl_LocalInvocationIndex == 0)
+	{
+		// Update light grid for opaque geometry;
+		oLightIndexStartOffset = atomicAdd(oLightIndexCounter[0], oLightCount);
+		imageStore(oLightGrid, ivec2(gl_WorkGroupID.xy), uvec4(oLightIndexStartOffset, oLightCount, 0, 0));
+		//imageStore(debugTexture, ivec2(gl_WorkGroupID.xy), vec4(maxDepthVS, 0.0, 0.0, 0.0));
+	}
+	
+	barrier();
+	
+	// Now update the light index list (all threads).
+	// For opaque geometry.
+	for (uint i = gl_LocalInvocationIndex; i < oLightCount; i += BLOCK_SIZE * BLOCK_SIZE)
+	{
+		oLightIndexList[oLightIndexStartOffset + i] = oLightList[i];
+	}
+}

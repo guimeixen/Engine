@@ -1,0 +1,6 @@
+#define CASCADE_COUNT 3
+#define ONE_OVER_CASCADE_COUNT (1.0 / CASCADE_COUNT)
+#define SHADOW_MAP_RES 2048
+#define ONE_OVER_SHADOW_MAP_RES (1.0 / SHADOW_MAP_RES)		// Shadow map pixel size
+
+#define MAX_POINT_LIGHTS 8

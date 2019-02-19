@@ -1,0 +1,242 @@
+docks 15
+
+index    0
+label    Game View
+x        207
+y        54
+size_x   1248
+size_y   673
+status   0
+active   1
+opened   1
+location 012
+child0   -1
+child1   -1
+prev_tab -1
+next_tab -1
+parent   12
+
+index    1
+label    Scene
+x        0
+y        54
+size_x   207
+size_y   673
+status   0
+active   1
+opened   1
+location 112
+child0   -1
+child1   -1
+prev_tab -1
+next_tab -1
+parent   12
+
+index    2
+label    Object Window
+x        1455
+y        54
+size_x   465
+size_y   673
+status   0
+active   0
+opened   1
+location 02
+child0   -1
+child1   -1
+prev_tab 3
+next_tab 9
+parent   11
+
+index    3
+label    Terrain Editor
+x        1455
+y        54
+size_x   465
+size_y   673
+status   0
+active   0
+opened   1
+location 02
+child0   -1
+child1   -1
+prev_tab 4
+next_tab 2
+parent   11
+
+index    4
+label    Material Editor
+x        1455
+y        54
+size_x   465
+size_y   673
+status   0
+active   0
+opened   1
+location 02
+child0   -1
+child1   -1
+prev_tab 7
+next_tab 3
+parent   11
+
+index    5
+label    AI Settings
+x        0
+y        727
+size_x   1920
+size_y   266
+status   0
+active   0
+opened   1
+location 3
+child0   -1
+child1   -1
+prev_tab 10
+next_tab 14
+parent   13
+
+index    6
+label    Rendering Window
+x        1455
+y        54
+size_x   465
+size_y   673
+status   0
+active   1
+opened   1
+location 02
+child0   -1
+child1   -1
+prev_tab 9
+next_tab 8
+parent   11
+
+index    7
+label    Animation Window
+x        1455
+y        54
+size_x   465
+size_y   673
+status   0
+active   0
+opened   1
+location 02
+child0   -1
+child1   -1
+prev_tab -1
+next_tab 4
+parent   11
+
+index    8
+label    Animation Properties
+x        1455
+y        54
+size_x   465
+size_y   673
+status   0
+active   0
+opened   1
+location 02
+child0   -1
+child1   -1
+prev_tab 6
+next_tab -1
+parent   11
+
+index    9
+label    Skeleton Tree
+x        1455
+y        54
+size_x   465
+size_y   673
+status   0
+active   0
+opened   1
+location 02
+child0   -1
+child1   -1
+prev_tab 2
+next_tab 6
+parent   11
+
+index    10
+label    Console
+x        0
+y        727
+size_x   1920
+size_y   266
+status   0
+active   1
+opened   1
+location 3
+child0   -1
+child1   -1
+prev_tab -1
+next_tab 5
+parent   13
+
+index    11
+label    DOCK
+x        0
+y        54
+size_x   1920
+size_y   673
+status   0
+active   1
+opened   0
+location 2
+child0   12
+child1   7
+prev_tab -1
+next_tab -1
+parent   13
+
+index    12
+label    DOCK
+x        0
+y        54
+size_x   1455
+size_y   673
+status   0
+active   1
+opened   0
+location 12
+child0   1
+child1   0
+prev_tab -1
+next_tab -1
+parent   11
+
+index    13
+label    ROOT
+x        0
+y        54
+size_x   1920
+size_y   939
+status   0
+active   1
+opened   0
+location -1
+child0   11
+child1   10
+prev_tab -1
+next_tab -1
+parent   -1
+
+index    14
+label    Assets Browser
+x        0
+y        727
+size_x   1920
+size_y   266
+status   0
+active   0
+opened   1
+location 3
+child0   -1
+child1   -1
+prev_tab 5
+next_tab -1
+parent   13
+

@@ -1,0 +1,7 @@
+baseMat=Data/Resources/Materials/default_skybox_mat.lua
+skybox=Data/Textures/Skybox/left.dds
+skybox=Data/Textures/Skybox/right.dds
+skybox=Data/Textures/Skybox/top.dds
+skybox=Data/Textures/Skybox/top.dds
+skybox=Data/Textures/Skybox/back.dds
+skybox=Data/Textures/Skybox/front.dds

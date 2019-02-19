@@ -1,0 +1,50 @@
+#include "include/ubos.hlsli"
+
+layout(set = 0, binding = 9) uniform sampler3D srcVoxels;
+layout(set = 0, binding = 10, rgba8) uniform writeonly image3D dstVoxels[7];	// The first mip is not added
+
+/*layout(push_constant) uniform PushConsts
+{
+	int mipIndex;		// The second mip starts at 0 in the dstVoxels array. We can also use it as the srcMipLevel in texelFetch
+	int dstMipRes;
+};*/
+
+float4[8] fetchTexels(int3 pos)
+{
+	return float4[8] (texelFetch(srcVoxels, pos, mipIndex),
+					texelFetch(srcVoxels, pos + int3(1, 0, 0), mipIndex),
+					texelFetch(srcVoxels, pos + int3(1, 1, 0), mipIndex),
+					texelFetch(srcVoxels, pos + int3(0, 0, 1), mipIndex),
+					texelFetch(srcVoxels, pos + int3(0, 1, 0), mipIndex),
+					texelFetch(srcVoxels, pos + int3(0, 1, 1), mipIndex),
+					texelFetch(srcVoxels, pos + int3(1, 0, 1), mipIndex),
+					texelFetch(srcVoxels, pos + int3(1, 1, 1), mipIndex));
+}
+
+[numthreads(4,4,4)]
+void CS(uint3 dispatchID : SV_DispatchThreadID)
+{
+	// Make sure were in range
+	if (gl_GlobalInvocationID.x < dstMipRes && gl_GlobalInvocationID.y < dstMipRes && gl_GlobalInvocationID.z < dstMipRes)
+	{
+		int3 dstPos = int3(gl_GlobalInvocationID);
+		int3 srcPos = dstPos * 2;
+		
+		float4 values[8] = fetchTexels(srcPos);
+		
+		float3 finalColor = float3(0.0);
+		float contributionCount = 0.0;
+		float alpha = 0.0;
+		
+		for (int i = 0; i < 8; i++)
+		{
+			float3 contribution = values[i].a > 0.0 ? float3(1.0) : float3(0.0);
+			
+			finalColor += values[i].rgb * contribution;
+			contributionCount += contribution.x;
+			alpha += values[i].a;
+		}
+		
+		imageStore(dstVoxels[mipIndex], dstPos, float4(finalColor / contributionCount, alpha));
+	}
+}

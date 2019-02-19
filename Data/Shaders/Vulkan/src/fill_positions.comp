@@ -1,0 +1,61 @@
+#version 450
+#extension GL_GOOGLE_include_directive : enable
+
+struct IndirectDraw
+{
+	uint indexCount;
+	uint instanceCount;
+	uint firstIndex;
+	uint baseVertex;
+	uint baseInstance;
+};
+
+#include "include/common.glsl"
+
+layout(set = 0, binding = 7, std430) buffer IndirectBuffer
+{
+	IndirectDraw indDraw[];					// We only have space for 1 element (we're just rendering a cube)
+};
+
+struct Voxel
+{
+	vec3 pos;
+	float pad;
+};
+
+layout(set = 0, binding = 8, std140) writeonly buffer VoxelSSBO
+{
+	Voxel voxels[];
+};
+
+layout(push_constant) uniform PushConsts
+{
+	uint mip;
+};
+
+//layout(set = 0, binding = 6, rgba8) uniform readonly image3D voxelTexture;
+layout(set = 0, binding = 10, rgba8) uniform readonly image3D voxelTexture[8];
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+
+void main()
+{
+	// Flat global index
+	uint index = gl_GlobalInvocationID.z * gl_WorkGroupSize.x * gl_NumWorkGroups.x * gl_WorkGroupSize.y * gl_NumWorkGroups.y +
+					gl_GlobalInvocationID.y * gl_WorkGroupSize.x * gl_NumWorkGroups.x +
+					gl_GlobalInvocationID.x;
+	
+	// Reset the instanceCount every first invocation, so we don't keep increasing instanceCount
+	if (index == 0)
+	{
+		indDraw[0].indexCount = 36;
+		atomicExchange(indDraw[0].instanceCount, 0);
+	}
+	
+	float a = imageLoad(voxelTexture[mip], ivec3(gl_GlobalInvocationID)).a;
+	if (a > 0.0)
+	{
+		uint index = atomicAdd(indDraw[0].instanceCount, 1);		// We can use instanceCount as the index. But use the return value which gives the value before the add so we start at 0 instead of 1. If we used the global index, the data
+		voxels[index].pos = vec3(gl_GlobalInvocationID);				// would be spread out in the buffer, only where the alpha was more than 0, but we want the place the positions tightly packed ready to be used for instancing
+	}
+}

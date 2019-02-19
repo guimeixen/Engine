@@ -1,0 +1,8 @@
+baseMat=Data/Resources/Materials/terrain_mat.lua
+heightmap=Data/Resources/Materials/terrain/default_heightmap.png
+diffuseR=Data/Textures/moss.png
+diffuseG=Data/Resources/Textures/sand.png
+diffuseB=Data/Resources/Textures/sand.png
+diffuseBlack=Data/Resources/Textures/sand.png
+diffuseRNormal=Data/Resources/Textures/default_normal.dds
+splatmap=Data/Resources/Textures/splatmap.png

@@ -1,0 +1,84 @@
+#version 450
+#extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
+#include "include/forward_plus.glsl"
+
+layout(std140, set = 0, binding = FRUSTUMS_BINDING) writeonly buffer FrustumSSBO
+{
+	Frustum frustums[];
+};
+
+layout(push_constant) uniform PushConsts
+{
+	uvec2 numFrustums;
+};
+
+// Compute a plane from 3 noncollinear points that form a triangle.
+// This equation assumes a right-handed (counter-clockwise winding order) 
+// coordinate system to determine the direction of the plane normal.
+Plane ComputePlane(vec3 p0, vec3 p1, vec3 p2)
+{
+	Plane p;
+	
+	vec3 v0 = p1 -  p0;
+	vec3 v2 = p2 - p0;
+	
+	p.normal = normalize(cross(v0, v2));
+	// Compute the distance to the origin using p0.
+	p.d = dot(p.normal, p0);
+	
+	return p;
+}
+
+vec3 ScreenToView(vec4 screenPos)
+{
+	// Convert to NDC
+	vec4 p = vec4(screenPos.x / screenRes.x, screenPos.y / screenRes.y, screenPos.z, screenPos.w);
+	p.xy = p.xy * 2.0 - 1.0;
+	
+	p = invProj * p;
+	p.xyz /= p.w;
+	
+	return p.xyz;
+}
+
+layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
+void main()
+{
+	if (gl_GlobalInvocationID.x < numFrustums.x && gl_GlobalInvocationID.y < numFrustums.y)
+	{
+		// Compute the 4 corner points on the far clipping plane to use as the frustum vertices
+		vec4 screenSpace[4];
+		// gl_GlobalInvocationID is going to vary between x->(0,80) and y->(0,45) by multiplying by TILE_SIZE  (16) we get the screen position x->(0,1280) and y->(0,720)
+		// Use z=1 to put the corners at the far plane
+		// top left
+		screenSpace[0] = vec4(gl_GlobalInvocationID.xy * TILE_SIZE, 1.0, 1.0);			// Multiply by TILE_SIZE to get the screen position
+		// top right
+		screenSpace[1] = vec4(vec2(gl_GlobalInvocationID.x + 1, gl_GlobalInvocationID.y) * TILE_SIZE, 1.0, 1.0);
+		// bottom left
+		screenSpace[2] = vec4(vec2(gl_GlobalInvocationID.x, gl_GlobalInvocationID.y + 1) * TILE_SIZE, 1.0, 1.0);
+		// bottom right
+		screenSpace[3] = vec4(vec2(gl_GlobalInvocationID.x +1, gl_GlobalInvocationID.y + 1) * TILE_SIZE, 1.0, 1.0);
+		
+		vec3 viewSpace[4];
+		viewSpace[0] = ScreenToView(screenSpace[0]);
+		viewSpace[1] = ScreenToView(screenSpace[1]);
+		viewSpace[2] = ScreenToView(screenSpace[2]);
+		viewSpace[3] = ScreenToView(screenSpace[3]);
+		
+		// Use zero vector because in view space the camera is always at the origin
+		Frustum f;
+		// Left plane
+		f.planes[0] = ComputePlane(vec3(0.0), viewSpace[2], viewSpace[0]);		// camPos, bottom left and top left
+		// Right plane
+		f.planes[1] = ComputePlane(vec3(0.0), viewSpace[1], viewSpace[3]);		// camPos, top right and bottom right
+		// Top plane
+		f.planes[2] = ComputePlane(vec3(0.0), viewSpace[0], viewSpace[1]);		// camPos, top left and top right
+		// Bottom plane
+		f.planes[3] = ComputePlane(vec3(0.0), viewSpace[3], viewSpace[2]);		// camPos, bottom right and bottom left
+		
+		// Flat global index
+		uint index = gl_GlobalInvocationID.y * numFrustums.x + gl_GlobalInvocationID.x;
+		frustums[index] = f;		
+	}
+}

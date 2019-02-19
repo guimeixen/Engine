@@ -1,0 +1,24 @@
+#include "include/common.hlsli"
+
+//RWTexture2D<unorm float4> inputImg : register (u0);
+RWTexture2D<unorm float4> outputImg : register (u0);
+//layout(binding = 0, rgba8) uniform writeonly image2D outputImg;
+/*layout(binding = 1, std430) readonly buffer testBuffer
+{
+	float bufferData[];
+};*/
+
+StructuredBuffer<float> testBuffer : register(t6);
+
+[numthreads(16,16,1)]
+void CS(uint3 dispatchID : SV_DispatchThreadID)
+{
+	/*float r = bufferData[0];
+	float g = bufferData[1];*/
+	//imageStore(outputImg, ivec2(gl_GlobalInvocationID.xy), vec4(1.0, 1.0, 0.0, 0.0));
+	//outputImg[dispatchID.xy] = inputImg[dispatchID.xy];
+	//outputImg[dispatchID.xy] = inputImg.Load(dispatchID.xy);
+	float r = testBuffer[0];
+	float g = testBuffer[1];
+	outputImg[dispatchID.xy] = float4(r, g, 0.0, 1.0);
+}

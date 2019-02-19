@@ -1,0 +1,331 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ABC9654E-9C8C-42F1-B69B-6F15AC8234B7}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Editor</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)Engine;$(SolutionDir)include;C:\VulkanSDK\1.1.77.0\Include;$(SolutionDir)Editor\imgui;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib;C:\VulkanSDK\1.1.77.0\Lib32;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <LibraryPath>$(SolutionDir)\lib;C:\VulkanSDK\1.0.65.1\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\Engine;$(SolutionDir)\include;C:\VulkanSDK\1.0.65.1\Include;$(SolutionDir)\Editor\imgui;$(SolutionDir)GameSparks\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>$(SolutionDir)\lib;C:\VulkanSDK\1.1.77.0\Lib32;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\Engine;$(SolutionDir)\include;C:\VulkanSDK\1.1.77.0\Include;$(SolutionDir)\Editor\imgui;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>$(SolutionDir)\lib;C:\VulkanSDK\1.0.65.1\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\Engine;$(SolutionDir)\include;C:\VulkanSDK\1.0.65.1\Include;$(SolutionDir)\Editor\imgui;$(SolutionDir)GameSparks\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;NOMINMAX;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>debug/x86/glfw3.lib;vulkan-1.lib;debug/x86/glew32d.lib;OpenGL32.lib;debug/x86/assimp.lib;debug/x86/Lua5.3.4.lib;debug/x86/BulletCollision_Debug.lib;debug/x86/BulletDynamics_Debug.lib;debug/x86/BulletSoftBody_Debug.lib;debug/x86/LinearMath_Debug.lib;debug/x86/fmodL_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>debug/x64/glfw3.lib;vulkan-1.lib;debug/x64/glew32d.lib;OpenGL32.lib;debug/x64/assimp.lib;debug/x64/SOIL.lib;debug/x64/Lua5.3.4.lib;debug/x64/BulletCollision_Debug.lib;debug/x64/BulletDynamics_Debug.lib;debug/x64/BulletSoftBody_Debug.lib;debug/x64/LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;NOMINMAX;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>release/x86/glfw3.lib;vulkan-1.lib;release/x86/glew32.lib;OpenGL32.lib;release/x86/assimp.lib;release/x86/Lua5.3.4.lib;release/x86/BulletCollision.lib;release/x86/BulletDynamics.lib;release/x86/BulletSoftBody.lib;release/x86/LinearMath.lib;release/x86/fmod_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>release/x64/glfw3.lib;vulkan-1.lib;release/x64/glew32.lib;OpenGL32.lib;release/x64/assimp.lib;release/x64/SOIL.lib;release/x64/Lua5.3.4.lib;release/x64/BulletCollision.lib;release/x64/BulletDynamics.lib;release/x64/BulletSoftBody.lib;release/x64/LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Engine\AI\AIObject.cpp" />
+    <ClCompile Include="..\Engine\AI\AISystem.cpp" />
+    <ClCompile Include="..\Engine\AI\AStarGrid.cpp" />
+    <ClCompile Include="..\Engine\AI\AStarNodeHeap.cpp" />
+    <ClCompile Include="..\Engine\Application.cpp" />
+    <ClCompile Include="..\Engine\Game\ComponentManagers\LightManager.cpp" />
+    <ClCompile Include="..\Engine\Game\ComponentManagers\ModelManager.cpp" />
+    <ClCompile Include="..\Engine\Game\ComponentManagers\ParticleManager.cpp" />
+    <ClCompile Include="..\Engine\Game\ComponentManagers\PhysicsManager.cpp" />
+    <ClCompile Include="..\Engine\Game\ComponentManagers\ScriptManager.cpp" />
+    <ClCompile Include="..\Engine\Game\ComponentManagers\SoundManager.cpp" />
+    <ClCompile Include="..\Engine\Game\ComponentManagers\TransformManager.cpp" />
+    <ClCompile Include="..\Engine\Game\EntityManager.cpp" />
+    <ClCompile Include="..\Engine\Game\Game.cpp" />
+    <ClCompile Include="..\Engine\Game\Object.cpp" />
+    <ClCompile Include="..\Engine\Game\SceneManager.cpp" />
+    <ClCompile Include="..\Engine\Game\Script.cpp" />
+    <ClCompile Include="..\Engine\Game\Transform.cpp" />
+    <ClCompile Include="..\Engine\Game\UI\Button.cpp" />
+    <ClCompile Include="..\Engine\Game\UI\EditText.cpp" />
+    <ClCompile Include="..\Engine\Game\UI\Image.cpp" />
+    <ClCompile Include="..\Engine\Game\UI\StaticText.cpp" />
+    <ClCompile Include="..\Engine\Game\UI\UIManager.cpp" />
+    <ClCompile Include="..\Engine\Game\UI\Widget.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Animation\AnimatedModel.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Animation\AnimationController.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Camera\Camera.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Camera\FPSCamera.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Camera\Frustum.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11DrawIndirectBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Framebuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11IndexBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Renderer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Shader.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11SSBO.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Texture2D.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Texture3D.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11UniformBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Utils.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11VertexArray.cpp" />
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11VertexBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\CascadedShadowMap.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\DebugDrawManager.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\DeferredRenderer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\ForwardPlusRenderer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\ForwardRenderer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\MainView.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\ProjectedGridWater.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\RenderingPath.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\TimeOfDayManager.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\VCTGI.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\VolumetricClouds.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Font.cpp" />
+    <ClCompile Include="..\Engine\Graphics\FrameGraph.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLDrawIndirectBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLFramebuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLIndexBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLRenderer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLShader.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLSSBO.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLTexture2D.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLTexture3D.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLTextureCube.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLUniformBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLUtils.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLVertexArray.cpp" />
+    <ClCompile Include="..\Engine\Graphics\GL\GLVertexBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Material.cpp" />
+    <ClCompile Include="..\Engine\Graphics\MeshDefaults.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Model.cpp" />
+    <ClCompile Include="..\Engine\Graphics\ParticleSystem.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Renderer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\ResourcesLoader.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Shader.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Terrain\Terrain.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Terrain\TerrainNode.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Texture.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VertexArray.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKAllocator.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKBase.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKDebug.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKDrawIndirectBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKFramebuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKIndexBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKRenderer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKShader.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKSSBO.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKSwapChain.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKTexture2D.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKTexture3D.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKTextureCube.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKUniformBuffer.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKUtils.cpp" />
+    <ClCompile Include="..\Engine\Graphics\VK\VKVertexArray.cpp" />
+    <ClCompile Include="..\Engine\Physics\Collider.cpp" />
+    <ClCompile Include="..\Engine\Physics\Ray.cpp" />
+    <ClCompile Include="..\Engine\Physics\RigidBody.cpp" />
+    <ClCompile Include="..\Engine\Physics\Trigger.cpp" />
+    <ClCompile Include="..\Engine\Program\Input.cpp" />
+    <ClCompile Include="..\Engine\Program\Log.cpp" />
+    <ClCompile Include="..\Engine\Program\Random.cpp" />
+    <ClCompile Include="..\Engine\Program\Serializer.cpp" />
+    <ClCompile Include="..\Engine\Program\Utils.cpp" />
+    <ClCompile Include="..\Engine\Program\Window.cpp" />
+    <ClCompile Include="..\Engine\Sound\SoundSource.cpp" />
+    <ClCompile Include="..\Engine\stb.cpp" />
+    <ClCompile Include="AIWindow.cpp" />
+    <ClCompile Include="AnimationProperties.cpp" />
+    <ClCompile Include="AnimationWindow.cpp" />
+    <ClCompile Include="AssetsBrowserWindow.cpp" />
+    <ClCompile Include="ConsoleWindow.cpp" />
+    <ClCompile Include="EditorManager.cpp" />
+    <ClCompile Include="EditorNameManager.cpp" />
+    <ClCompile Include="EditorWindow.cpp" />
+    <ClCompile Include="EntityDebugWindow.cpp" />
+    <ClCompile Include="Gizmo.cpp" />
+    <ClCompile Include="imgui\imconfig.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_dock.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MaterialWindow.cpp" />
+    <ClCompile Include="ObjectWindow.cpp" />
+    <ClCompile Include="RenderingWindow.cpp" />
+    <ClCompile Include="SceneWindow.cpp" />
+    <ClCompile Include="SkeletonTreeWindow.cpp" />
+    <ClCompile Include="TerrainWindow.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AIWindow.h" />
+    <ClInclude Include="AnimationProperties.h" />
+    <ClInclude Include="AnimationWindow.h" />
+    <ClInclude Include="AssetsBrowserWindow.h" />
+    <ClInclude Include="Commands.h" />
+    <ClInclude Include="ConsoleWindow.h" />
+    <ClInclude Include="EditorManager.h" />
+    <ClInclude Include="EditorNameManager.h" />
+    <ClInclude Include="EditorWindow.h" />
+    <ClInclude Include="EntityDebugWindow.h" />
+    <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_dock.h" />
+    <ClInclude Include="imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\stb_rect_pack.h" />
+    <ClInclude Include="imgui\stb_textedit.h" />
+    <ClInclude Include="imgui\stb_truetype.h" />
+    <ClInclude Include="MaterialWindow.h" />
+    <ClInclude Include="ObjectWindow.h" />
+    <ClInclude Include="RenderingWindow.h" />
+    <ClInclude Include="SceneWindow.h" />
+    <ClInclude Include="SkeletonTreeWindow.h" />
+    <ClInclude Include="TerrainWindow.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
