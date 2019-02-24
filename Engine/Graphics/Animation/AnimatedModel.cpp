@@ -6,8 +6,6 @@
 #include "Graphics\Renderer.h"
 #include "Program\Log.h"
 #include "Game\Game.h"
-#include "Game\Transform.h"
-#include "Game\Object.h"
 #include "Program\Input.h"
 #include "Graphics\Material.h"
 

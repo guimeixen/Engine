@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Game\Object.h"
-#include "Graphics\Terrain\Terrain.h"
+#include "Game/EntityManager.h"
+#include "Game/ComponentManagers/TransformManager.h"
+#include "Graphics/Terrain/Terrain.h"
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
 
 class EditorCommand
 {
@@ -19,46 +20,50 @@ public:
 class TransformCommand : public EditorCommand
 {
 public:
-	TransformCommand(Engine::Object *obj, const glm::vec3 &newPosition, const glm::vec3 &newRotation, const glm::vec3 &newScale)
+	TransformCommand(Engine::TransformManager *tm, Engine::Entity e, const glm::vec3 &newPosition, const glm::vec3 &newRotation, const glm::vec3 &newScale)
 	{
-		this->obj = obj;
+		this->tm = tm;
+		this->e = e;
 		newPos = newPosition;
 		newRot = newRotation;
 		this->newScale = newScale;
 
-		oldPos = obj->GetLocalPosition();
-		oldRot = obj->GetLocalRotationEuler();
-		oldScale = obj->GetLocalScale();
+		oldPos = tm->GetLocalPosition(e);
+		oldRot = tm->GetLocalRotation(e);
+		oldScale = tm->GetLocalScale(e);
 	}
 
 	void Execute() override
 	{
-		obj->SetLocalPosition(newPos);
-		obj->SetLocalRotationEuler(newRot);
-		obj->SetLocalScale(newScale);
+		tm->SetLocalPosition(e, newPos);
+		tm->SetLocalRotation(e, newRot);
+		tm->SetLocalScale(e, newScale);
 	}
 
 	void Undo() override
 	{
-		obj->SetLocalPosition(oldPos);
-		obj->SetLocalRotationEuler(oldRot);
-		obj->SetLocalScale(oldScale);
+		tm->SetLocalPosition(e, oldPos);
+		tm->SetLocalRotation(e, oldRot);
+		tm->SetLocalScale(e, oldScale);
 	}
 
 	void Redo() override
 	{
-
+		tm->SetLocalPosition(e, newPos);
+		tm->SetLocalRotation(e, newRot);
+		tm->SetLocalScale(e, newScale);
 	}
 
 private:
-	Engine::Object *obj;
+	Engine::TransformManager *tm;
+	Engine::Entity e;
 
 	glm::vec3 newPos;
-	glm::vec3 newRot;
+	glm::quat newRot;
 	glm::vec3 newScale;
 
 	glm::vec3 oldPos;
-	glm::vec3 oldRot;
+	glm::quat oldRot;
 	glm::vec3 oldScale;
 };
 

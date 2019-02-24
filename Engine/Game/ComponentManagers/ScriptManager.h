@@ -18,9 +18,6 @@ namespace Engine
 	class ScriptManager
 	{
 	public:
-		ScriptManager();
-		~ScriptManager();
-
 		void Init(Game *game);
 		void Play();
 		void UpdateInGame(float dt);

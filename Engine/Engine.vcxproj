@@ -34,10 +34,7 @@
     <ClCompile Include="Game\ComponentManagers\TransformManager.cpp" />
     <ClCompile Include="Game\EntityManager.cpp" />
     <ClCompile Include="Game\Game.cpp" />
-    <ClCompile Include="Game\Object.cpp" />
-    <ClCompile Include="Game\SceneManager.cpp" />
     <ClCompile Include="Game\Script.cpp" />
-    <ClCompile Include="Game\Transform.cpp" />
     <ClCompile Include="Game\UI\EditText.cpp" />
     <ClCompile Include="Game\UI\Image.cpp" />
     <ClCompile Include="Game\UI\StaticText.cpp" />
@@ -144,10 +141,7 @@
     <ClInclude Include="Game\ComponentManagers\TransformManager.h" />
     <ClInclude Include="Game\EntityManager.h" />
     <ClInclude Include="Game\Game.h" />
-    <ClInclude Include="Game\Object.h" />
-    <ClInclude Include="Game\SceneManager.h" />
     <ClInclude Include="Game\Script.h" />
-    <ClInclude Include="Game\Transform.h" />
     <ClInclude Include="Game\UI\EditText.h" />
     <ClInclude Include="Game\UI\Image.h" />
     <ClInclude Include="Game\UI\StaticText.h" />

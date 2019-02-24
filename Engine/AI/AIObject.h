@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Game\Object.h"
+#include "Game/EntityManager.h"
 
 namespace Engine
 {
@@ -14,15 +14,14 @@ namespace Engine
 
 	class Game;
 
-	class AIObject : public Object
+	class AIObject
 	{
 	public:
-		AIObject(Game *game, unsigned int id);
-		~AIObject();
+		AIObject(Game *game);
 
 		void UpdateInGame(float dt);
 
-		void SetTarget(Object *obj);
+		void SetTarget(Entity e);
 		void SetEyesOffset(const glm::vec3 &offset) { eyesOffset = offset; }
 		void SetEyesRange(float range) { eyesRange = range; }
 		void SetAttackRange(float range) { attackRange = range; }
@@ -33,8 +32,7 @@ namespace Engine
 		void SetMoveSpeed(float moveSpeed) { maxMoveSpeed = moveSpeed; }
 		void TurnTo(float angle);
 
-		Object *GetTarget() const { return target; }
-		unsigned int GetTargetID() const { return targetID; }
+		Entity GetTarget() const { return target; }
 		const glm::vec3 &GetEyesOffset() const { return eyesOffset; }
 		float GetEyesRange() const { return eyesRange; }
 		float GetAttackRange() const { return attackRange; }
@@ -47,13 +45,13 @@ namespace Engine
 		void Deserialize(Serializer &s);
 
 		// Script functions
-		static AIObject *CastFromObject(Object *obj) { if (!obj || obj->GetType() != ObjectType::AI_OBJECT) return nullptr; else { return static_cast<AIObject*>(obj); } }
+		//static AIObject *CastFromObject(Object *obj) { if (!obj || obj->GetType() != ObjectType::AI_OBJECT) return nullptr; else { return static_cast<AIObject*>(obj); } }
 
 	private:
-		Game * game;
-		Object * target;
+		Game *game;
+		Entity e;
+		Entity target;
 		glm::vec3 targetWorldPosition;		// The target position is separated from the object target because we might want the ai to go the other places and not just the target object
-		unsigned int targetID;
 		glm::vec3 eyesOffset;
 		float eyesRange;
 		float attackRange;

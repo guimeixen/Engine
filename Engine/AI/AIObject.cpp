@@ -8,13 +8,8 @@
 
 namespace Engine
 {
-
-	AIObject::AIObject(Game *game, unsigned int id) : Object(game, id)
+	AIObject::AIObject(Game *game)
 	{
-		type = ObjectType::AI_OBJECT;
-
-		target = nullptr;
-		targetID = -1;
 		eyesOffset = glm::vec3(0.0f);
 		eyesRange = 15.0f;
 		attackRange = 1.0f;
@@ -48,24 +43,17 @@ namespace Engine
 		state = IDLE;
 	}
 
-	AIObject::~AIObject()
-	{
-	}
-
 	void AIObject::UpdateInGame(float dt)
 	{
-		//Object::UpdateInGame(dt);
-
-		/*if (!target)
-			return;*/
-
 		castSightRayTimer += dt;
 
-		glm::vec3 worldPosition = GetWorldPosition();
+		TransformManager &tm = game->GetTransformManager();
+
+		glm::vec3 worldPosition = tm.GetWorldPosition(e);
 
 		// First check if the target is in the ai's field of view
 		glm::vec3 aiToTarget = glm::normalize(targetWorldPosition - worldPosition);
-		glm::vec3 aiForward = glm::normalize(GetLocalToWorldTransform()[2]);			// Forward is stored in the third column of the world matrix. Also normalize it because it might have scaling applied
+		glm::vec3 aiForward = glm::normalize(tm.GetLocalToWorld(e)[2]);			// Forward is stored in the third column of the world matrix. Also normalize it because it might have scaling applied
 		if (glm::dot(aiToTarget, aiForward) >= glm::cos(glm::radians(fov * 0.5f)))
 			targetInFOV = true;
 		else
@@ -74,7 +62,7 @@ namespace Engine
 		if (targetInFOV)
 		{
 			// If the target is in the FOV then update the target position to the target's position so the AI tries to chase the target
-			targetWorldPosition = target->GetWorldPosition();
+			targetWorldPosition = tm.GetWorldPosition(target);
 
 			if (castSightRayTimer >= castSightRayInterval)
 			{
@@ -132,7 +120,7 @@ namespace Engine
 		if (requestPathTimer >= 1.0f)
 		{
 			//Log::Message("AI requested path.");
-			game->GetAISystem().RequestPath(worldPosition, target->GetWorldPosition(), pathWaypoints);
+			game->GetAISystem().RequestPath(worldPosition, tm.GetWorldPosition(target), pathWaypoints);
 
 			followPath = false;
 
@@ -141,7 +129,7 @@ namespace Engine
 				followPath = true;
 				pathEnded = false;
 			}
-			else if (glm::length2(worldPosition - target->GetWorldPosition()) < 12.0f)
+			else if (glm::length2(worldPosition - tm.GetWorldPosition(target)) < 12.0f)
 			{
 				pathEnded = true;
 			}
@@ -162,8 +150,8 @@ namespace Engine
 			if (moveSpeed < maxMoveSpeed)
 				moveSpeed += dt * 2.0f;
 
-			SetLocalPosition(worldPosition + forward * dt * moveSpeed);
-			worldPosition = GetLocalPosition();
+			tm.SetLocalPosition(e, worldPosition + forward * dt * moveSpeed);
+			worldPosition = tm.GetWorldPosition(e);
 
 			glm::vec2 dif = glm::abs(posDif);
 			if (dif.x < 0.02f && dif.y < 0.02f)
@@ -184,11 +172,12 @@ namespace Engine
 
 		if (pathEnded)		// Move the monster forward torwards the player
 		{
-			worldPosition = GetWorldPosition();
+			worldPosition = tm.GetWorldPosition(e);
 			glm::vec2 posDif = glm::vec2(targetWorldPosition.x - worldPosition.x, targetWorldPosition.z - worldPosition.z);
 			glm::vec3 forward = glm::normalize(glm::vec3(posDif.x, 0.0f, posDif.y));
 			worldPosition += forward * dt * moveSpeed;
-			SetLocalPosition(worldPosition);
+
+			tm.SetLocalPosition(e, worldPosition);		// Replace with SetWorldPosition otherwise we can't parent the aiobject
 
 			posDif = glm::vec2(targetWorldPosition.x - worldPosition.x, targetWorldPosition.z - worldPosition.z);
 
@@ -200,10 +189,10 @@ namespace Engine
 		if (game->GetTerrain())
 		{
 			float height = game->GetTerrain()->GetExactHeightAt(worldPosition.x, worldPosition.z);
-			SetLocalPosition(glm::vec3(worldPosition.x, height + 0.1f, worldPosition.z));
+			tm.SetLocalPosition(e, glm::vec3(worldPosition.x, height + 0.1f, worldPosition.z));
 		}
 
-		float targetDistance = glm::length(target->GetWorldPosition() - GetWorldPosition());
+		float targetDistance = glm::length(tm.GetWorldPosition(target) - tm.GetWorldPosition(e));
 
 		// Check if the enemy is close enough to the player to attack
 		// Replace with entity
@@ -232,7 +221,7 @@ namespace Engine
 
 		if (turning)
 		{
-			glm::vec3 localRotEuler = GetLocalRotationEuler();
+			glm::vec3 localRotEuler = glm::eulerAngles(tm.GetLocalRotation(e));
 
 			float shortestAngle = utils::WrapAngle(localRotEuler.y, goalAngle);
 
@@ -247,23 +236,19 @@ namespace Engine
 				turnSpeed = glm::min(glm::abs(shortestAngle), 100.0f) * 4.0f;
 
 				if (shortestAngle < 0.0f)
-					SetLocalRotationEuler(glm::vec3(localRotEuler.x, localRotEuler.y - dt * turnSpeed, localRotEuler.z));
+					tm.SetLocalRotationEuler(e, glm::vec3(localRotEuler.x, localRotEuler.y - dt * turnSpeed, localRotEuler.z));
 				else
-					SetLocalRotationEuler(glm::vec3(localRotEuler.x, localRotEuler.y + dt * turnSpeed, localRotEuler.z));
+					tm.SetLocalRotationEuler(e, glm::vec3(localRotEuler.x, localRotEuler.y + dt * turnSpeed, localRotEuler.z));
 			}
 		}
 	}
 
-	void AIObject::SetTarget(Object *obj)
+	void AIObject::SetTarget(Entity e)
 	{
-		if (!obj)
-			return;
+		// Check if entity is valid
 
-		target = obj;
-		if (target)
-			targetID = obj->GetID();
-
-		targetWorldPosition = target->GetWorldPosition();
+		target = e;
+		targetWorldPosition = game->GetTransformManager().GetWorldPosition(e);
 	}
 
 	void AIObject::SetState(int state)
@@ -279,9 +264,6 @@ namespace Engine
 
 	void AIObject::Serialize(Serializer &s)
 	{
-		Object::Serialize(s);
-
-		s.Write(targetID);
 		s.Write(eyesOffset);
 		s.Write(eyesRange);
 		s.Write(attackRange);
@@ -291,9 +273,6 @@ namespace Engine
 
 	void AIObject::Deserialize(Serializer &s)
 	{
-		Object::Deserialize(s);
-
-		s.Read(targetID);
 		s.Read(eyesOffset);
 		s.Read(eyesRange);
 		s.Read(attackRange);

@@ -2,7 +2,6 @@
 
 #include "Program\Log.h"
 #include "Physics\RigidBody.h"
-#include "Game\Object.h"
 #include "ScriptManager.h"
 #include "Physics\Collider.h"
 #include "Physics\Trigger.h"

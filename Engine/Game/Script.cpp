@@ -4,7 +4,6 @@
 #include "Game\UI\Button.h"
 #include "Game\UI\Image.h"
 #include "Game\UI\EditText.h"
-#include "Game\Object.h"
 #include "Game\Game.h"
 #include "Game\UI\UIManager.h"
 

@@ -2,7 +2,6 @@
 
 #include "Game\Game.h"
 #include "Game\EntityManager.h"
-#include "Game\Transform.h"
 
 #include "EditorNameManager.h"
 

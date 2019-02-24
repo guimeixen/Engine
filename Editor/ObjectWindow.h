@@ -1,15 +1,16 @@
 #pragma once
 
 #include "Commands.h"
-#include "Graphics\Lights.h"
-#include "Graphics\Model.h"
-#include "Game\ComponentManagers\TransformManager.h"
-#include "Game\ComponentManagers\ModelManager.h"
-#include "Game\ComponentManagers\ParticleManager.h"
-#include "Game\ComponentManagers\SoundManager.h"
-#include "Game\UI\UIManager.h"
+#include "Graphics/Lights.h"
+#include "Graphics/Model.h"
+#include "Game/ComponentManagers/TransformManager.h"
+#include "Game/ComponentManagers/ModelManager.h"
+#include "Game/ComponentManagers/ParticleManager.h"
+#include "Game/ComponentManagers/SoundManager.h"
+#include "Game/ComponentManagers/PhysicsManager.h"
+#include "Game/UI/UIManager.h"
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
 
 #include <stack>
 

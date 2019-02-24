@@ -3,15 +3,12 @@
 #include "Program\Input.h"
 #include "Program\Window.h"
 
-#include "Game\Object.h"
 #include "Game\UI\UIManager.h"
 #include "Game\UI\StaticText.h"
 #include "Game\UI\Button.h"
 #include "Game\UI\Image.h"
 #include "Game\UI\EditText.h"
 #include "Game\Game.h"
-
-#include "AI\AIObject.h"
 
 #include "Physics\RigidBody.h"
 #include "Physics\Collider.h"
@@ -35,14 +32,6 @@
 
 namespace Engine
 {
-	ScriptManager::ScriptManager()
-	{
-	}
-
-	ScriptManager::~ScriptManager()
-	{
-	}
-
 	void ScriptManager::Init(Game *game)
 	{
 		L = luaL_newstate();

@@ -1,7 +1,6 @@
 #include "ObjectWindow.h"
 
 #include "Game\Game.h"
-#include "Game\Object.h"
 #include "Game\UI\Button.h"
 #include "Game\UI\StaticText.h"
 #include "Game\UI\Image.h"

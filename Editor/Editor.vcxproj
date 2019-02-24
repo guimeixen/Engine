@@ -176,10 +176,7 @@
     <ClCompile Include="..\Engine\Game\ComponentManagers\TransformManager.cpp" />
     <ClCompile Include="..\Engine\Game\EntityManager.cpp" />
     <ClCompile Include="..\Engine\Game\Game.cpp" />
-    <ClCompile Include="..\Engine\Game\Object.cpp" />
-    <ClCompile Include="..\Engine\Game\SceneManager.cpp" />
     <ClCompile Include="..\Engine\Game\Script.cpp" />
-    <ClCompile Include="..\Engine\Game\Transform.cpp" />
     <ClCompile Include="..\Engine\Game\UI\Button.cpp" />
     <ClCompile Include="..\Engine\Game\UI\EditText.cpp" />
     <ClCompile Include="..\Engine\Game\UI\Image.cpp" />

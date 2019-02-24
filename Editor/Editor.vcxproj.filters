@@ -116,9 +116,6 @@
     <ClCompile Include="..\Engine\Graphics\Model.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Game\Object.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\Graphics\ParticleSystem.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -227,9 +224,6 @@
     <ClCompile Include="EditorManager.cpp">
       <Filter>Source Files\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Game\Transform.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\Physics\Trigger.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
@@ -238,9 +232,6 @@
     </ClCompile>
     <ClCompile Include="Gizmo.cpp">
       <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\SceneManager.cpp">
-      <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="SkeletonTreeWindow.cpp">
       <Filter>Source Files\Editor</Filter>
