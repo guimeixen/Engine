@@ -29,7 +29,6 @@ namespace Engine
 		OnButtonPressed
 	};
 
-	class Object;
 	class Widget;
 	class Game;
 
@@ -45,18 +44,17 @@ namespace Engine
 		friend class ScriptManager;
 	public:
 		Script(lua_State *L, const std::string &name, const std::string &path, const luabridge::LuaRef &table);
-		~Script();
 
 		void CallOnAddEditorProperty(Entity e);
 		void CallOnInit(Entity e);
 		void CallOnUpdate(Entity e, float dt);
-		void CallOnEvent(Object *obj, int id);
-		void CallOnTriggerEnter(Object *obj);
-		void CallOnTriggerStay(Object *obj);
-		void CallOnTriggerExit(Object *obj);
+		void CallOnEvent(Entity e, int id);
+		void CallOnTriggerEnter(Entity e);
+		void CallOnTriggerStay(Entity e);
+		void CallOnTriggerExit(Entity e);
 		void CallOnResize(int width, int height);
-		void CallOnTargetSeen(Object *target);
-		void CallOnTargetInRange(Object *target);
+		void CallOnTargetSeen(Entity target);
+		void CallOnTargetInRange(Entity target);
 		void CallOnButtonPressed();
 
 		void SetFunction(ScriptFunctionID id, luabridge::LuaRef *func);

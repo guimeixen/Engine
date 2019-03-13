@@ -21,7 +21,6 @@ namespace Engine
 	public:
 		Trigger();
 		Trigger(PhysicsManager *physicsManager, btPairCachingGhostObject *trigger);
-		~Trigger();
 
 		//btGhostObject *GetHandle() const { return ghost; }
 		btPairCachingGhostObject *GetHandle() const { return ghost; }
@@ -61,8 +60,8 @@ namespace Engine
 		btPairCachingGhostObject *ghost;
 		btCollisionShape *shape;
 		Script *script;
-		std::vector<Object*> inTriggerList;
-		std::vector<Object*> oldInTriggerList;
+		std::vector<Entity> inTriggerList;
+		std::vector<Entity> oldInTriggerList;
 		glm::vec3 position;
 		glm::vec3 center;
 		bool debugView = true;

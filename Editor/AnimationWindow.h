@@ -9,13 +9,11 @@
 
 class Engine::Game;
 class EditorManager;
-class Engine::Object;
 
 class EditorLink
 {
 public:
 	EditorLink();
-	~EditorLink();
 
 	bool CheckIntersection() const;
 	void Render();
@@ -43,7 +41,6 @@ class EditorAnimNode
 {
 public:
 	EditorAnimNode();
-	~EditorAnimNode();
 
 	void Render(ImU32 col);
 	bool ContainsPoint(const ImVec2 &point);
@@ -74,7 +71,6 @@ class AnimationWindow
 {
 public:
 	AnimationWindow();
-	~AnimationWindow();
 
 	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
@@ -109,18 +105,17 @@ private:
 	bool isControllerLoaded = false;
 	std::vector<std::string> files;
 
-	Engine::Object *curObj;
+	Engine::Entity curEntity;
 	Engine::AnimationController *curAnimController;
 	std::string curAnimContPath;
 
 	std::vector<EditorAnimNode> editorNodes;
-	unsigned int currentNodeID	= 0;
-	int currentLinkID			= -1;
-	bool firstClick				= true;
-	bool isDragging				= false;
-	int nodeAnimIndex			= 0;
+	unsigned int currentNodeID = 0;
+	int currentLinkID = -1;
+	bool firstClick	= true;
+	bool isDragging	= false;
+	int nodeAnimIndex = 0;
 	bool looped = true;
-
 	bool showingNodeContext = false;
 
 	ImVec2 oldMousePos;

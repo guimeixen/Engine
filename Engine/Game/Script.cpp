@@ -18,10 +18,6 @@ namespace Engine
 		this->path = path;
 	}
 
-	Script::~Script()
-	{
-	}
-
 	void Script::CallOnAddEditorProperty(Entity e)
 	{
 		luabridge::LuaRef *ref = functions[OnAddEditorProperty];
@@ -78,19 +74,19 @@ namespace Engine
 		}
 	}
 
-	void Script::CallOnEvent(Object *obj, int id)
+	void Script::CallOnEvent(Entity e, int id)
 	{
-		try
+		/*try
 		{
 			(*functions[OnEvent])(obj, id);
 		}
 		catch (luabridge::LuaException const& e)
 		{
 			std::cout << "OnEvent LuaException: " << e.what() << "\n";
-		}
+		}*/
 	}
 
-	void Script::CallOnTriggerEnter(Object *obj)
+	void Script::CallOnTriggerEnter(Entity e)
 	{
 		luabridge::LuaRef *ref = functions[OnTriggerEnter];
 
@@ -98,7 +94,7 @@ namespace Engine
 		{
 			try
 			{
-				(*ref)(obj);
+				(*ref)(e);
 			}
 			catch (luabridge::LuaException const& e)
 			{
@@ -107,13 +103,13 @@ namespace Engine
 		}
 	}
 
-	void Script::CallOnTriggerStay(Object *obj)
+	void Script::CallOnTriggerStay(Entity e)
 	{
 		if (functions[OnTriggerStay])
 		{
 			try
 			{
-				(*functions[OnTriggerStay])(obj);
+				(*functions[OnTriggerStay])(e);
 			}
 			catch (luabridge::LuaException const& e)
 			{
@@ -122,13 +118,13 @@ namespace Engine
 		}
 	}
 
-	void Script::CallOnTriggerExit(Object *obj)
+	void Script::CallOnTriggerExit(Entity e)
 	{
 		if (functions[OnTriggerExit])
 		{
 			try
 			{
-				(*functions[OnTriggerExit])(obj);
+				(*functions[OnTriggerExit])(e);
 			}
 			catch (luabridge::LuaException const& e)
 			{
@@ -154,7 +150,7 @@ namespace Engine
 		}
 	}
 
-	void Script::CallOnTargetSeen(Object *target)
+	void Script::CallOnTargetSeen(Entity target)
 	{
 		luabridge::LuaRef *ref = functions[OnTargetSeen];
 
@@ -171,7 +167,7 @@ namespace Engine
 		}
 	}
 
-	void Script::CallOnTargetInRange(Object *target)
+	void Script::CallOnTargetInRange(Entity target)
 	{
 		luabridge::LuaRef *ref = functions[OnTargetInRange];
 

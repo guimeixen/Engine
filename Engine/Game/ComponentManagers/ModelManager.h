@@ -41,9 +41,11 @@ namespace Engine
 		void DuplicateModel(Entity e, Entity newE);
 		void RemoveModel(Entity e);
 		Model *GetModel(Entity e) const;
+		AnimatedModel *GetAnimatedModel(Entity e) const;
 		const AABB &GetAABB(Entity e) const;
 
-		bool HasModel(Entity e) const { return map.find(e.id) != map.end(); }
+		bool HasModel(Entity e) const;
+		bool HasAnimatedModel(Entity e) const;
 
 		bool PerformRaycast(Camera *camera, const glm::vec2 &point, Entity &outEntity);
 

@@ -31,14 +31,14 @@
 #include "GLFW\glfw3native.h"
 #include "imgui\imgui_impl_dx11.h"
 #include "Graphics\D3D11\D3D11Renderer.h"
+#include <Windows.h>
 #endif
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <chrono>
-
-#include <Windows.h>
+#include <filesystem>
 
 EditorManager::EditorManager()
 {
@@ -754,13 +754,13 @@ void EditorManager::HandleProjectCreation()
 				if (canCreateFolder)
 				{
 					curLevelDir = "Data/Levels/";
+					
+					if (!DirectoryExists(curLevelDir))
+						CreateFolder(curLevelDir.c_str());
+
 					curLevelDir += projectName;
 
-					std::cout << "Creating project folder at " << curLevelDir << " ...";
-					if (CreateProjectFolder(curLevelDir.c_str()))
-						std::cout << "Done\n";
-					else
-						std::cout << "Failed\n";
+					CreateFolder(curLevelDir.c_str());
 
 					game->AddScene("main");		// Add default main scene
 					game->Save(curLevelDir + '/', std::string(projectName));			
@@ -980,12 +980,22 @@ void EditorManager::FindFilesInDirectory(const char *dir)
 	FindClose(h);
 }
 
-bool EditorManager::CreateProjectFolder(const char *folderPath)
+bool EditorManager::DirectoryExists(const std::string &path)
 {
-	if (CreateDirectoryA(folderPath, NULL))
-		return true;
+	return std::experimental::filesystem::exists(path);
+}
 
-	std::cout << "Failed to create project directory. Error: " << GetLastError() << '\n';
+bool EditorManager::CreateFolder(const char *folderPath)
+{
+	Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Creating folder at %s ...", folderPath);
+
+	if (CreateDirectoryA(folderPath, NULL))
+	{
+		Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Done");
+		return true;
+	}
+
+	Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to create folder: %s    Error: %lu", folderPath, GetLastError());
 
 	return false;
 }

@@ -15,13 +15,8 @@ AnimationWindow::AnimationWindow()
 	game = nullptr;
 	editorManager = nullptr;
 	curAnimController = nullptr;
-	curObj = nullptr;
 
 	ResetName();
-}
-
-AnimationWindow::~AnimationWindow()
-{
 }
 
 void AnimationWindow::Init(Engine::Game *game, EditorManager *editorManager)
@@ -34,7 +29,7 @@ void AnimationWindow::Render()
 {
 	if (ImGui::BeginDock("Animation Window", &showWindow))
 	{
-		//curObj = editorManager->GetObjectWindow().GetObject();
+		curEntity = editorManager->GetObjectWindow().GetSelectedEntity();
 
 		const std::map<unsigned int, Engine::Animation*> &animations = game->GetModelManager().GetAnimations();
 
@@ -69,12 +64,13 @@ void AnimationWindow::Render()
 			ImU32 col = IM_COL32(128, 128, 128, 255);
 			if (i == 0)
 				col = IM_COL32(45, 190, 45, 255);
-			/*else if (curObj)		// Replace with entity
+			else if (curEntity.IsValid())
 			{
-				Engine::AnimatedModel *am = curObj->GetAnimatedModel();
+				Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
+
 				if (am && am->GetAnimationController() && i == am->GetAnimationController()->GetCurrentNodeID())
 					col = IM_COL32(255, 175, 20, 255);
-			}*/
+			}
 
 			editorNodes[i].Render(col);
 		}
@@ -283,14 +279,13 @@ void AnimationWindow::HandleNodeCreation()
 				// Save separately the position, size, etc of the nodes and links because it's just needed for the editor
 				SaveEditorAnimationController(path + ".animcontrollereditor");
 
-				// If we have an object selected then reload it's animation controller
-				// Replace with entity
-				/*if (curObj)
+				// If we have an entity selected with an animated model then reload it's animation controller
+				if (curEntity.IsValid())
 				{
-					Engine::AnimatedModel *am = curObj->GetAnimatedModel();
+					Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
 					if (am)
 						am->SetAnimationController(path + ".animcontroller", &game->GetModelManager());
-				}*/
+				}
 
 				closeOuterPopup = true;
 				ImGui::CloseCurrentPopup();
@@ -637,10 +632,6 @@ EditorAnimNode::EditorAnimNode()
 	size = ImVec2(100.0f, 20.0f);
 }
 
-EditorAnimNode::~EditorAnimNode()
-{
-}
-
 void EditorAnimNode::Render(ImU32 col)
 {
 	ImDrawList *drawList = ImGui::GetWindowDrawList();
@@ -702,10 +693,6 @@ void EditorAnimNode::Deserialize(Engine::Serializer &s)
 EditorLink::EditorLink()
 {
 	offset = 0.0f;
-}
-
-EditorLink::~EditorLink()
-{
 }
 
 bool EditorLink::CheckIntersection() const

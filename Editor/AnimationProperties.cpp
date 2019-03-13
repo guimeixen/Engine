@@ -10,12 +10,7 @@ AnimationProperties::AnimationProperties()
 {
 	game = nullptr;
 	editorManager = nullptr;
-	curObj = nullptr;
 	curAnimController = nullptr;
-}
-
-AnimationProperties::~AnimationProperties()
-{
 }
 
 void AnimationProperties::Init(Engine::Game *game, EditorManager *editorManager)
@@ -28,7 +23,7 @@ void AnimationProperties::Render()
 {
 	if (ImGui::BeginDock("Animation Properties", &showWindow))
 	{
-		//curObj = editorManager->GetObjectWindow().GetObject();
+		curEntity = editorManager->GetObjectWindow().GetSelectedEntity();
 		curAnimController = editorManager->GetAnimationWindow().GetCurrentAnimationController();
 
 		if (!curAnimController)
@@ -81,14 +76,18 @@ void AnimationProperties::Render()
 			ImGui::PushID(j);
 
 			// Replace with entity
-			/*if (pd.type == Engine::ParamType::INT)
+			if (pd.type == Engine::ParamType::INT)
 			{
 				ImGui::PushItemWidth(150);
 				ImGui::DragInt("", &pd.param.intVal);
 				ImGui::PopItemWidth();
 
-				if (curObj && curObj->GetAnimatedModel() && curObj->GetAnimatedModel()->GetAnimationController())
-					curObj->GetAnimatedModel()->GetAnimationController()->GetParameters()[i].param.intVal = pd.param.intVal;
+				if (curEntity.IsValid())
+				{
+					Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
+					if (am && am->GetAnimationController())
+						am->GetAnimationController()->GetParameters()[i].param.intVal = pd.param.intVal;
+				}
 			}
 			else if (pd.type == Engine::ParamType::FLOAT)
 			{
@@ -96,17 +95,25 @@ void AnimationProperties::Render()
 				ImGui::DragFloat("", &pd.param.floatVal, 0.1f);
 				ImGui::PopItemWidth();
 
-				if (curObj && curObj->GetAnimatedModel() && curObj->GetAnimatedModel()->GetAnimationController())
-					curObj->GetAnimatedModel()->GetAnimationController()->GetParameters()[i].param.floatVal = pd.param.floatVal;
+				if (curEntity.IsValid())
+				{
+					Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
+					if (am && am->GetAnimationController())
+						am->GetAnimationController()->GetParameters()[i].param.floatVal = pd.param.floatVal;
+				}
 			}
 			else if (pd.type == Engine::ParamType::BOOL)
 			{
 				ImGui::Checkbox("", &pd.param.boolVal);
 
-				if (curObj && curObj->GetAnimatedModel() && curObj->GetAnimatedModel()->GetAnimationController())
-					curObj->GetAnimatedModel()->GetAnimationController()->GetParameters()[i].param.boolVal = pd.param.boolVal;
+				if (curEntity.IsValid())
+				{
+					Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
+					if (am && am->GetAnimationController())
+						am->GetAnimationController()->GetParameters()[i].param.boolVal = pd.param.boolVal;
+				}
 			}
-			*/
+			
 			ImGui::PopID();
 
 			j++;
@@ -136,11 +143,12 @@ void AnimationProperties::HandleAddParameter(std::vector<Engine::ParameterDesc> 
 
 			parameters.push_back(param);
 
-			// Replace with entity
-			/*if (curObj && curObj->GetAnimatedModel() && curObj->GetAnimatedModel()->GetAnimationController())
+			if (curEntity.IsValid())
 			{
-				curObj->GetAnimatedModel()->GetAnimationController()->GetParameters().push_back(param);
-			}*/
+				Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
+				if (am && am->GetAnimationController())
+					am->GetAnimationController()->GetParameters().push_back(param);
+			}
 
 			floatCombos.push_back(0);
 			inputFloats.push_back(0.0f);
@@ -160,11 +168,12 @@ void AnimationProperties::HandleAddParameter(std::vector<Engine::ParameterDesc> 
 
 			parameters.push_back(param);
 
-			// Replace with entity
-			/*if (curObj && curObj->GetAnimatedModel() && curObj->GetAnimatedModel()->GetAnimationController())
+			if (curEntity.IsValid())
 			{
-				curObj->GetAnimatedModel()->GetAnimationController()->GetParameters().push_back(param);
-			}*/
+				Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
+				if (am && am->GetAnimationController())
+					am->GetAnimationController()->GetParameters().push_back(param);
+			}
 
 			intCombos.push_back(0);
 			inputInts.push_back(0);
@@ -184,11 +193,12 @@ void AnimationProperties::HandleAddParameter(std::vector<Engine::ParameterDesc> 
 
 			parameters.push_back(param);
 
-			// Replace with entity
-			/*if (curObj && curObj->GetAnimatedModel() && curObj->GetAnimatedModel()->GetAnimationController())
+			if (curEntity.IsValid())
 			{
-				curObj->GetAnimatedModel()->GetAnimationController()->GetParameters().push_back(param);
-			}*/
+				Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
+				if (am && am->GetAnimationController())
+					am->GetAnimationController()->GetParameters().push_back(param);
+			}
 
 			boolCombos.push_back(0);
 

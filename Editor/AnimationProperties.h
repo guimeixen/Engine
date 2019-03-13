@@ -11,7 +11,6 @@ class AnimationProperties
 {
 public:
 	AnimationProperties();
-	~AnimationProperties();
 
 	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
@@ -28,7 +27,7 @@ private:
 	EditorManager *editorManager;
 	bool showWindow = true;
 
-	Engine::Object *curObj;
+	Engine::Entity curEntity;
 	Engine::AnimationController *curAnimController;
 
 	std::vector<char*> paramNames;

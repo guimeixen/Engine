@@ -493,9 +493,34 @@ namespace Engine
 		return models[map.at(e.id)].model;
 	}
 
+	AnimatedModel *ModelManager::GetAnimatedModel(Entity e) const
+	{
+		if (HasModel(e))
+		{
+			Model *m = GetModel(e);
+			if (m->GetType() == ModelType::ANIMATED)
+				return static_cast<AnimatedModel*>(m);
+		}
+
+		return nullptr;
+	}
+
 	const AABB &ModelManager::GetAABB(Entity e) const
 	{
 		return models[map.at(e.id)].aabb;
+	}
+
+	bool ModelManager::HasModel(Entity e) const
+	{
+		return map.find(e.id) != map.end();
+	}
+
+	bool ModelManager::HasAnimatedModel(Entity e) const
+	{
+		if (HasModel(e) && GetModel(e)->GetType() == Engine::ModelType::ANIMATED)
+			return true;
+
+		return false;
 	}
 
 	bool ModelManager::PerformRaycast(Camera *camera, const glm::vec2 &point, Entity &outEntity)

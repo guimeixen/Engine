@@ -24,7 +24,6 @@ namespace Engine
 		STOPPED
 	};
 
-	class Object;
 	class Renderer;
 	class Terrain;
 	class MainView;

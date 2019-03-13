@@ -24,7 +24,6 @@
 #include <stack>
 
 class Engine::Game;
-class Engine::Object;
 struct GLFWwindow;
 
 class EditorManager
@@ -85,7 +84,8 @@ private:
 	void UnsavedWarning();
 
 	void FindFilesInDirectory(const char *dir);
-	bool CreateProjectFolder(const char *folderPath);
+	bool DirectoryExists(const std::string &path);
+	bool CreateFolder(const char *folderPath);
 
 	void SaveProject();
 	void Undo();

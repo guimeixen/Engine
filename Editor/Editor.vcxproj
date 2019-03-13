@@ -22,7 +22,7 @@
     <ProjectGuid>{ABC9654E-9C8C-42F1-B69B-6F15AC8234B7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Editor</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -104,6 +104,12 @@
       <AdditionalDependencies>debug/x86/glfw3.lib;vulkan-1.lib;debug/x86/glew32d.lib;OpenGL32.lib;debug/x86/assimp.lib;debug/x86/Lua5.3.4.lib;debug/x86/BulletCollision_Debug.lib;debug/x86/BulletDynamics_Debug.lib;debug/x86/BulletSoftBody_Debug.lib;debug/x86/LinearMath_Debug.lib;debug/x86/fmodL_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\assimp.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\fmodL.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\glew32d.dll" "$(TargetDir)"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -140,6 +146,12 @@
       <AdditionalDependencies>release/x86/glfw3.lib;vulkan-1.lib;release/x86/glew32.lib;OpenGL32.lib;release/x86/assimp.lib;release/x86/Lua5.3.4.lib;release/x86/BulletCollision.lib;release/x86/BulletDynamics.lib;release/x86/BulletSoftBody.lib;release/x86/LinearMath.lib;release/x86/fmod_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\assimp.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\fmod.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\glew32.dll" "$(TargetDir)"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

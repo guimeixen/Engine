@@ -20,10 +20,6 @@ namespace Engine
 		transitioningToPrevious = false;
 	}
 
-	AnimationController::~AnimationController()
-	{
-	}
-
 	void AnimationController::Update(AnimatedModel *animModel)
 	{
 		if (animModel->IsTransitionFinished() && animModel->IsAnimationFinished() && animNodes[curNodeID].IsLooping() == false)
@@ -159,7 +155,6 @@ namespace Engine
 				parametersDesc[i].param.intVal = value;
 			}
 		}
-		
 	}
 
 	void AnimationController::SetFloat(const std::string &name, float value)
@@ -228,10 +223,6 @@ namespace Engine
 		loop = true;
 	}
 
-	AnimNode::~AnimNode()
-	{
-	}
-
 	void AnimNode::SetAnimationID(ModelManager *modelManager, unsigned int id)
 	{
 		animID = id;
@@ -288,10 +279,6 @@ namespace Engine
 	{
 		transitionTime = 1.0f;
 		toNodeID = -1;
-	}
-
-	Link::~Link()
-	{
 	}
 
 	void Link::Serialize(Serializer &s) const

@@ -11,7 +11,6 @@ namespace Engine
 {
 	Trigger::Trigger()
 	{
-		//ghost = nullptr;
 		ghost = nullptr;
 		shape = nullptr;
 		script = nullptr;
@@ -30,18 +29,12 @@ namespace Engine
 		position = glm::vec3(0.0f);
 	}
 
-	Trigger::~Trigger()
-	{
-	}
-
 	void Trigger::Update(btDynamicsWorld *dynamicsWorld)
 	{
 		for (size_t i = 0; i < inTriggerList.size(); i++)
 		{
-			inTriggerList[i] = nullptr;
+			inTriggerList[i].id = std::numeric_limits<unsigned int>::max();
 		}
-
-
 
 		btManifoldArray manifoldArray;
 		btBroadphasePairArray& pairArray = ghost->getOverlappingPairCache()->getOverlappingPairArray();
@@ -73,10 +66,10 @@ namespace Engine
 					if (inTriggerList.size() < (size_t)numPairs)
 					{
 						for (size_t i = inTriggerList.size(); i < (size_t)numPairs; i++)
-							inTriggerList.push_back(nullptr);
+							inTriggerList.push_back({std::numeric_limits<unsigned int>::max()});
 					}
 
-					Object *whoTriggered = static_cast<Object*>(ghost->getOverlappingObject(i)->getUserPointer());
+					Entity whoTriggered = { (unsigned int)ghost->getOverlappingObject(i)->getUserIndex() };
 
 					inTriggerList[i] = whoTriggered;
 				}
@@ -88,18 +81,18 @@ namespace Engine
 		
 		for (size_t i = 0; i < inTriggerList.size(); i++)
 		{
-			if (inTriggerList[i])
+			if (inTriggerList[i].IsValid())
 			{
 				bool alreadyInList = false;
 				size_t freeIndex = 0;
 				for (size_t j = 0; j < oldInTriggerList.size(); j++)
 				{
-					if (inTriggerList[i] == oldInTriggerList[j])
+					if (inTriggerList[i].id == oldInTriggerList[j].id)
 					{
 						alreadyInList = true;
 						//break;
 					}
-					if (oldInTriggerList[j] == nullptr)
+					if (oldInTriggerList[j].IsValid() == false)
 						freeIndex = j;
 				}
 
@@ -126,7 +119,7 @@ namespace Engine
 			bool stillOverlapping = false;
 			for (size_t j = 0; j < inTriggerList.size(); j++)
 			{
-				if (oldInTriggerList[i] == inTriggerList[j])
+				if (oldInTriggerList[i].id == inTriggerList[j].id)
 				{
 					stillOverlapping = true;
 					break;
@@ -140,7 +133,7 @@ namespace Engine
 
 				//std::cout << "trigger exit\n";
 
-				oldInTriggerList[i] = nullptr;
+				oldInTriggerList[i].id = std::numeric_limits<unsigned int>::max();
 			}
 		}
 	}

@@ -11,7 +11,6 @@
 
 namespace Engine
 {
-	class Object;
 	class RigidBody;
 	class Collider;
 	class Trigger;

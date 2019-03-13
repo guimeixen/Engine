@@ -102,10 +102,11 @@ namespace Engine
 			deltaTime = (float)currentTime - lastTime;
 			lastTime = (float)currentTime;
 			
-			Update();
-
 			if (!window.IsMinimized())
+			{
+				Update();
 				Render();
+			}
 
 			frameCounter++;
 			auto tEnd = std::chrono::high_resolution_clock::now();

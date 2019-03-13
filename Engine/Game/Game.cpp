@@ -178,7 +178,6 @@ namespace Engine
 		}
 
 		renderingPath->Render();
-
 		debugDrawManager->Clear();
 	}
 

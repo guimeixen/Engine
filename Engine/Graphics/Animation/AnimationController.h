@@ -58,7 +58,6 @@ namespace Engine
 	{
 	public:
 		Link();
-		~Link();
 
 		void SetToNodeID(int id) { toNodeID = id; }
 		void SetTransitionTime(float time) { transitionTime = time; }
@@ -86,7 +85,6 @@ namespace Engine
 	{
 	public:
 		AnimNode();
-		~AnimNode();
 
 		void AddLink(const Link &link) { links.push_back(link); }
 		void RemoveLink(unsigned int index) { if (index < links.size()) { links.erase(links.begin() + index); } }
@@ -118,7 +116,6 @@ namespace Engine
 	{
 	public:
 		AnimationController(const std::string &path);
-		~AnimationController();
 
 		void Update(AnimatedModel *animModel);
 
