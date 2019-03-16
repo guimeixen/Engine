@@ -115,18 +115,45 @@ namespace Engine
 		{
 			const aiMesh* aiMesh = scene->mMeshes[i];
 
+			aiMaterial *aiMat = nullptr;
+
+			if (aiMesh->mMaterialIndex >= 0)
+				aiMat = scene->mMaterials[aiMesh->mMaterialIndex];
+
 			if (matNames.size() > 0)
 			{
 				MeshMaterial mm;
 				mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);
-				mm.mat = renderer->CreateMaterialInstance(scriptManager, matNames[meshesAndMaterials.size()], mm.mesh.vao->GetVertexInputDescs());
+
+				const std::string &matName = matNames[meshesAndMaterials.size()];
+
+				if (matName.size() > 0)
+					mm.mat = renderer->CreateMaterialInstance(scriptManager, matName, mm.mesh.vao->GetVertexInputDescs());
+				else
+					mm.mat = LoadMaterialFromAssimpMat(renderer, scriptManager, mm.mesh, aiMat);
+
+				if (aiMat)
+				{
+					aiString name;
+					aiMat->Get(AI_MATKEY_NAME, name);
+					strncpy(mm.mat->name, name.C_Str(), 64);
+				}
+
 				meshesAndMaterials.push_back(mm);
 			}
 			else
 			{
 				MeshMaterial mm;
 				mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);
-				mm.mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefaultAnimated.mat", mm.mesh.vao->GetVertexInputDescs());
+				mm.mat = LoadMaterialFromAssimpMat(renderer, scriptManager, mm.mesh, aiMat);
+
+				if (aiMat)
+				{
+					aiString name;
+					aiMat->Get(AI_MATKEY_NAME, name);
+					strncpy(mm.mat->name, name.C_Str(), 64);
+				}
+
 				meshesAndMaterials.push_back(mm);
 			}
 		}

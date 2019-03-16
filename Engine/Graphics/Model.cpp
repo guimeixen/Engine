@@ -399,12 +399,18 @@ namespace Engine
 			}
 			else
 			{
-				mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
+				if (type == ModelType::ANIMATED)
+					mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefaultAnimated.mat", mesh.vao->GetVertexInputDescs());
+				else
+					mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
 			}
 		}
 		else
 		{
-			mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
+			if (type == ModelType::ANIMATED)
+				mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefaultAnimated.mat", mesh.vao->GetVertexInputDescs());
+			else
+				mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
 		}
 
 		return mat;

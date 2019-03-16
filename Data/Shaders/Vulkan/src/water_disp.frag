@@ -13,18 +13,18 @@ layout(set = 1, binding = 2) uniform sampler2D refractionTex;
 layout(set = 1, binding = 3) uniform sampler2D refractionDepthTex;
 layout(set = 1, binding = 4) uniform sampler2D foamTexture;
 
-/*const float twoPI = 2 * 3.14159;
+const float twoPI = 2 * 3.14159;
 const float wavelength[4] = float[](13.0, 9.9, 7.3, 6.0);
 const float amplitude[4] = float[](0.2, 0.12, 0.08, 0.02);
 const float speed[4] = float[](3.4, 2.8, 1.8, 0.6);
 const vec2 dir[4] = vec2[](vec2(1.0, -0.2), vec2(1.0, 0.6), vec2(-0.2, 1.0), vec2(-0.43, -0.8));
-*/
+
 float LinearizeDepth(float depth)
 {
 	return 2.0 * nearFarPlane.x * nearFarPlane.y / (nearFarPlane.y + nearFarPlane.x - (2.0 * depth - 1.0) * (nearFarPlane.y - nearFarPlane.x));
 }
 
-/*vec3 waveNormal(vec2 pos)
+vec3 waveNormal(vec2 pos)
 {
 	float x = 0.0;
 	float z = 0.0;
@@ -47,11 +47,11 @@ float LinearizeDepth(float depth)
 	}
 
     return normalize(vec3(-x, 1 - y, -z));
-}*/
+}
 
 void main()
 {
-	vec3 N = vec3(0.0, 1.0, 0.0);
+	vec3 N = waveNormal(worldPos.xz);
 	vec3 V = normalize(camPos.xyz - worldPos);
 	vec3 H = normalize(V + dirAndIntensity.xyz);
 	
@@ -62,9 +62,9 @@ void main()
 	vec3 normal2 = texture(normalMap, tex2).rbg * 2.0 - 1.0;
 	vec3 fineNormal = normal1 + normal2;
 
-	//float detailFalloff = clamp((clipSpacePos.w - 60.0) / 40.0, 0.0, 1.0);
-  //  fineNormal = normalize(mix(fineNormal, vec3(0.0, 2.0, 0.0), clamp(detailFalloff - 8.0, 0.0, 1.0)));
-  //  N = normalize(mix(N, vec3(0.0, 1.0, 0.0), detailFalloff));
+	float detailFalloff = clamp((clipSpacePos.w - 60.0) / 40.0, 0.0, 1.0);
+    fineNormal = normalize(mix(fineNormal, vec3(0.0, 2.0, 0.0), clamp(detailFalloff - 8.0, 0.0, 1.0)));
+    N = normalize(mix(N, vec3(0.0, 1.0, 0.0), detailFalloff));
 	
 	// Transform fine normal to world space
     vec3 tangent = cross(N, vec3(0.0, 0.0, 1.0));
@@ -98,7 +98,7 @@ void main()
 	
 	/*vec3 col = mix(shallowColor, deepColor, clamp(waterDepth * 0.1, 0.0, 1.0));
 	//refraction = mix(refraction, col, clamp(waterDepth * 0.3, 0.0, 1.0));*/
-	//refraction = mix(refraction, vec3(0.0, 0.08, 0.34), clamp(waterDepth * 0.3, 0.0, 1.0));
+	refraction = mix(refraction, vec3(0.01, 0.18, 0.44), clamp(waterDepth * 0.3, 0.0, 1.0));
 	
 	// Fresnel Effect
 	float NdotV = max(dot(N, V), 0.0);
@@ -107,7 +107,7 @@ void main()
 
 	vec3 specular = pow(max(dot(N, H), 0.0), 256.0) * dirLightColor.xyz;
 	
-	//vec3 foam = texture(foamTexture, worldPos.xz * 0.05).rgb;
+	vec3 foam = texture(foamTexture, worldPos.xz * 0.05).rgb;
 
 	outColor.rgb = mix(refraction, reflection, fresnel);
 	outColor.rgb += specular * 3.0;
