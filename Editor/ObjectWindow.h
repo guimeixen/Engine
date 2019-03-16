@@ -9,18 +9,14 @@
 #include "Game/ComponentManagers/SoundManager.h"
 #include "Game/ComponentManagers/PhysicsManager.h"
 #include "Game/UI/UIManager.h"
+#include "EditorWindow.h"
 
 #include "include/glm/glm.hpp"
 
-#include <stack>
-
-class EditorManager;
-
-class ObjectWindow
+class ObjectWindow : public EditorWindow
 {
 public:
 	ObjectWindow();
-	~ObjectWindow();
 
 	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
@@ -28,9 +24,6 @@ public:
 	void SetEntity(Engine::Entity entity);
 	void DeselectEntity() { selected = false; selectedEntity.id = std::numeric_limits<unsigned int>::max(); }
 	Engine::Entity GetSelectedEntity() const { return selectedEntity; }
-
-	void Show(bool show) { showWindow = show; }
-	bool IsVisible() const { return showWindow; }
 
 	bool IsSelectingAsset() const { return isSelectingAsset; }
 
@@ -68,9 +61,6 @@ private:
 	void CreatePrefabFolder();
 
 private:
-	Engine::Game *game;
-	EditorManager *editorManager;
-
 	Engine::TransformManager*		transformManager;
 	Engine::ModelManager*			modelManager;
 	Engine::ParticleManager*		particleManager;
@@ -87,7 +77,6 @@ private:
 	Engine::SoundSource *selectedSoundSource;
 	Engine::Widget *selectedWidget;
 
-	bool showWindow = true;
 	bool selected = false;
 
 	std::vector<std::string> files;

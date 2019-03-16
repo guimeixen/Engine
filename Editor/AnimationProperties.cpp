@@ -8,27 +8,28 @@
 
 AnimationProperties::AnimationProperties()
 {
-	game = nullptr;
-	editorManager = nullptr;
 	curAnimController = nullptr;
 }
 
-void AnimationProperties::Init(Engine::Game *game, EditorManager *editorManager)
+AnimationProperties::~AnimationProperties()
 {
-	this->game = game;
-	this->editorManager = editorManager;
+	for (size_t i = 0; i < paramNames.size(); i++)
+	{
+		if (paramNames[i])
+			delete[] paramNames[i];
+	}
 }
 
 void AnimationProperties::Render()
 {
-	if (ImGui::BeginDock("Animation Properties", &showWindow))
+	if (BeginWindow("Animation Properties"))
 	{
 		curEntity = editorManager->GetObjectWindow().GetSelectedEntity();
 		curAnimController = editorManager->GetAnimationWindow().GetCurrentAnimationController();
 
 		if (!curAnimController)
 		{
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}
 
@@ -41,31 +42,9 @@ void AnimationProperties::Render()
 		{
 			Engine::ParameterDesc &pd = parameters[i];
 
-			if (paramNames.size() <= i)
-			{
-				char name[128];
-				strcpy_s(name, 128, pd.name.c_str());
-				paramNames.push_back(name);
-
-				if (pd.type == Engine::ParamType::INT)
-				{			
-					intCombos.push_back(0);
-					inputInts.push_back(0);
-				}
-				else if (pd.type == Engine::ParamType::FLOAT)
-				{
-					floatCombos.push_back(0);
-					inputFloats.push_back(0.0f);
-				}
-				else if (pd.type == Engine::ParamType::BOOL)
-				{
-					boolCombos.push_back(0);
-				}
-			}
-
 			ImGui::PushID(i);
 			ImGui::PushItemWidth(150);
-			if (ImGui::InputText("Name", paramNames[i], 128, ImGuiInputTextFlags_EnterReturnsTrue))
+			if (ImGui::InputText("Name", paramNames[i], 64, ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				pd.name = paramNames[i];
 			}
@@ -75,7 +54,6 @@ void AnimationProperties::Render()
 			
 			ImGui::PushID(j);
 
-			// Replace with entity
 			if (pd.type == Engine::ParamType::INT)
 			{
 				ImGui::PushItemWidth(150);
@@ -123,7 +101,7 @@ void AnimationProperties::Render()
 		ImGui::Separator();
 		HandleLinkOptions(parameters);
 	}
-	ImGui::EndDock();
+	EndWindow();
 }
 
 void AnimationProperties::HandleAddParameter(std::vector<Engine::ParameterDesc> &parameters)
@@ -153,8 +131,8 @@ void AnimationProperties::HandleAddParameter(std::vector<Engine::ParameterDesc> 
 			floatCombos.push_back(0);
 			inputFloats.push_back(0.0f);
 
-			char name[128];
-			std::memset(name, 0, 128);
+			char *name = new char[64];
+			strncpy(name, param.name.c_str(), 64);
 			paramNames.push_back(name);
 
 			ImGui::CloseCurrentPopup();
@@ -178,8 +156,8 @@ void AnimationProperties::HandleAddParameter(std::vector<Engine::ParameterDesc> 
 			intCombos.push_back(0);
 			inputInts.push_back(0);
 
-			char name[128];
-			std::memset(name, 0, 128);
+			char *name = new char[64];
+			strncpy(name, param.name.c_str(), 64);
 			paramNames.push_back(name);
 
 			ImGui::CloseCurrentPopup();
@@ -202,8 +180,8 @@ void AnimationProperties::HandleAddParameter(std::vector<Engine::ParameterDesc> 
 
 			boolCombos.push_back(0);
 
-			char name[128];
-			std::memset(name, 0, 128);
+			char *name = new char[64];
+			strncpy(name, param.name.c_str(), 64);
 			paramNames.push_back(name);
 
 			ImGui::CloseCurrentPopup();

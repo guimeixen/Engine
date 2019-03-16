@@ -21,18 +21,11 @@
 TerrainWindow::TerrainWindow()
 {
 	currentTerrain = nullptr;
-	game = nullptr;
-	editorManager = nullptr;
-}
-
-TerrainWindow::~TerrainWindow()
-{
 }
 
 void TerrainWindow::Init(Engine::Game *game, EditorManager *editorManager)
 {
-	this->game = game;
-	this->editorManager = editorManager;
+	EditorWindow::Init(game, editorManager);
 	this->currentTerrain = game->GetTerrain();
 
 	texturesPopupNames[0] = "Choose red texture:";
@@ -47,7 +40,7 @@ void TerrainWindow::Render()
 {
 	isSelected = false;
 
-	if (ImGui::BeginDock("Terrain Editor", &showWindow))
+	if (BeginWindow("Terrain Editor"))
 	{
 		isSelected = true;
 
@@ -55,7 +48,7 @@ void TerrainWindow::Render()
 
 		if (!currentTerrain)
 		{
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}
 
@@ -255,7 +248,7 @@ void TerrainWindow::Render()
 			}
 		}
 	}
-	ImGui::EndDock();
+	EndWindow();
 }
 
 void TerrainWindow::Paint(const glm::vec2 &mousePos)

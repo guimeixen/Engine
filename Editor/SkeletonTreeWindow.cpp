@@ -8,35 +8,23 @@
 
 #include <iostream>
 
-SkeletonTreeWindow::SkeletonTreeWindow()
-{
-	game = nullptr;
-	editorManager = nullptr;
-}
-
-void SkeletonTreeWindow::Init(Engine::Game *game, EditorManager *editorManager)
-{
-	this->game = game;
-	this->editorManager = editorManager;
-}
-
 void SkeletonTreeWindow::Render()
 {
-	if (ImGui::BeginDock("Skeleton Tree", &showWindow))
+	if (BeginWindow("Skeleton Tree"))
 	{
 		Engine::Entity e = editorManager->GetObjectWindow().GetSelectedEntity();
 
 		if (!e.IsValid())
 		{
 			ImGui::Text("There's no entity selected.");
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}
 
 		if (game->GetModelManager().HasModel(e) == false)
 		{
 			ImGui::Text("The currently selected entity doesn't have an animated model.");
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}
 
@@ -45,7 +33,7 @@ void SkeletonTreeWindow::Render()
 		if (m->GetType() != Engine::ModelType::ANIMATED)
 		{
 			ImGui::Text("The currently selected entity doesn't have an animated model.");
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}
 
@@ -97,7 +85,7 @@ void SkeletonTreeWindow::Render()
 			curConnection++;
 		}*/
 	}
-	ImGui::EndDock();
+	EndWindow();
 }
 
 void SkeletonTreeWindow::RenderSkeleton(Engine::Bone *bone)

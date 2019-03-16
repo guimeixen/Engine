@@ -1,25 +1,16 @@
 #pragma once
 
-#include "Game\Game.h"
+#include "EditorWindow.h"
 
 #include <string>
 
-class EditorManager;
-
-class RenderingWindow
+class RenderingWindow : public EditorWindow
 {
 public:
 	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
 
-	void Show(bool show) { showWindow = show; }
-	bool IsVisible() const { return showWindow; }
-
 private:
-	Engine::Game *game;
-	EditorManager *editorManager;
-	bool showWindow = true;
-
 	bool showUI = true;
 
 	std::vector<std::string> files;

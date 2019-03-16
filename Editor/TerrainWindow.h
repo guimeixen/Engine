@@ -1,27 +1,22 @@
 #pragma once
 
+#include "EditorWindow.h"
+#include "Graphics\Terrain\Terrain.h"
+
 #include "include\glm\glm.hpp"
 
 #include <vector>
 
-#include "Graphics\Terrain\Terrain.h"
-
-class Engine::Game;
-class EditorManager;
-
-class TerrainWindow
+class TerrainWindow : public EditorWindow
 {
 public:
 	TerrainWindow();
-	~TerrainWindow();
 
 	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
 
 	void Paint(const glm::vec2 &mousePos);
 
-	void Show(bool show) { showWindow = show; }
-	bool IsVisible() const { return showWindow; }
 	bool IsSelected() const { return isSelected; }
 
 private:
@@ -33,10 +28,7 @@ private:
 	void HandleVegModel(const Engine::Vegetation &v);
 
 private:
-	Engine::Game *game;
-	EditorManager *editorManager;
 	Engine::Terrain *currentTerrain;
-	bool showWindow = true;
 	bool isSelected = false;
 	std::vector<std::string> files;
 

@@ -22,25 +22,20 @@ SceneWindow::SceneWindow()
 	std::memset(objectName, 0, 256);
 }
 
-SceneWindow::~SceneWindow()
+void SceneWindow::Init(Engine::Game *game, EditorManager *editorManager)
 {
-}
-
-void SceneWindow::Init(Engine::Game *game, EditorManager *editorManager, Gizmo *gizmo)
-{
-	this->game = game;
-	this->editorManager = editorManager;
-	this->gizmo = gizmo;
+	EditorWindow::Init(game, editorManager);
+	this->gizmo = &editorManager->GetGizmo();
 	transformManager = &game->GetTransformManager();
 }
 
 void SceneWindow::Render()
 {
-	if (ImGui::BeginDock("Scene", &showWindow))
+	if (BeginWindow("Scene"))
 	{
 		if (!editorManager->IsProjectOpen())
 		{
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}
 
@@ -109,12 +104,7 @@ void SceneWindow::Render()
 			shouldSelectEntity = false;
 		}
 	}
-	ImGui::EndDock();
-}
-
-void SceneWindow::Show(bool show)
-{
-	showWindow = show;
+	EndWindow();
 }
 
 void SceneWindow::RenderEntityName(const EditorName &name)

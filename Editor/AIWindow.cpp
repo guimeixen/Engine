@@ -14,19 +14,7 @@
 
 AIWindow::AIWindow()
 {
-	game = nullptr;
-	editorManager = nullptr;
 	gridCenter = glm::vec2(0.0f);
-}
-
-AIWindow::~AIWindow()
-{
-}
-
-void AIWindow::Init(Engine::Game *game, EditorManager *editorManager)
-{
-	this->game = game;
-	this->editorManager = editorManager;
 }
 
 void AIWindow::Update()
@@ -36,7 +24,7 @@ void AIWindow::Update()
 
 void AIWindow::Render()
 {
-	if (ImGui::BeginDock("AI Settings", &showWindow))
+	if (BeginWindow("AI Settings"))
 	{
 		if (ImGui::DragFloat2("Grid center", glm::value_ptr(gridCenter), 0.1f))
 		{
@@ -105,5 +93,5 @@ void AIWindow::Render()
 			}
 		}
 	}
-	ImGui::EndDock();
+	EndWindow();
 }

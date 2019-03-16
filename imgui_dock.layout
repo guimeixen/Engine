@@ -13,7 +13,7 @@ location 012
 child0   -1
 child1   -1
 prev_tab -1
-next_tab -1
+next_tab 7
 parent   12
 
 index    1
@@ -39,7 +39,7 @@ y        54
 size_x   310
 size_y   459
 status   0
-active   1
+active   0
 opened   1
 location 02
 child0   -1
@@ -76,7 +76,7 @@ opened   1
 location 02
 child0   -1
 child1   -1
-prev_tab 7
+prev_tab -1
 next_tab 3
 parent   11
 
@@ -103,7 +103,7 @@ y        54
 size_x   310
 size_y   459
 status   0
-active   0
+active   1
 opened   1
 location 02
 child0   -1
@@ -114,19 +114,19 @@ parent   11
 
 index    7
 label    Animation Window
-x        970
+x        138
 y        54
-size_x   310
+size_x   832
 size_y   459
 status   0
 active   0
 opened   1
-location 02
+location 012
 child0   -1
 child1   -1
-prev_tab -1
-next_tab 4
-parent   11
+prev_tab 0
+next_tab -1
+parent   12
 
 index    8
 label    Animation Properties
@@ -187,7 +187,7 @@ active   1
 opened   0
 location 2
 child0   12
-child1   7
+child1   4
 prev_tab -1
 next_tab -1
 parent   13

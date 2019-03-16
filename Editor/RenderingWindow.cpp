@@ -13,8 +13,7 @@
 
 void RenderingWindow::Init(Engine::Game *game, EditorManager *editorManager)
 {
-	this->game = game;
-	this->editorManager = editorManager;
+	EditorWindow::Init(game, editorManager);
 
 	nearPlane = game->GetRenderingPath()->GetMainCamera()->GetNearPlane();
 	farPlane = game->GetRenderingPath()->GetMainCamera()->GetFarPlane();
@@ -44,7 +43,7 @@ void RenderingWindow::Render()
 {
 	Engine::FrameUBO &frameUBO = game->GetRenderingPath()->GetFrameData();
 
-	if (ImGui::BeginDock("Rendering Window", &showWindow))
+	if (BeginWindow("Rendering Window"))
 	{
 		Engine::RenderingPath *renderingPath = game->GetRenderingPath();
 		Engine::DirLight &mainDirLight = renderingPath->GetMainDirLight();
@@ -222,5 +221,5 @@ void RenderingWindow::Render()
 
 		}
 	}
-	ImGui::EndDock();
+	EndWindow();
 }

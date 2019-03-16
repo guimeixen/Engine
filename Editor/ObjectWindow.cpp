@@ -78,14 +78,10 @@ ObjectWindow::ObjectWindow()
 	lodDistance = 0.0f;
 }
 
-ObjectWindow::~ObjectWindow()
-{
-}
-
 void ObjectWindow::Init(Engine::Game *game, EditorManager *editorManager)
 {
-	this->game = game;
-	this->editorManager = editorManager;
+	EditorWindow::Init(game, editorManager);
+
 	transformManager = &game->GetTransformManager();
 	modelManager = &game->GetModelManager();
 	particleManager = &game->GetParticleManager();
@@ -96,13 +92,13 @@ void ObjectWindow::Init(Engine::Game *game, EditorManager *editorManager)
 
 void ObjectWindow::Render()
 {
-	if (ImGui::BeginDock("Object Window", &showWindow))
+	if (BeginWindow("Object Window"))
 	{
 		isSelectingAsset = false;
 
 		if (!selected)
 		{
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}	
 
@@ -111,7 +107,7 @@ void ObjectWindow::Render()
 			game->GetEntityManager().Destroy(selectedEntity);
 			editorManager->GetGizmo().DeselectEntity();
 			DeselectEntity();
-			ImGui::EndDock();
+			EndWindow();
 			return;
 		}
 
@@ -361,7 +357,7 @@ void ObjectWindow::Render()
 
 		//ImGui::PopItemWidth();
 	}
-	ImGui::EndDock();
+	EndWindow();
 
 	// If a component was removed, remove it from the object
 	if (!modelOpen && selectedModel)

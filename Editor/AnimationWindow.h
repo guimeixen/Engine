@@ -1,14 +1,12 @@
 #pragma once
 
+#include "EditorWindow.h"
 #include "Program\Serializer.h"
 #include "Graphics\Animation\AnimatedModel.h"
 
 #include "imgui\imgui.h"
 
 #include <string>
-
-class Engine::Game;
-class EditorManager;
 
 class EditorLink
 {
@@ -67,18 +65,14 @@ private:
 	std::vector<EditorLink> editorLinks;			// Links that go out of this node
 };
 
-class AnimationWindow
+class AnimationWindow : public EditorWindow
 {
 public:
 	AnimationWindow();
 
-	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
 
 	void OpenAnimationController(const std::string &path);
-
-	void Show(bool show) { showWindow = show; }
-	bool IsVisible() const { return showWindow; }
 
 	unsigned int GetCurrentNodeID() const { return currentNodeID; }
 	unsigned int GetCurrentLinkID() const { return currentLinkID; }
@@ -98,9 +92,6 @@ private:
 	void LoadEditorAnimationController(const std::string &path);
 	
 private:
-	Engine::Game *game;
-	EditorManager *editorManager;
-	bool showWindow = true;
 	bool isControllerCreated = false;
 	bool isControllerLoaded = false;
 	std::vector<std::string> files;

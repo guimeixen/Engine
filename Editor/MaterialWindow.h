@@ -1,23 +1,17 @@
 #pragma once
 
-#include <vector>
-
-#include "Game\Game.h"
+#include "EditorWindow.h"
 #include "Graphics\Material.h"
 
-class EditorManager;
+#include <vector>
 
-class MaterialWindow
+class MaterialWindow : public EditorWindow
 {
 public:
 	MaterialWindow();
-	~MaterialWindow();
 
-	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
 
-	void Show(bool show) { showWindow = show; }
-	bool IsVisible() const { return showWindow; }
 	void Focus() { focus = true; }
 
 	void SetCurrentMaterial(Engine::Material *mat) { currentMaterial = mat; }
@@ -29,11 +23,8 @@ private:
 	void ShowMaterialParameters();
 
 private:
-	Engine::Game *game;
-	EditorManager *editorManager;
 	Engine::Material *currentMaterial;
 	Engine::MaterialInstance *currentMaterialInstance;
-	bool showWindow = true;
 	bool focus = false;
 	std::vector<std::string> files;
 	unsigned int textureIndex = 0;

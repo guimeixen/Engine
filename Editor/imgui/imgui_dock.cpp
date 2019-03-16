@@ -668,7 +668,6 @@ struct DockContext
 				if (InvisibleButton(dock_tab->label, size))
 				{
 					dock_tab->setActive();
-					printf("ehreerererer\n");
 				}
 
 				if (IsItemActive() && IsMouseDragging())

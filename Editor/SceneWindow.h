@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Game\Game.h"
+#include "EditorWindow.h"
 #include "Game\EntityManager.h"
-
 #include "EditorNameManager.h"
 
 #include "imgui\imgui.h"
@@ -10,30 +9,22 @@
 #include <string>
 #include <vector>
 
-class EditorManager;
 class Gizmo;
 
-class SceneWindow
+class SceneWindow : public EditorWindow
 {
 public:
 	SceneWindow();
-	~SceneWindow();
 
-	void Init(Engine::Game *game, EditorManager *editorManager, Gizmo *gizmo);
+	void Init(Engine::Game *game, EditorManager *editorManager);
 	void Render();
-
-	void Show(bool show);
-	bool IsVisible() const { return showWindow; }
 
 private:
 	void RenderEntityName(const EditorName &name);
 
 private:
-	Engine::Game *game;
-	EditorManager *editorManager;
 	Engine::TransformManager *transformManager;
 	Gizmo *gizmo;
-	bool showWindow = true;
 	
 	bool hovered = false;
 	int imguiID = 0;

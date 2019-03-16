@@ -18,8 +18,6 @@
 MaterialWindow::MaterialWindow()
 {
 	currentMaterial = nullptr;
-	game = nullptr;
-	editorManager = nullptr;
 	tempF = 0.0f;
 	tempI = 0;
 	tempv2 = glm::vec2();
@@ -28,19 +26,9 @@ MaterialWindow::MaterialWindow()
 	tempColV4 = glm::vec4();
 }
 
-MaterialWindow::~MaterialWindow()
-{
-}
-
-void MaterialWindow::Init(Engine::Game *game, EditorManager *editorManager)
-{
-	this->game = game;
-	this->editorManager = editorManager;
-}
-
 void MaterialWindow::Render()
 {	
-	if (ImGui::BeginDock("Material Editor", &showWindow))
+	if (BeginWindow("Material Editor"))
 	{
 		const std::map<unsigned int, Engine::MaterialRefInfo> materials = Engine::ResourcesLoader::GetMaterials();
 
@@ -143,7 +131,7 @@ void MaterialWindow::Render()
 		ImGui::SetDockActive();
 		focus = false;
 	}
-	ImGui::EndDock();
+	EndWindow();
 }
 
 void MaterialWindow::AddTexture()

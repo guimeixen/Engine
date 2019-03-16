@@ -12,22 +12,14 @@
 
 AnimationWindow::AnimationWindow()
 {
-	game = nullptr;
-	editorManager = nullptr;
 	curAnimController = nullptr;
 
 	ResetName();
 }
 
-void AnimationWindow::Init(Engine::Game *game, EditorManager *editorManager)
-{
-	this->game = game;
-	this->editorManager = editorManager;
-}
-
 void AnimationWindow::Render()
 {
-	if (ImGui::BeginDock("Animation Window", &showWindow))
+	if (BeginWindow("Animation Window"))
 	{
 		curEntity = editorManager->GetObjectWindow().GetSelectedEntity();
 
@@ -82,7 +74,7 @@ void AnimationWindow::Render()
 		HandleNodeDrag();
 		HandleNodeContextPopup();	
 	}
-	ImGui::EndDock();
+	EndWindow();
 }
 
 void AnimationWindow::OpenAnimationController(const std::string &path)

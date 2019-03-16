@@ -117,7 +117,7 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game)
 
 	gizmo.Init(game);
 	objectWindow.Init(game, this);
-	sceneWindow.Init(game, this, &gizmo);
+	sceneWindow.Init(game, this);
 	terrainWindow.Init(game, this);
 	materialWindow.Init(game, this);
 	aiWindow.Init(game, this);
