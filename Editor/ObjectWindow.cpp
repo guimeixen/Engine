@@ -36,6 +36,7 @@
 #include "imgui\imconfig.h"
 
 #include <iostream>
+#include <filesystem>
 
 #include <Windows.h>
 
@@ -87,7 +88,7 @@ void ObjectWindow::Init(Engine::Game *game, EditorManager *editorManager)
 	particleManager = &game->GetParticleManager();
 	physicsManager = &game->GetPhysicsManager();
 
-	memset(buf, 0, 256);
+	memset(scriptNameInputBuffer, 0, 64);
 }
 
 void ObjectWindow::Render()
@@ -340,19 +341,41 @@ void ObjectWindow::Render()
 		}
 		if (addScriptSelected)
 		{
-			//ImGui::OpenPopup("Choose script");		// Don't call here otherwise the popup keeps appearing even if we click outside of it
 			if (ImGui::BeginPopup("Choose script"))
 			{
 				isSelectingAsset = true;
+				bool openCreate = false;
+
+				if (ImGui::Button("Create new script"))
+					openCreate = true;
+
 				if (files.size() > 0)
 					AddScript();
 				else
 					ImGui::Text("No scripts found on project folder.");
 
 				ImGui::EndPopup();
+
+				if(openCreate)
+					ImGui::OpenPopup("Create new script popup");
 			}
 			else
 				addScriptSelected = false;
+		}
+
+		if (ImGui::BeginPopup("Create new script popup"))
+		{
+			if (ImGui::InputText("Name", scriptNameInputBuffer, 64, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				std::ofstream(editorManager->GetCurrentProjectDir() + '/' + scriptNameInputBuffer + ".lua");
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::Button("Create"))
+			{
+				std::ofstream(editorManager->GetCurrentProjectDir() + '/' + scriptNameInputBuffer + ".lua");
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
 		}
 
 		//ImGui::PopItemWidth();

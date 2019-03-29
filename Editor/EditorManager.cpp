@@ -95,11 +95,6 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game)
 		Engine::D3D11Renderer *renderer = static_cast<Engine::D3D11Renderer*>(game->GetRenderer());
 		ImGui_ImplDX11_Init(renderer->GetDevice(), renderer->GetContext());
 	}
-	else
-	{
-		std::cout << "Only OpenGL and D3D11 are supported for Editor\n";
-		return;
-	}
 	
 	ImGui::LoadDock();
 
@@ -797,7 +792,7 @@ void EditorManager::HandleProjectCreation()
 				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 				auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-				std::cout << "Level load time: " << duration << " ms\n";
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Level load time: %lld ms", duration);
 
 				assetsBrowserWindow.SetFiles(curLevelDir);
 
@@ -884,9 +879,9 @@ void EditorManager::SaveAs()
 			std::string projectNameStr = std::string(projectName);
 			std::string path = "Data/Levels/" + projectNameStr + '/';
 			if (game->Save(path, projectNameStr))
-				std::cout << "Project saved\n";
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Project saved");
 			else
-				std::cout << "Failed to save project\n";
+				Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to save project");
 
 			const std::string &name = game->GetScenes()[currentScene].name;
 
@@ -1007,9 +1002,9 @@ void EditorManager::SaveProject()
 		std::string projectNameStr = std::string(projectName);
 		std::string path = "Data/Levels/" + projectNameStr + '/';
 		if (game->Save(path, projectNameStr))
-			std::cout << "Project saved\n";
+			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Project saved");
 		else
-			std::cout << "Failed to save project\n";
+			Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to save project");
 
 		const std::string &name = game->GetScenes()[currentScene].name;
 

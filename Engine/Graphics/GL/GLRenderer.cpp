@@ -56,11 +56,11 @@ namespace Engine
 
 		if (err != GLEW_OK)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLEW - Error: %d\n", err);
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLEW - Error: %d", err);
 			return false;
 		}
 		else
-			Log::Print(LogLevel::LEVEL_INFO, "GLEW successfuly initialized\n");
+			Log::Print(LogLevel::LEVEL_INFO, "GLEW successfuly initialized");
 
 		//Log::Message("GL version: " + glGetString(GL_VERSION));
 		//Log::Message("GPU: " << glGetString(GL_RENDERER));
@@ -861,7 +861,7 @@ namespace Engine
 			mainLightUBO = nullptr;
 		}*/
 
-		Log::Print(LogLevel::LEVEL_INFO, "GL renderer exiting\n");
+		Log::Print(LogLevel::LEVEL_INFO, "GL renderer exiting");
 	}
 
 	void GLRenderer::SortCommands()

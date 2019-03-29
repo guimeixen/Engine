@@ -27,12 +27,12 @@ namespace Engine
 
 		if (glfwInit() != GLFW_TRUE)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLFW!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLFW!");
 			return false;
 		}
 		else
 		{
-			Log::Print(LogLevel::LEVEL_INFO, "GLFW successfuly initialized\n");
+			Log::Print(LogLevel::LEVEL_INFO, "GLFW successfuly initialized");
 		}
 
 		//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);

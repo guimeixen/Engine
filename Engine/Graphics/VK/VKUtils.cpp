@@ -48,12 +48,12 @@ namespace Engine
 			const char **glfwExtensions;
 			glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-			Log::Print(LogLevel::LEVEL_INFO, "Required GLFW extensions:\n");
+			Log::Print(LogLevel::LEVEL_INFO, "Required GLFW extensions:");
 
 			for (uint32_t i = 0; i < glfwExtensionCount; i++)
 			{
 				extensions.push_back(glfwExtensions[i]);
-				Log::Print(LogLevel::LEVEL_INFO, "%s\n", glfwExtensions[i]);
+				Log::Print(LogLevel::LEVEL_INFO, "%s", glfwExtensions[i]);
 			}
 
 			if (enableValidationLayers)
@@ -72,7 +72,7 @@ namespace Engine
 			std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-			Log::Print(LogLevel::LEVEL_INFO, "Queue families count: %d\n", queueFamilyCount);
+			Log::Print(LogLevel::LEVEL_INFO, "Queue families count: %d", queueFamilyCount);
 
 			int i = 0;
 			VkBool32 presentSupport = false;
@@ -270,7 +270,7 @@ namespace Engine
 				}
 			}
 
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find memory type!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find memory type!");
 			return 0;
 		}
 

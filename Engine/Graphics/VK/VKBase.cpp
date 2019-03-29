@@ -24,7 +24,7 @@ namespace Engine
 	{
 		if (enableValidationLayers && !vkutils::ValidationLayersSupported(validationLayers))
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Validation layers were requested, but are not available!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Validation layers were requested, but are not available!");
 			return false;
 		}
 
@@ -99,7 +99,7 @@ namespace Engine
 		VkCommandBuffer commandBuffer;
 		if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate command buffer!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate command buffer!");
 		}
 
 		return commandBuffer;
@@ -116,7 +116,7 @@ namespace Engine
 		VkCommandBuffer cmdBuffer;
 		if (vkAllocateCommandBuffers(device, &allocInfo, &cmdBuffer) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate compute command buffer!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate compute command buffer!");
 		}
 
 		return cmdBuffer;
@@ -135,7 +135,7 @@ namespace Engine
 
 		if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate command buffers!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate command buffers!");
 		}
 
 		return commandBuffers;
@@ -203,7 +203,7 @@ namespace Engine
 		}
 		else
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!");
 		}
 
 		vkCmdPipelineBarrier(singleTimeCmdBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &imageMemBarrier);
@@ -299,7 +299,7 @@ namespace Engine
 		}
 		else
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!");
 		}
 
 		vkCmdPipelineBarrier(transferCb, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -373,7 +373,7 @@ namespace Engine
 		}
 		else
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!");
 		}
 
 		vkCmdPipelineBarrier(transferCb, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -439,7 +439,7 @@ namespace Engine
 		}
 		else
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Unsupported layout transition!");
 		}
 
 		vkCmdPipelineBarrier(transferCb, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
@@ -453,10 +453,10 @@ namespace Engine
 		std::vector<VkExtensionProperties> extensions(extensionCount);
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-		Log::Print(LogLevel::LEVEL_INFO, "Available Extensions:\n");
+		Log::Print(LogLevel::LEVEL_INFO, "Available Extensions:");
 		for (const auto &extension : extensions)
 		{
-			Log::Print(LogLevel::LEVEL_INFO, "\t%s\n", extension.extensionName);
+			Log::Print(LogLevel::LEVEL_INFO, "\t%s", extension.extensionName);
 		}
 	}
 
@@ -490,7 +490,7 @@ namespace Engine
 
 		if (vkCreateInstance(&instanceInfo, nullptr, &instance) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Vulkan Instance!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Vulkan Instance!");
 			return false;
 		}
 
@@ -507,7 +507,7 @@ namespace Engine
 
 		if (vkdebug::CreateDebugReportCallbackEXT(instance, &callbackInfo, nullptr, &callback) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create debug report callback!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create debug report callback!");
 			return false;
 		}
 
@@ -519,7 +519,7 @@ namespace Engine
 		// SURFACE CREATION
 		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create window surface!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create window surface!");
 			return false;
 		}
 
@@ -534,7 +534,7 @@ namespace Engine
 
 		if (deviceCount == 0)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find GPUs with Vulkan support!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find GPUs with Vulkan support!");
 			return false;
 		}
 
@@ -552,7 +552,7 @@ namespace Engine
 
 		if (physicalDevice == VK_NULL_HANDLE)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find suitable GPU!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find suitable GPU!");
 			return false;
 		}
 
@@ -560,19 +560,19 @@ namespace Engine
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &gpuMemoryProperties);
 
-		Log::Print(LogLevel::LEVEL_INFO, "Non coherent atom size: %d\n", deviceProperties.limits.nonCoherentAtomSize);
-		Log::Print(LogLevel::LEVEL_INFO, "Max allocations: %d\n", deviceProperties.limits.maxMemoryAllocationCount);
-		Log::Print(LogLevel::LEVEL_INFO, "Memory heaps: %d\n", gpuMemoryProperties.memoryHeapCount);
+		Log::Print(LogLevel::LEVEL_INFO, "Non coherent atom size: %d", deviceProperties.limits.nonCoherentAtomSize);
+		Log::Print(LogLevel::LEVEL_INFO, "Max allocations: %d", deviceProperties.limits.maxMemoryAllocationCount);
+		Log::Print(LogLevel::LEVEL_INFO, "Memory heaps: %d", gpuMemoryProperties.memoryHeapCount);
 
 		for (uint32_t i = 0; i < gpuMemoryProperties.memoryHeapCount; i++)
 		{			
 			if (gpuMemoryProperties.memoryHeaps[i].flags == 1)
-				Log::Print(LogLevel::LEVEL_INFO, "\tSize: %d mib  - Device Local\n", gpuMemoryProperties.memoryHeaps[i].size >> 20);
+				Log::Print(LogLevel::LEVEL_INFO, "\tSize: %d mib  - Device Local", gpuMemoryProperties.memoryHeaps[i].size >> 20);
 			else
-				Log::Print(LogLevel::LEVEL_INFO, "\tSize: %d mib\n", gpuMemoryProperties.memoryHeaps[i].size >> 20);
+				Log::Print(LogLevel::LEVEL_INFO, "\tSize: %d mib", gpuMemoryProperties.memoryHeaps[i].size >> 20);
 		}
 
-		Log::Print(LogLevel::LEVEL_INFO, "Memory types: %d\n", gpuMemoryProperties.memoryTypeCount);
+		Log::Print(LogLevel::LEVEL_INFO, "Memory types: %d", gpuMemoryProperties.memoryTypeCount);
 
 		std::string str;
 		for (uint32_t i = 0; i < gpuMemoryProperties.memoryTypeCount; i++)
@@ -586,7 +586,7 @@ namespace Engine
 			if ((gpuMemoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) == VK_MEMORY_PROPERTY_HOST_CACHED_BIT)
 				str += "Host cached";
 
-			Log::Print(LogLevel::LEVEL_INFO, "\tHeap index: %d  - Property Flags: %s\n", gpuMemoryProperties.memoryTypes[i].heapIndex, str.c_str());
+			Log::Print(LogLevel::LEVEL_INFO, "\tHeap index: %d  - Property Flags: %s", gpuMemoryProperties.memoryTypes[i].heapIndex, str.c_str());
 			str.clear();
 		}
 
@@ -641,7 +641,7 @@ namespace Engine
 
 		if (vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Logical Device|\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Logical Device");
 			return false;
 		}
 
@@ -665,7 +665,7 @@ namespace Engine
 
 		if (vkCreateCommandPool(device, &poolInfo, nullptr, &cmdPool) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Command Pool!\n	");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Command Pool!");
 			return false;
 		}
 
@@ -673,7 +673,7 @@ namespace Engine
 
 		if (vkCreateCommandPool(device, &poolInfo, nullptr, &computeCmdPool) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute command pool\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute command pool");
 			return false;
 		}
 

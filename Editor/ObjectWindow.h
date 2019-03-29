@@ -190,6 +190,7 @@ private:
 	// Script
 	int selectedScriptProperty	= 0;
 	size_t propertyIndex		= 0;
+	char scriptNameInputBuffer[64];
 
 	// Sound source
 	int soundComboId			= 0;
@@ -201,7 +202,7 @@ private:
 	float min3DDistance			= 1.0f;
 	float max3DDistance			= 10000.0f;
 
-	char buf[256];
+	
 
 	// Widget
 	bool isEnabled = true;

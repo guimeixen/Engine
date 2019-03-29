@@ -2,10 +2,10 @@ docks 15
 
 index    0
 label    Game View
-x        138
+x        141
 y        54
-size_x   832
-size_y   459
+size_x   889
+size_y   444
 status   0
 active   1
 opened   1
@@ -20,8 +20,8 @@ index    1
 label    Scene
 x        0
 y        54
-size_x   138
-size_y   459
+size_x   141
+size_y   444
 status   0
 active   1
 opened   1
@@ -34,12 +34,12 @@ parent   12
 
 index    2
 label    Object Window
-x        970
+x        1030
 y        54
-size_x   310
-size_y   459
+size_x   336
+size_y   444
 status   0
-active   0
+active   1
 opened   1
 location 02
 child0   -1
@@ -50,10 +50,10 @@ parent   11
 
 index    3
 label    Terrain Editor
-x        970
+x        1030
 y        54
-size_x   310
-size_y   459
+size_x   336
+size_y   444
 status   0
 active   0
 opened   1
@@ -66,10 +66,10 @@ parent   11
 
 index    4
 label    Material Editor
-x        970
+x        1030
 y        54
-size_x   310
-size_y   459
+size_x   336
+size_y   444
 status   0
 active   0
 opened   1
@@ -83,8 +83,8 @@ parent   11
 index    5
 label    AI Settings
 x        0
-y        513
-size_x   1280
+y        498
+size_x   1366
 size_y   182
 status   0
 active   0
@@ -98,12 +98,12 @@ parent   13
 
 index    6
 label    Rendering Window
-x        970
+x        1030
 y        54
-size_x   310
-size_y   459
+size_x   336
+size_y   444
 status   0
-active   1
+active   0
 opened   1
 location 02
 child0   -1
@@ -114,10 +114,10 @@ parent   11
 
 index    7
 label    Animation Window
-x        138
+x        141
 y        54
-size_x   832
-size_y   459
+size_x   889
+size_y   444
 status   0
 active   0
 opened   1
@@ -130,10 +130,10 @@ parent   12
 
 index    8
 label    Animation Properties
-x        970
+x        1030
 y        54
-size_x   310
-size_y   459
+size_x   336
+size_y   444
 status   0
 active   0
 opened   1
@@ -146,10 +146,10 @@ parent   11
 
 index    9
 label    Skeleton Tree
-x        970
+x        1030
 y        54
-size_x   310
-size_y   459
+size_x   336
+size_y   444
 status   0
 active   0
 opened   1
@@ -163,11 +163,11 @@ parent   11
 index    10
 label    Console
 x        0
-y        513
-size_x   1280
+y        498
+size_x   1366
 size_y   182
 status   0
-active   1
+active   0
 opened   1
 location 3
 child0   -1
@@ -180,8 +180,8 @@ index    11
 label    DOCK
 x        0
 y        54
-size_x   1280
-size_y   459
+size_x   1366
+size_y   444
 status   0
 active   1
 opened   0
@@ -196,8 +196,8 @@ index    12
 label    DOCK
 x        0
 y        54
-size_x   970
-size_y   459
+size_x   1030
+size_y   444
 status   0
 active   1
 opened   0
@@ -212,8 +212,8 @@ index    13
 label    ROOT
 x        0
 y        54
-size_x   1280
-size_y   641
+size_x   1366
+size_y   626
 status   0
 active   1
 opened   0
@@ -227,11 +227,11 @@ parent   -1
 index    14
 label    Assets Browser
 x        0
-y        513
-size_x   1280
+y        498
+size_x   1366
 size_y   182
 status   0
-active   0
+active   1
 opened   1
 location 3
 child0   -1

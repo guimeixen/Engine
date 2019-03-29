@@ -34,7 +34,7 @@ namespace Engine
 
 		if (!rigidBody)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create rigid body\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create rigid body");
 			return;
 		}
 

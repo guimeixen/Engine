@@ -450,7 +450,7 @@ namespace Engine
 
 		if (std::system(command.c_str()) != 0)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to compile shader\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to compile shader");
 			if (defines.length() != 0)
 				std::remove(path.c_str());
 

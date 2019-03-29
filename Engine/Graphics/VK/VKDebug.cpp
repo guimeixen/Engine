@@ -1,14 +1,16 @@
 #include "VKDebug.h"
 
+#include "Program/Log.h"
+
 #include <iostream>
 
 namespace Engine
 {
 	namespace vkdebug
 	{
-		VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char * layerPrefix, const char * msg, void * userData)
+		VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData)
 		{
-			std::cerr << "Validation Layer: " << msg << "\n";
+			std::cerr << "Validation Layer: " << msg << '\n';
 
 			return VK_FALSE;
 		}

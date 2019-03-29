@@ -642,8 +642,8 @@ namespace Engine
 
 		if (!tempScene || !tempScene->mRootNode)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load animation file\n");
-			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load animation file");
+			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s", importer.GetErrorString());
 			return nullptr;
 		}
 
@@ -828,7 +828,7 @@ namespace Engine
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
+			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s", importer.GetErrorString());
 			return;
 		}
 

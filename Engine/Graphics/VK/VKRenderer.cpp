@@ -95,22 +95,22 @@ namespace Engine
 		{
 			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frameResources[i].imageAvailableSemaphore) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore\n");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore");
 				return false;
 			}
 			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frameResources[i].renderFinishedSemaphore) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore\n");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore");
 				return false;
 			}
 			if (vkCreateFence(device, &fenceInfo, nullptr, &frameResources[i].frameFence) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create fence\n");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create fence");
 				return false;
 			}
 			/*if (vkCreateFence(device, &fenceInfo, nullptr, &frameResources[i].computeFence) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute fence\n");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute fence");
 				return false;
 			}*/
 
@@ -167,7 +167,7 @@ namespace Engine
 		poolSize[2].descriptorCount = 1;
 
 		poolSize[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		poolSize[3].descriptorCount = 5;
+		poolSize[3].descriptorCount = 7;
 
 		poolSize[4].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 		poolSize[4].descriptorCount = 15;
@@ -180,7 +180,7 @@ namespace Engine
 
 		if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create descriptor pool\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create descriptor pool");
 			return false;
 		}
 
@@ -816,7 +816,7 @@ namespace Engine
 		vkCmdEndRenderPass(cb);
 
 		/*if (vkEndCommandBuffer(cb) != VK_SUCCESS)
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer\n");*/
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer");*/
 	}
 
 	void VKRenderer::ClearRenderTarget(Framebuffer *rt)
@@ -1325,7 +1325,7 @@ namespace Engine
 
 		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &globalSet) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set");
 			return;
 		}
 
@@ -1755,9 +1755,9 @@ namespace Engine
 	void VKRenderer::Present()
 	{
 		if (vkEndCommandBuffer(frameResources[currentFrame].frameCmdBuffer) != VK_SUCCESS)
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer");
 		/*if (vkEndCommandBuffer(frameResources[currentFrame].computeCmdBuffer) != VK_SUCCESS)
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record compute command buffer\n");*/
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record compute command buffer");*/
 
 		VkDevice device = base.GetDevice();
 
@@ -2009,7 +2009,7 @@ namespace Engine
 
 		swapChain.Dispose(device);
 		base.Dispose();
-		Log::Print(LogLevel::LEVEL_INFO, "Vulkan renderer shutdown\n");
+		Log::Print(LogLevel::LEVEL_INFO, "Vulkan renderer shutdown");
 	}
 
 	void VKRenderer::DisposeStagingResources()
@@ -2403,7 +2403,7 @@ namespace Engine
 
 		if (vkCreateRenderPass(base.GetDevice(), &renderPassInfo, nullptr, &defaultRenderPass) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create render pass\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create render pass");
 			return false;
 		}
 
@@ -2635,12 +2635,12 @@ namespace Engine
 
 		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &setInfo.set[0]) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set");
 			return;
 		}
 		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &setInfo.set[1]) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set");
 			return;
 		}	
 		sets.push_back(setInfo);

@@ -236,7 +236,7 @@ namespace Engine
 				}
 
 				if (vkCreateImageView(device, &viewInfo, nullptr, &imageViews[i]) != VK_SUCCESS)
-					Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create image view for mip %i!\n", i);
+					Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create image view for mip %i!", i);
 			}		
 		}
 		else
@@ -250,7 +250,7 @@ namespace Engine
 			viewInfo.subresourceRange.layerCount = 1;
 
 			if (vkCreateImageView(device, &viewInfo, nullptr, &imageViews[0]) != VK_SUCCESS)
-				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create image view!\n");
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create image view!");
 		}
 	}
 

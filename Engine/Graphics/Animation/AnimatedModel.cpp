@@ -100,7 +100,7 @@ namespace Engine
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			std::cout << "Assimp Error: " << importer.GetErrorString() << "\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s", importer.GetErrorString());
 		}
 
 		const aiMatrix4x4 &aim = scene->mRootNode->mTransformation;

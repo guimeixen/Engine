@@ -14,5 +14,7 @@ public:
 private:
 	std::string currentDir;
 	std::vector<std::string> filesInCurrentDir;
+	int directoriesDepth = 0;
+	char folderName[64];
 };
 

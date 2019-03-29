@@ -119,7 +119,7 @@ namespace Engine
 
 		if (!file.is_open())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Error! Failed to load font file\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Error! Failed to load font file");
 			std::cout << fontPath << "\n";
 		}
 

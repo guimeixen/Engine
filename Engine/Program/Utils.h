@@ -20,6 +20,6 @@ namespace Engine
 		bool AABBABBBIntersection(const AABB &a, const AABB &b);
 
 		// It's necessary to clear the vector before calling the function if you don't want the values from a previous find to remain in the vector
-		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension);
+		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension, bool includeSubDirectories = true, bool addPathToFileName = true);
 	}
 }

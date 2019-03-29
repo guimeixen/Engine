@@ -37,7 +37,7 @@ namespace Engine
 		if (callbackFunc)
 			callbackFunc(level, buffer);
 
-		std::cout << buffer << '/n';
+		std::cout << buffer << '\n';
 
 		if (logFile.is_open() == false)
 		{

@@ -198,7 +198,7 @@ namespace Engine
 			return true;		// Intersecting on all 3 axes
 		}
 
-		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension)
+		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension, bool includeSubDirectories, bool addPathToFileName)
 		{
 			WIN32_FIND_DATAA findData;
 			HANDLE h = FindFirstFileA(dir.c_str(), &findData);
@@ -208,7 +208,7 @@ namespace Engine
 
 			do
 			{
-				if (findData.cFileName[0] != '.' && findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				if (includeSubDirectories && findData.cFileName[0] != '.' && findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 				{
 					std::string path = dir;
 					path.pop_back();		// Remove the * necessary to find the files
