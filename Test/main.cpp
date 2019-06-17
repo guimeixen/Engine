@@ -1,7 +1,6 @@
 //#include <vld.h>
 
 #include "Application.h"
-#include "Game/Game.h"
 #include "Graphics/MeshDefaults.h"
 #include "Program/Random.h"
 #include "Graphics/Effects/ForwardRenderer.h"

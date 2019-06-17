@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Graphics\RendererStructs.h"
-#include "Game\EntityManager.h"
-#include "Physics\BoundingVolumes.h"
-#include "Graphics\Animation\AnimatedModel.h"
+#include "Graphics/RendererStructs.h"
+#include "Physics/BoundingVolumes.h"
+#include "Graphics/Animation/AnimatedModel.h"
 
 #include <unordered_map>
 #include <map>

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Game\EntityManager.h"
-#include "Program\Serializer.h"
+#include "Game/EntityManager.h"
+#include "Program/Serializer.h"
 
-#include "include\lua\lua.hpp"
-#include "include\LuaBridge\LuaBridge.h"
+#include "include/lua/lua.hpp"
+#include "include/LuaBridge/LuaBridge.h"
 
 #include <string>
 #include <vector>

@@ -1,53 +1,89 @@
 #pragma once
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
+
+#define KEY_PRESSED			1
+#define KEY_RELEASED		0
+#define MOUSE_BUTTON_LEFT	0
+#define MOUSE_BUTTON_RIGHT	1
 
 namespace Engine
 {
-#define KEY_SPACE		32
-#define KEY_0           48
-#define KEY_1           49
-#define KEY_2           50
-#define KEY_3           51
-#define KEY_4           52
-#define KEY_5           53
-#define KEY_6           54
-#define KEY_7           55
-#define KEY_8           56
-#define KEY_9           57
-#define KEY_A			65
-#define KEY_B			66
-#define KEY_C			67
-#define KEY_D			68
-#define KEY_E			69
-#define KEY_F			70
-#define KEY_G			71
-#define KEY_H			72
-#define KEY_I			73
-#define KEY_J			74
-#define KEY_K			75
-#define KEY_L			76
-#define KEY_M			77
-#define KEY_N			78
-#define KEY_O			79
-#define KEY_P			80
-#define KEY_Q			81
-#define KEY_R			82
-#define KEY_S			83
-#define KEY_T			84
-#define KEY_U			85
-#define KEY_V			86
-#define KEY_W			87
-#define KEY_X			88
-#define KEY_Y			89
-#define KEY_Z			90
-#define KEY_ESCAPE		256
-#define KEY_ENTER		257
-#define KEY_TAB			258
-#define KEY_BACKSPACE	259
-#define KEY_DEL			261
-#define KEY_LEFT_SHIFT	340
-#define KEY_LEFT_CONTROL 341
+	enum Keys
+	{
+		KEY_SPACE		= 32,
+		KEY_0           = 48,
+		KEY_1           = 49,
+		KEY_2           = 50,
+		KEY_3           = 51,
+		KEY_4           = 52,
+		KEY_5           = 53,
+		KEY_6           = 54,
+		KEY_7           = 55,
+		KEY_8           = 56,
+		KEY_9           = 57,
+		KEY_A			= 65,
+		KEY_B			= 66,
+		KEY_C			= 67,
+		KEY_D			= 68,
+		KEY_E			= 69,
+		KEY_F			= 70,
+		KEY_G			= 71,
+		KEY_H			= 72,
+		KEY_I			= 73,
+		KEY_J			= 74,
+		KEY_K			= 75,
+		KEY_L			= 76,
+		KEY_M			= 77,
+		KEY_N			= 78,
+		KEY_O			= 79,
+		KEY_P			= 80,
+		KEY_Q			= 81,
+		KEY_R			= 82,
+		KEY_S			= 83,
+		KEY_T			= 84,
+		KEY_U			= 85,
+		KEY_V			= 86,
+		KEY_W			= 87,
+		KEY_X			= 88,
+		KEY_Y			= 89,
+		KEY_Z			= 90,
+		KEY_ESCAPE		= 256,
+		KEY_ENTER		= 257,
+		KEY_TAB			= 258,
+		KEY_BACKSPACE	= 259,
+		KEY_DEL			= 261,
+		KEY_LEFT_SHIFT	= 340,
+		KEY_LEFT_CONTROL = 341,
+	};
+
+	enum VitaButtons
+	{
+		VITA_SELECT				= 0x00000001,
+		VITA_L3					= 0x00000002,
+		VITA_R3					= 0x00000004,
+		VITA_START				= 0x00000008,
+		VITA_UP					= 0x00000010,
+		VITA_RIGHT				= 0x00000020,
+		VITA_DOWN				= 0x00000040,
+		VITA_LEFT				= 0x00000080,
+		VITA_LTRIGGER			= 0x00000100,
+		VITA_L2					= VITA_LTRIGGER,
+		VITA_RTRIGGER			= 0x00000200,
+		VITA_R2					= VITA_RTRIGGER,
+		VITA_L1					= 0x00000400,
+		VITA_R1					= 0x00000800,
+		VITA_TRIANGLE			= 0x00001000,
+		VITA_CIRCLE				= 0x00002000,
+		VITA_CROSS				= 0x00004000,
+		VITA_SQUARE				= 0x00008000,
+		VITA_INTERCEPTED		= 0x00010000,            //!< Input not available because intercepted by another application
+		VITA_PSBUTTON			= VITA_INTERCEPTED,
+		VITA_HEADPHONE			= 0x00080000,            //!< Headphone plugged in.
+		VITA_VOLUP				= 0x00100000,
+		VITA_VOLDOWN			= 0x00200000,
+		VITA_POWER				= 0x40000000
+	};
 
 	struct Key
 	{
@@ -73,7 +109,6 @@ namespace Engine
 	{
 	public:
 		InputManager();
-		~InputManager();
 
 		void Update();			// Needs to be called at the start of the frame to reset the just released state. If two requests of WasKeyReleased() are made to the same key only the first would return
 								// the correct state because in the first call it would then reset the state.
@@ -89,6 +124,10 @@ namespace Engine
 		bool IsMousePressed(int button) const;
 		bool IsMouseButtonDown(int button) const;
 		float GetScrollWheelY() const { return scrollWheelY; }
+		float GetLeftAnalogueStickX() const { return leftStickX; }
+		float GetLeftAnalogueStickY() const { return leftStickY; }
+		float GetRightAnalogueStickX() const { return rightStickX; }
+		float GetRightAnalogueStickY() const { return rightStickY; }
 
 		void SetMousePosition(const glm::vec2 &pos);
 		const glm::vec2 &GetMousePosition() const { return mousePosition; }
@@ -97,6 +136,8 @@ namespace Engine
 		void UpdateChar(unsigned char c);
 		void SetMouseButtonState(int button, int action);
 		void SetScrollWheelYOffset(float yoffset);
+		void UpdateVitaButtons(int buttons);
+		void UpdateVitaSticks(unsigned char leftStickX, unsigned char leftStickY, unsigned char rightStickX, unsigned char rightStickY);
 
 	private:
 		Key keys[512];
@@ -106,6 +147,13 @@ namespace Engine
 		unsigned char lastChar;
 		bool charUpdated;
 		float scrollWheelY;
+
+		// Vita
+		int buttons;
+		float leftStickX;			// Between -1 and 1
+		float leftStickY;
+		float rightStickX;
+		float rightStickY;
 	};
 
 	class Input
@@ -124,6 +172,10 @@ namespace Engine
 		static bool MouseMoved() { return inputManager->MouseMoved(); }
 		static const glm::vec2 &GetMousePosition() { return inputManager->GetMousePosition(); }
 		static float GetScrollWheelY() { return inputManager->GetScrollWheelY(); }
+		static float GetLeftAnalogueStickX() { return inputManager->GetLeftAnalogueStickX(); }
+		static float GetLeftAnalogueStickY() { return inputManager->GetLeftAnalogueStickY(); }
+		static float GetRightAnalogueStickX() { return inputManager->GetRightAnalogueStickX(); }
+		static float GetRightAnalogueStickY() { return inputManager->GetRightAnalogueStickY(); }
 
 		static InputManager *GetInputManager() { return inputManager; }
 

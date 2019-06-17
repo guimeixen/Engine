@@ -22,7 +22,7 @@
     <ProjectGuid>{ABC9654E-9C8C-42F1-B69B-6F15AC8234B7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Editor</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -96,7 +96,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;NOMINMAX;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;$(SolutionDir)/include/bullet;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -270,8 +270,10 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Physics\Ray.cpp" />
     <ClCompile Include="..\Engine\Physics\RigidBody.cpp" />
     <ClCompile Include="..\Engine\Physics\Trigger.cpp" />
+    <ClCompile Include="..\Engine\Program\FileManager.cpp" />
     <ClCompile Include="..\Engine\Program\Input.cpp" />
     <ClCompile Include="..\Engine\Program\Log.cpp" />
+    <ClCompile Include="..\Engine\Program\PSVCompiler.cpp" />
     <ClCompile Include="..\Engine\Program\Random.cpp" />
     <ClCompile Include="..\Engine\Program\Serializer.cpp" />
     <ClCompile Include="..\Engine\Program\Utils.cpp" />

@@ -32,6 +32,11 @@ IMGUI_API void     ImGui_ImplVulkan_NewFrame();
 IMGUI_API void     ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer);
 IMGUI_API void	   ImGUI_ImplVulkan_SetGameViewTexture(Engine::Texture *texture, bool updateDescSet = false);
 
+// The way this impl creates/resizes the buffers didn't work with the way the renderer is setup
+// because when they get destroyed to be resized they are still in use by the cmd buffer
+// For now we just create them large enough in Init
+IMGUI_API void     ImGUI_ImplVulkan_CreateOrResizeBuffers(VkDeviceSize vertexSize, VkDeviceSize indexSize);
+
 // Called by Init/NewFrame/Shutdown
 IMGUI_API void     ImGui_ImplVulkan_InvalidateFontUploadObjects();
 IMGUI_API void     ImGui_ImplVulkan_InvalidateDeviceObjects();

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Mesh.h"
-#include "Physics\BoundingVolumes.h"
-#include "Program\Serializer.h"
+#include "Physics/BoundingVolumes.h"
+#include "Program/Serializer.h"
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
 
 #include <string>
 #include <vector>

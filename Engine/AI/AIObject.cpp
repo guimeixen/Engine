@@ -1,10 +1,10 @@
 #include "AIObject.h"
 
-#include "Game\Game.h"
-#include "Program\Log.h"
-#include "Graphics\Renderer.h"
-#include "Program\Utils.h"
-#include "Graphics\Animation\AnimatedModel.h"
+#include "Game/Game.h"
+#include "Program/Log.h"
+#include "Graphics/Renderer.h"
+#include "Program/Utils.h"
+#include "Graphics/Animation/AnimatedModel.h"
 
 namespace Engine
 {
@@ -68,7 +68,7 @@ namespace Engine
 			{
 				// We increase the height of where the ray leaves because the ai origin is at the feet and they can sometimes clip through the terrain which would
 				// result in a ray being casted from below the terrain and would hit it from below and wouldn't get us any correct results
-				glm::vec3 raycastPos = worldPosition + eyesOffset;
+				//glm::vec3 raycastPos = worldPosition + eyesOffset;
 
 				//btCollisionWorld::ClosestRayResultCallback rayCallback = game->GetPhysicsManager().PerformRaycast(raycastPos, glm::normalize(targetWorldPosition - raycastPos), eyesRange);
 
@@ -192,7 +192,7 @@ namespace Engine
 			tm.SetLocalPosition(e, glm::vec3(worldPosition.x, height + 0.1f, worldPosition.z));
 		}
 
-		float targetDistance = glm::length(tm.GetWorldPosition(target) - tm.GetWorldPosition(e));
+		//float targetDistance = glm::length(tm.GetWorldPosition(target) - tm.GetWorldPosition(e));
 
 		// Check if the enemy is close enough to the player to attack
 		// Replace with entity

@@ -1,6 +1,7 @@
 #include "Font.h"
 
-#include "Program\Log.h"
+#include "Program/Log.h"
+#include "Program/FileManager.h"
 #include "ResourcesLoader.h"
 #include "Shader.h"
 #include "Buffers.h"
@@ -8,33 +9,51 @@
 #include "VertexArray.h"
 #include "Material.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-
-#include <fstream>
-#include <iostream>
+#include "include/glm/gtc/matrix_transform.hpp"
 
 namespace Engine
 {
 	Font::Font()
 	{
-		maxCharsBuffer = MAX_QUADS / 6;
+		maxCharsBuffer = MAX_QUADS;
 		curQuadCount = 0;
 		vertexBuffer = nullptr;
 		enabled = true;
 		mesh = {};
 	}
 
-	Font::~Font()
-	{
-	}
-
-	void Font::Init(Renderer *renderer, ScriptManager &scriptManager, const std::string &fontPath, const std::string &fontAtlasPath)
+	bool Font::Init(Renderer *renderer, ScriptManager &scriptManager, const std::string &fontPath, const std::string &fontAtlasPath)
 	{
 		this->renderer = renderer;
 
+		Log::Print(LogLevel::LEVEL_INFO, "Init font\n");
+
 		mesh = {};
 
-		vertexBuffer = renderer->CreateVertexBuffer(nullptr, maxCharsBuffer * 6 * sizeof(VertexPOS2D_UV_COLOR), BufferUsage::DYNAMIC);
+		Log::Print(LogLevel::LEVEL_INFO, "Creating vertex buffer\n");
+		vertexBuffer = renderer->CreateVertexBuffer(nullptr, MAX_QUADS * 4 * sizeof(VertexPOS2D_UV_COLOR), BufferUsage::DYNAMIC);
+
+		// Given that the Vita doesn't support non-indexed drawing, we need to use an index buffer
+		// So we just need to create one with the space for the maximum number of characters and fill with the generated indices and never touch it again
+
+		unsigned short indices[MAX_QUADS * 6];
+
+		unsigned short index = 0;
+		for (unsigned short i = 0; i < MAX_QUADS * 6; i += 6)
+		{
+			indices[i]	   = index;
+			indices[i + 1] = index + 1;
+			indices[i + 2] = index + 2;
+			indices[i + 3] = index + 0;
+			indices[i + 4] = index + 2;
+			indices[i + 5] = index + 3;
+			index += 4;
+		}
+
+		//unsigned short indices[] = { 0,1,2, 0,2,3 };
+
+		Log::Print(LogLevel::LEVEL_INFO, "Creating index buffer\n");
+		Buffer *indexBuffer = renderer->CreateIndexBuffer(indices, sizeof(indices), BufferUsage::STATIC);
 
 		VertexAttribute attribs[2] = {};
 		attribs[0].count = 4;
@@ -47,15 +66,22 @@ namespace Engine
 		desc.stride = 8 * sizeof(float);
 		desc.attribs = { attribs[0], attribs[1] };
 
-		mesh.vao = renderer->CreateVertexArray(desc, vertexBuffer, nullptr);
+		mesh.vao = renderer->CreateVertexArray(desc, vertexBuffer, indexBuffer);
 
-		matInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/text_mat.lua", { desc });
+		Log::Print(LogLevel::LEVEL_INFO, "Creating text material instance\n");
+		matInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Materials/text_mat.lua", { desc });
+
+		Log::Print(LogLevel::LEVEL_INFO, "Creating font texture\n");
 		TextureParams params = { TextureWrap::REPEAT, TextureFilter::LINEAR, TextureFormat::RGBA, TextureInternalFormat::RGBA8, TextureDataType::UNSIGNED_BYTE, false, false };
 		textAtlas = renderer->CreateTexture2D(fontAtlasPath, params);
+
 		matInstance->textures[0] = textAtlas;
 		renderer->UpdateMaterialInstance(matInstance);
 
-		ReadFontFile(fontPath);
+		if (!ReadFontFile(fontPath))
+			return false;
+
+		return true;
 	}
 
 	void Font::Reload(const std::string &fontPath)
@@ -113,14 +139,14 @@ namespace Engine
 		return size;
 	}
 
-	void Font::ReadFontFile(const std::string &fontPath)
+	bool Font::ReadFontFile(const std::string &fontPath)
 	{
-		std::ifstream file(fontPath);
+		std::ifstream file = renderer->GetFileManager()->Open(fontPath);
 
 		if (!file.is_open())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Error! Failed to load font file");
-			std::cout << fontPath << "\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to load font file: %s\n", fontPath);
+			return false;
 		}
 
 		std::string line;
@@ -208,7 +234,7 @@ namespace Engine
 			}
 		}
 
-		file.close();
+		return true;
 	}
 
 	void Font::PrepareText()
@@ -246,12 +272,10 @@ namespace Engine
 				glm::vec4 bottomRight = glm::vec4(xpos + w, ypos, 0.0f, 1.0f);
 				glm::vec4 topRight = glm::vec4(xpos + w, ypos + h, 0.0f, 1.0f);
 
-				quadsBuffer[curQuadCount * 6 + 0] = { glm::vec4(topLeft.x,		topLeft.y,		val1, val4), t.color };
-				quadsBuffer[curQuadCount * 6 + 1] = { glm::vec4(bottomLeft.x,	bottomLeft.y,	val1, val3), t.color };
-				quadsBuffer[curQuadCount * 6 + 2] = { glm::vec4(bottomRight.x,	bottomRight.y,	val2, val3), t.color };
-				quadsBuffer[curQuadCount * 6 + 3] = { glm::vec4(topLeft.x,		topLeft.y,		val1, val4), t.color };
-				quadsBuffer[curQuadCount * 6 + 4] = { glm::vec4(bottomRight.x,	bottomRight.y,	val2, val3), t.color };
-				quadsBuffer[curQuadCount * 6 + 5] = { glm::vec4(topRight.x,		topRight.y,		val2, val4), t.color };
+				quadsBuffer[curQuadCount * 4 + 0] = { glm::vec4(topLeft.x,		topLeft.y,		val1, val4), t.color };
+				quadsBuffer[curQuadCount * 4 + 1] = { glm::vec4(bottomLeft.x,	bottomLeft.y,	val1, val3), t.color };
+				quadsBuffer[curQuadCount * 4 + 2] = { glm::vec4(bottomRight.x,	bottomRight.y,	val2, val3), t.color };
+				quadsBuffer[curQuadCount * 4 + 3] = { glm::vec4(topRight.x,		topRight.y,		val2, val4), t.color };
 
 				x += (c.advance - paddingWidth) * t.scale.x;
 
@@ -261,8 +285,9 @@ namespace Engine
 
 		if (curQuadCount > 0)
 		{
-			vertexBuffer->Update(quadsBuffer, curQuadCount * 6 * sizeof(VertexPOS2D_UV_COLOR), 0);
-			mesh.vertexCount = curQuadCount * 6;
+			vertexBuffer->Update(quadsBuffer, curQuadCount * 4 * sizeof(VertexPOS2D_UV_COLOR), 0);
+			//mesh.vertexCount = curQuadCount * 4;
+			mesh.indexCount = curQuadCount * 6;
 		}
 	}
 
@@ -282,6 +307,8 @@ namespace Engine
 			delete mesh.vao;
 			mesh.vao = nullptr;
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing font\n");
 	}
 
 	void Font::Resize(unsigned int width, unsigned int height)

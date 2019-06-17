@@ -1,22 +1,20 @@
 #include "VCTGI.h"
 
-#include "Graphics\Renderer.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\MeshDefaults.h"
-#include "Graphics\Buffers.h"
-#include "Graphics\VertexArray.h"
-#include "Graphics\GL\GLSSBO.h"
-#include "Graphics\GL\GLDrawIndirectBuffer.h"
-#include "Graphics\Camera\Camera.h"
-#include "Graphics\Material.h"
-#include "Graphics\Buffers.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/MeshDefaults.h"
+#include "Graphics/Buffers.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Camera/Camera.h"
+#include "Graphics/Material.h"
+#include "Graphics/Buffers.h"
 
-#include "Program\Input.h"
+#include "Program/Input.h"
+#include "Program/Log.h"
 
-#include "Data\Shaders\GL\include\common.glsl"
+#include "Data/Shaders/GL/include/common.glsl"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glew\glew.h"
+#include "include/glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
 
@@ -112,13 +110,15 @@ namespace Engine
 			voxelsPositionsBuffer->RemoveReference();
 		if (voxelTexture)
 			voxelTexture->RemoveReference();
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing vctgi\n");
 	}
 
 	void VCTGI::UpdateProjection(const glm::vec3 &camPos)
 	{
-		float absX = std::fabsf(lastCamPos.x - camPos.x);
-		float absY = std::fabsf(lastCamPos.y - camPos.y);
-		float absZ = std::fabsf(lastCamPos.z - camPos.z);
+		float absX = fabsf(lastCamPos.x - camPos.x);
+		float absY = fabsf(lastCamPos.y - camPos.y);
+		float absZ = fabsf(lastCamPos.z - camPos.z);
 		if (absX > 0.01f || absY > 0.01f || absZ > 0.01f)
 		{
 			voxelized = false;
@@ -165,7 +165,7 @@ namespace Engine
 	{
 		Pass &fillVoxelsVisBufferPass = frameGraph.AddPass("fillPositions");
 		fillVoxelsVisBufferPass.SetIsCompute(true);
-		fillVoxelsVisBufferPass.AddImageInput("voxelTextureMipmapped", voxelTexture);
+		fillVoxelsVisBufferPass.AddImageInput("voxelTextureMipmapped");
 		fillVoxelsVisBufferPass.AddBufferOutput("voxelPositionsBuffer", voxelsPositionsBuffer);
 		fillVoxelsVisBufferPass.AddBufferOutput("voxelsIndirectBuffer", indirectBuffer);
 
@@ -219,8 +219,8 @@ namespace Engine
 	{
 		Pass &mipMapsPass = frameGraph.AddPass("voxelMipMaps");
 		mipMapsPass.SetIsCompute(true);
-		mipMapsPass.AddImageInput("voxelTexture", voxelTexture);
-		mipMapsPass.AddImageOutput("voxelTextureMipmapped", voxelTexture);		// So the framegraph add this pass to the ordered pass list
+		mipMapsPass.AddImageInput("voxelTexture");
+		mipMapsPass.AddImageOutput("voxelTextureMipmapped", voxelTexture);		// So the framegraph adds this pass to the ordered pass list
 
 		mipMapsPass.SetOnBarriers([this]()
 		{

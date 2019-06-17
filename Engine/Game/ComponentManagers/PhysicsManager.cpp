@@ -1,16 +1,18 @@
 #include "PhysicsManager.h"
 
-#include "Program\Log.h"
-#include "Physics\RigidBody.h"
+#include "Program/Log.h"
+#include "Physics/RigidBody.h"
+#include "Physics/Collider.h"
+#include "Physics/Trigger.h"
 #include "ScriptManager.h"
-#include "Physics\Collider.h"
-#include "Physics\Trigger.h"
-#include "Graphics\Effects\DebugDrawManager.h"
+#include "Graphics/Effects/DebugDrawManager.h"
 #include "TransformManager.h"
 
-#include "Program\Utils.h"
+#include "Program/Utils.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
+
+#include "include/glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
 
@@ -22,10 +24,6 @@ namespace Engine
 		isInit = false;
 	}
 
-	PhysicsManager::~PhysicsManager()
-	{
-	}
-
 	void PhysicsManager::Init(TransformManager *transformManager)
 	{
 		if (isInit)
@@ -34,20 +32,25 @@ namespace Engine
 		this->transformManager = transformManager;
 
 		broadphase = new btDbvtBroadphase();
-
+		Log::Print(LogLevel::LEVEL_INFO, "Init dbvt\n");
 		collisionConfiguration = new btDefaultCollisionConfiguration();
+		Log::Print(LogLevel::LEVEL_INFO, "Init config\n");
 		dispatcher = new btCollisionDispatcher(collisionConfiguration);
-
+		Log::Print(LogLevel::LEVEL_INFO, "Init dispatcher\n");
 		solver = new btSequentialImpulseConstraintSolver;
-
-		ghostCallback = new btGhostPairCallback();
+		Log::Print(LogLevel::LEVEL_INFO, "Init solver\n");
+		//ghostCallback = new btGhostPairCallback();
 
 		// The world
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+		Log::Print(LogLevel::LEVEL_INFO, "Init world\n");
 		dynamicsWorld->setGravity(btVector3(0.0f, -9.81f, 0.0f));
-		dynamicsWorld->getPairCache()->setInternalGhostPairCallback(ghostCallback);			// For the ghost to work correctly
+		Log::Print(LogLevel::LEVEL_INFO, "Init gravity\n");
+		//dynamicsWorld->getPairCache()->setInternalGhostPairCallback(ghostCallback);			// For the ghost to work correctly
 
 		isInit = true;
+		
+		Log::Print(LogLevel::LEVEL_INFO, "Init Physics manager\n");
 	}
 
 	void PhysicsManager::Play()
@@ -292,8 +295,8 @@ namespace Engine
 
 		PartialDispose();
 
-		if (ghostCallback)
-			delete ghostCallback;
+		//if (ghostCallback)
+		//	delete ghostCallback;
 		if (dynamicsWorld)
 			delete dynamicsWorld;
 		if (solver)
@@ -306,6 +309,8 @@ namespace Engine
 			delete broadphase;
 
 		isInit = false;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Physics manager\n");
 	}
 
 	bool PhysicsManager::HasRigidBody(Entity e) const
@@ -1167,17 +1172,17 @@ namespace Engine
 	{
 		btSphereShape sphere(radius);
 		btTransform t(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f), center);
-		ghost.setCollisionShape(&sphere);
-		ghost.setWorldTransform(t);
-		ghost.setCollisionFlags(ghost.getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE | btCollisionObject::CF_STATIC_OBJECT);
+		///ghost.setCollisionShape(&sphere);
+		///ghost.setWorldTransform(t);
+		///ghost.setCollisionFlags(ghost.getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE | btCollisionObject::CF_STATIC_OBJECT);
 
-		dynamicsWorld->addCollisionObject(&ghost, Layer::DEFAULT, Layer::OBSTACLE);
+		///dynamicsWorld->addCollisionObject(&ghost, Layer::DEFAULT, Layer::OBSTACLE);
 		bool overlaps = false;
 
 		/*if (ghost.getNumOverlappingObjects() > 0)
 			overlaps = true;*/
 
-		if (ghost.getOverlappingPairCache()->getNumOverlappingPairs() > 0)
+		/*if (ghost.getOverlappingPairCache()->getNumOverlappingPairs() > 0)
 		{
 			//std::cout << "Pairs: " << ghost.getOverlappingPairCache()->getNumOverlappingPairs() << '\n';
 			//dynamicsWorld->getDispatcher()->dispatchAllCollisionPairs(ghost.getOverlappingPairCache(), dynamicsWorld->getDispatchInfo(), dynamicsWorld->getDispatcher());
@@ -1218,9 +1223,9 @@ namespace Engine
 					break;
 			}
 
-		}
+		}*/
 		
-		dynamicsWorld->removeCollisionObject(&ghost);
+		///dynamicsWorld->removeCollisionObject(&ghost);
 		return overlaps;
 	}
 

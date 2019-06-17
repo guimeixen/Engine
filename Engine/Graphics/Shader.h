@@ -2,8 +2,6 @@
 
 #include "RendererStructs.h"
 
-#include "include\glm\glm.hpp"
-
 #include <string>
 
 namespace Engine

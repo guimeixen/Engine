@@ -133,7 +133,7 @@ namespace Engine
 		CreateImage(allocator, context->GetPhysicalDevice(), device);		
 	}
 
-	VKTexture2D::VKTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData)
+	VKTexture2D::VKTexture2D(VKBase *context, const std::string &path, const TextureParams &params, bool storeTextureData)
 	{
 		AddReference();
 		data = nullptr;
@@ -144,9 +144,26 @@ namespace Engine
 		this->params = params;
 		this->storeTextureData = storeTextureData;
 		this->type = TextureType::TEXTURE2D;
-		usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;			// The image is going to be used as a dst for a buffer copy and we will also access it from the shader
 		aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 		sampler = VK_NULL_HANDLE;
+		format = vkutils::GetFormat(params.internalFormat);
+
+		if (params.usedAsStorageInCompute || params.usedAsStorageInGraphics)
+		{
+			VkFormatProperties formatProps = {};
+			vkGetPhysicalDeviceFormatProperties(context->GetPhysicalDevice(), format, &formatProps);
+			if ((formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) == false)
+			{
+				std::cout << "Missing support for storage image bit\n";
+				return;
+			}
+
+			usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;		// TODO: How to know if the image is also going to be used for sampling too?
+		}
+		else
+		{
+			usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;			// The image is going to be used as a dst for a buffer copy and we will also access it from the shader
+		}
 	}
 
 	VKTexture2D::~VKTexture2D()
@@ -193,7 +210,7 @@ namespace Engine
 
 		if (t.empty())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s", path.c_str());
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s\n", path.c_str());
 			path = "Data/Resources/Textures/white.dds";
 			t = gli::load(path);
 		}
@@ -427,12 +444,32 @@ namespace Engine
 			Load(allocator, physicalDevice, device);
 			return;
 		}
+		
 
-		if (storeTextureData)
+		/*if (params.internalFormat == TextureInternalFormat::R16F)
 		{
-			data = new unsigned char[width * height * nChannels];
-			memcpy(data, image, width * height * nChannels * sizeof(unsigned char));
+			half_float::half *d = new half_float::half(width * height * 1);
+			size_t size = width * height;
+			for (size_t i = 0; i < size; i++)
+			{
+				d[i] = half_float::half_cast<half_float::half>(image[i]);
+			}
+
+
+			if (storeTextureData)
+			{
+				data = new unsigned char[width * height * nChannels];
+				memcpy(data, image, width * height * nChannels * sizeof(unsigned char));
+			}
 		}
+		else
+		{*/
+			if (storeTextureData)
+			{
+				data = new unsigned char[width * height * nChannels];
+				memcpy(data, image, width * height * nChannels * sizeof(unsigned char));
+			}
+		//}
 
 		mipmapsGenerated = false;
 		this->width = static_cast<uint32_t>(width);

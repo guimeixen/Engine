@@ -124,7 +124,7 @@ namespace Engine
 
 		if (vkCreateSwapchainKHR(device, &swapChainInfo, nullptr, &swapChain) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create swapchain");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create swapchain\n");
 			return false;
 		}
 
@@ -163,7 +163,7 @@ namespace Engine
 
 			if (vkCreateImageView(device, &viewInfo, nullptr, &imageViews[i]) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create swapchain image view with index: %d", i);
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create swapchain image view with index: %d\n", i);
 				return false;
 			}
 		}
@@ -191,7 +191,7 @@ namespace Engine
 
 			if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create swapchain framebuffers");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create swapchain framebuffers\n");
 			}
 		}
 	}

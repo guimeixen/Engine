@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Game\EntityManager.h"
-#include "Graphics\RendererStructs.h"
+#include "Game/EntityManager.h"
+#include "Graphics/RendererStructs.h"
 
 #include <vector>
 #include <unordered_map>
@@ -21,9 +21,6 @@ namespace Engine
 	class ParticleManager : public RenderQueueGenerator
 	{
 	public:
-		ParticleManager();
-		~ParticleManager();
-
 		void Init(Game *game);
 		void Dispose();
 

@@ -450,7 +450,7 @@ namespace Engine
 
 		if (std::system(command.c_str()) != 0)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to compile shader");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to compile shader\n");
 			if (defines.length() != 0)
 				std::remove(path.c_str());
 
@@ -480,7 +480,6 @@ namespace Engine
 
 			computeFile.seekg(0);									// Go back the beginning of the file
 			computeFile.read(computeCode.data(), compFileSize);		// Now read it all at once
-			computeFile.close();
 
 			// Compute module
 			VkShaderModuleCreateInfo moduleInfo = {};

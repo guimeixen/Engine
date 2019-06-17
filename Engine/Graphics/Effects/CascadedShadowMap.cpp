@@ -1,8 +1,8 @@
 #include "CascadedShadowMap.h"
 
-#include "Graphics\Camera\Camera.h"
+#include "Graphics/Camera/Camera.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
 
 namespace Engine
 {

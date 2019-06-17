@@ -32,7 +32,7 @@ namespace Engine
 
 		if (FAILED(hr))
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create draw indirect buffer");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create draw indirect buffer\n");
 			return;
 		}
 
@@ -47,7 +47,7 @@ namespace Engine
 		if (FAILED(hr))
 		{
 			buffer->Release();
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create draw indirect buffer unordered access view");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create draw indirect buffer unordered access view\n");
 		}
 	}
 

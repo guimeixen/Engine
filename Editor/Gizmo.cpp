@@ -47,7 +47,7 @@ void Gizmo::Update(float dt)
 	wasEntitySelected = false;
 
 	// Object focus
-	if (selected && Engine::Input::WasKeyPressed(KEY_F) && !game->IsPlaying())
+	if (selected && Engine::Input::WasKeyPressed(Engine::Keys::KEY_F) && !game->IsPlaying())
 	{
 		Engine::FPSCamera *cam = game->GetMainCamera();
 		glm::vec3 center;

@@ -74,7 +74,7 @@ namespace Engine
 		HRESULT hr = device->CreateTexture2D(&rtDesc, nullptr, &tex);
 		if (FAILED(hr))
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create render target texture");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create render target texture\n");
 			return;
 		}
 
@@ -161,7 +161,7 @@ namespace Engine
 				HRESULT hr = device->CreateTexture2D(&texDesc, &sd, &tex);
 				if (FAILED(hr))
 				{
-					Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture");
+					Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture\n");
 					return;
 				}
 
@@ -174,7 +174,7 @@ namespace Engine
 				HRESULT hr = device->CreateTexture2D(&texDesc, &sd, &tex);
 				if (FAILED(hr))
 				{
-					Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture");
+					Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture\n");
 					return;
 				}
 			}
@@ -184,7 +184,7 @@ namespace Engine
 			HRESULT hr = device->CreateTexture2D(&texDesc, nullptr, &tex);
 			if (FAILED(hr))
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create empty texture");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create empty texture\n");
 				return;
 			}
 		}
@@ -253,7 +253,7 @@ namespace Engine
 		gli::texture2d tex2D(gli::load(path));
 		if (tex2D.empty())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture\n");
 			return;
 		}
 
@@ -300,7 +300,7 @@ namespace Engine
 		HRESULT hr = device->CreateTexture2D(&texDesc, initData.data(), &tex);
 		if (FAILED(hr))
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create create texture");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create create texture\n");
 			return;
 		}
 
@@ -337,7 +337,7 @@ namespace Engine
 
 		if (!image)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s", path.c_str());
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s\n", path.c_str());
 			return;
 		}
 
@@ -397,7 +397,7 @@ namespace Engine
 		HRESULT hr = device->CreateTexture2D(&texDesc, initData.data(), &tex);
 		if (FAILED(hr))
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture\n");
 			return;
 		}
 
@@ -463,7 +463,7 @@ namespace Engine
 		HRESULT hr = device->CreateSamplerState(&samplerDesc, &samplerState);
 		if (FAILED(hr))
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create sampler state");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create sampler state\n");
 			return false;
 		}
 
@@ -488,7 +488,7 @@ namespace Engine
 		{
 			tex->Release();
 			samplerState->Release();
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create shader resource view");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create shader resource view\n");
 			return false;
 		}
 
@@ -513,7 +513,7 @@ namespace Engine
 		{
 			tex->Release();
 			samplerState->Release();
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture2d unordered access view");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture2d unordered access view\n");
 			return false;
 		}
 

@@ -2,8 +2,6 @@
 
 #include "VertexTypes.h"
 
-#include "include\glm\glm.hpp"
-
 #include <vector>
 
 namespace Engine

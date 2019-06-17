@@ -5,15 +5,15 @@
 #include "Renderer.h"
 #include "Texture.h"
 #include "Buffers.h"
-#include "GL\GLUtils.h"
-#include "VK\VKUtils.h"
 
-#include "Program\StringID.h"
+#include "Program/FileManager.h"
+#include "Program/StringID.h"
+#include "Program/Log.h"
 
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include <unordered_map>
+#include <cstdio>
 
 namespace Engine
 {
@@ -24,6 +24,8 @@ namespace Engine
 
 	Material::Material(Renderer *renderer, const std::string &matPath, const std::string &defines, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &descs)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Loading new material: %s\n", matPath.c_str());
+
 		showInEditor = true;
 		path = matPath;
 
@@ -36,24 +38,20 @@ namespace Engine
 		name.pop_back();
 		name.pop_back();
 
-		std::string shaderPath = "Data/Shaders/";
-		if (Renderer::GetCurrentAPI() == GraphicsAPI::OpenGL)
-			shaderPath += "GL/";
-		else if (Renderer::GetCurrentAPI() == GraphicsAPI::Vulkan)
-			shaderPath += "Vulkan/";
-		else if (Renderer::GetCurrentAPI() == GraphicsAPI::D3D11)
-			shaderPath += "D3D/";
-
 		// Load the lua material file
 		scriptManager.ExecuteFile(matPath);
 
 		lua_State *L = scriptManager.GetLuaState();
 		luabridge::LuaRef matTable = luabridge::getGlobal(L, name.c_str());
 
+		Log::Print(LogLevel::LEVEL_INFO, "Loading passes table\n");
+		Log::Print(LogLevel::LEVEL_INFO, "%s\n", matTable.tostring().c_str());
 		// Load passes table
 		luabridge::LuaRef passesTable = matTable["passes"];
+		Log::Print(LogLevel::LEVEL_INFO, "Loaded table\n");
 		if (!passesTable.isNil())
 		{
+			Log::Print(LogLevel::LEVEL_INFO, "Loading passes\n");
 			std::map<std::string, luabridge::LuaRef> values = scriptManager.GetKeyValueMap(passesTable);
 
 			// Loop over every pass of this material
@@ -89,6 +87,8 @@ namespace Engine
 					}
 
 					pass.id = SID(pair.first);
+
+					Log::Print(LogLevel::LEVEL_INFO, "Pass id: %u\n", pass.id);
 
 					luabridge::LuaRef ref = pair.second["queue"];
 					if (ref.isString())
@@ -195,9 +195,6 @@ namespace Engine
 						pass.rasterizerState.frontFace = Renderer::GetFrontFace(s);
 					}
 
-
-					GraphicsAPI api = Renderer::GetCurrentAPI();
-
 					if (pass.isCompute)
 					{
 						pass.shader = renderer->CreateComputeShader(shaderName, defines);
@@ -206,13 +203,13 @@ namespace Engine
 					{
 						if (shaderName.length())
 						{
-							pass.shader = renderer->CreateShader(shaderName, shaderName, defines, inputDescs);
+							pass.shader = renderer->CreateShader(shaderName, shaderName, defines, inputDescs, pass.blendState);
 						}
 						else if (vertexName.length() != 0 && fragmentName.length() != 0)
 						{
 							if (geometryName.length() == 0)
 							{
-								pass.shader = renderer->CreateShader(vertexName, fragmentName, defines, inputDescs);
+								pass.shader = renderer->CreateShader(vertexName, fragmentName, defines, inputDescs, pass.blendState);
 							}
 							else
 							{
@@ -222,13 +219,14 @@ namespace Engine
 					}			
 
 					shaderPasses.push_back(pass);
+					Log::Print(LogLevel::LEVEL_INFO, "Added pass\n");
 				}
 			}
 		}
 
 		// Load material ubo
 
-		luabridge::LuaRef materiaUBOTable = matTable["materialUBO"];
+		/*luabridge::LuaRef materiaUBOTable = matTable["materialUBO"];
 		if (!materiaUBOTable.isNil())
 		{
 			unsigned int matUBOSize = 0;
@@ -302,7 +300,9 @@ namespace Engine
 			}
 
 			//std::cout << "Mesh params ubo size: " << meshParamsSize << '\n';
-		}
+		}*/
+
+		Log::Print(LogLevel::LEVEL_INFO, "Loading resources table\n");
 
 		// Load resources table
 		luabridge::LuaRef resourcesTable = matTable["resources"];
@@ -359,11 +359,13 @@ namespace Engine
 						luabridge::LuaRef texFormatRef = it->second["texFormat"];
 						if (texFormatRef.isString())
 						{
-							texInfo.params.format = TextureFormatFromString(texFormatRef.cast<std::string>());
-							if (texInfo.params.format == TextureFormat::RED)
-								texInfo.params.internalFormat = TextureInternalFormat::RED8;
-							else if (texInfo.params.format == TextureFormat::RGB)
-								texInfo.params.internalFormat = TextureInternalFormat::RGB8;
+							texInfo.params.internalFormat = TextureInternalFormatFromString(texFormatRef.cast<std::string>());
+							if (texInfo.params.internalFormat == TextureInternalFormat::RED8)
+								texInfo.params.format = TextureFormat::RED;
+							else if (texInfo.params.internalFormat == TextureInternalFormat::RGB8)
+								texInfo.params.format = TextureFormat::RGB;
+							else if (texInfo.params.internalFormat == TextureInternalFormat::R16F)
+								texInfo.params.format = TextureFormat::RED;
 						}
 
 						luabridge::LuaRef texFilterRef = it->second["filter"];
@@ -403,6 +405,8 @@ namespace Engine
 				}
 			}
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Finished loading material\n");
 	}
 
 	Material::~Material()
@@ -411,26 +415,26 @@ namespace Engine
 
 	MaterialInstance *Material::LoadMaterialInstance(Renderer *renderer, const std::string &path, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &descs)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Loading material instance for %s\n", path.c_str());
+
+		std::ifstream file = renderer->GetFileManager()->Open(path);
+
+		if (!file.is_open())
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Could not open material instance file: %s\n", path.c_str());
+			return nullptr;
+		} 
+
 		MaterialInstance *mi = new MaterialInstance;
 		mi->path = path;
 		mi->lastParamOffset = 0;
 		mi->computeSetID = std::numeric_limits<unsigned int>::max();
 		mi->graphicsSetID = std::numeric_limits<unsigned int>::max();
 
-		std::ifstream file(path);
-
-		if (!file.is_open())
-		{
-			std::cout << "ERROR -> Could not open material instance file: " << path << "\n";
-			delete mi;
-			mi = nullptr;
-			return nullptr;
-		}
-
 		std::string line;
-		unsigned int textureID = 0;
 		unsigned int options = 0;
 		std::vector<std::string> cubemapFaces;
+		std::vector<std::string> texturePaths;
 
 		while (std::getline(file, line))
 		{
@@ -462,27 +466,28 @@ namespace Engine
 			{
 				std::string defines = "";
 				/*if ((options & NORMAL_MATRIX) == NORMAL_MATRIX)
-				{
-					defines += "#define NORMAL_MATRIX\n";
-				}*/
+					defines += "#define NORMAL_MATRIX\n";*/
 				if ((options & INSTANCING) == INSTANCING)
-				{
 					defines += "#define INSTANCING\n";
-				}
 				if ((options & ANIMATED) == ANIMATED)
-				{
 					defines += "#define ANIMATED\n";
-				}
 				if ((options & ALPHA) == ALPHA)
-				{
 					defines += "#define ALPHA\n";
-				}
+
+#ifdef EDITOR
+				defines += "#define EDITOR\n";
+#endif
 
 				mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, line.substr(8), defines, scriptManager, descs);
 				mi->textures.resize(mi->baseMaterial->texturesInfo.size());
 			}
+			else
+			{
+				texturePaths.push_back(line.substr(line.find('=') + 1));
+				//Log::Print(LogLevel::LEVEL_INFO, "%s\n", texturePaths[texturePaths.size()-1].c_str());
+			}
 
-			for (size_t i = 0; i < mi->textures.size(); i++)
+			/*for (size_t i = 0; i < mi->textures.size(); i++)
 			{
 				std::string s(mi->baseMaterial->texturesInfo[i].name + '=');
 				size_t length = s.length();
@@ -507,13 +512,32 @@ namespace Engine
 						break;
 					}
 				}
-			}
+			}*/
 		}
 
-		file.clear();
-		file.seekg(0, std::ios::beg);
+		Log::Print(LogLevel::LEVEL_INFO, "Loading material instance textures\n");
 
-		file.close();
+		size_t textureIndex = 0;
+		for (size_t i = 0; i < mi->textures.size(); i++)
+		{
+			if (mi->baseMaterial->texturesInfo[i].type == TextureType::TEXTURE_CUBE)
+			{
+				// Read six texture paths to load the cubemap
+				for (size_t i = 0; i < 6; i++)
+				{
+					cubemapFaces.push_back(texturePaths[textureIndex]);
+					textureIndex++;
+				}
+
+				mi->textures[i] = renderer->CreateTextureCube(cubemapFaces, mi->baseMaterial->texturesInfo[i].params);			// Allow loading a cubemap from just one file or 6
+				cubemapFaces.clear();
+			}
+			else
+			{
+				Log::Print(LogLevel::LEVEL_INFO, "Loading texture\n");
+				mi->textures[i] = renderer->CreateTexture2D(texturePaths[textureIndex], mi->baseMaterial->texturesInfo[i].params, mi->baseMaterial->texturesInfo[i].storeData);
+			}
+		}
 
 		return mi;
 	}
@@ -522,7 +546,13 @@ namespace Engine
 	{
 		MaterialInstance *mi = new MaterialInstance;
 		mi->lastParamOffset = 0;
+
+#ifdef EDITOR
+		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, "#define EDITOR\n", scriptManager, inputDescs);
+#else
 		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, "", scriptManager, inputDescs);
+#endif
+
 		mi->textures.resize(mi->baseMaterial->texturesInfo.size());
 		mi->buffers.resize(mi->baseMaterial->buffersInfo.size());
 
@@ -587,16 +617,18 @@ namespace Engine
 		return TextureWrap::REPEAT;
 	}
 
-	TextureFormat Material::TextureFormatFromString(const std::string &str)
+	TextureInternalFormat Material::TextureInternalFormatFromString(const std::string &str)
 	{
 		if (str == "red")
-			return TextureFormat::RED;
+			return TextureInternalFormat::RED8;
 		else if (str == "rgb")
-			return TextureFormat::RGB;
+			return TextureInternalFormat::RGB8;
+		else if (str == "r16")
+			return TextureInternalFormat::R16F;
 		/*else if (str == "rgba")
 			return TextureFormat::RGBA;*/
 
-		return TextureFormat::RGBA;
+		return TextureInternalFormat::RGBA8;
 	}
 
 	TextureFilter Material::TextureFilterFromString(const std::string &str)

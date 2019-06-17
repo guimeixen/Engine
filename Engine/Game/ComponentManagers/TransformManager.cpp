@@ -1,6 +1,8 @@
 #include "TransformManager.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "Program/Log.h"
+
+#include "include/glm/gtc/matrix_transform.hpp"
 
 namespace Engine
 {
@@ -25,12 +27,16 @@ namespace Engine
 		instanceData.modified = (bool*)(instanceData.nextSibling + initialCapacity);
 
 		isInit = true;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Transform manager\n");
 	}
 
 	void TransformManager::Dispose()
 	{
 		if (instanceData.buffer)
 			delete[] instanceData.buffer;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Transform manager\n");
 	}
 
 	void TransformManager::ClearModifiedTransforms()

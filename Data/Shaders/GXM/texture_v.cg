@@ -1,0 +1,17 @@
+uniform CameraUBO
+{
+	float4x4 projView;
+} cam : BUFFER[0];
+
+uniform float4x4 modelMatrix;
+
+void main(
+	float2 inPos,
+	float2 inUv,
+	float4 out outPos : POSITION,
+	float2 out outUv : TEXCOORD0)
+{
+	outPos = mul(modelMatrix, float4(inPos, 0.0f, 1.0f));
+	outPos = mul(cam.projView, outPos);
+	outUv = inUv;
+}

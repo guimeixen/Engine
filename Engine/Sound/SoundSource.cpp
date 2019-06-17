@@ -4,15 +4,15 @@ namespace Engine
 {
 	SoundSource::SoundSource()
 	{
-		sound = nullptr;
-		channel = nullptr;
+		//sound = nullptr;
+		//channel = nullptr;
 		isStream = false;
 		wantsPlay = false;
 		wantsStop = false;
 		isPlaying = false;
 		volume = 1.0f;
 		pitch = 1.0f;
-		position = { 0.0f, 0.0f, 0.0f };
+		//position = { 0.0f, 0.0f, 0.0f };
 		min3DDistance = 1.0f;
 		max3DDistance = 100.0f;
 		is3D = false;
@@ -20,7 +20,7 @@ namespace Engine
 		playOnStart = false;
 	}
 
-	void SoundSource::SetSound(FMOD::Sound *sound)
+	/*void SoundSource::SetSound(FMOD::Sound *sound)
 	{
 		if (!sound)
 			return;
@@ -37,7 +37,7 @@ namespace Engine
 		{
 			sound->setMode(FMOD_LOOP_NORMAL);
 		}
-	}
+	}*/
 
 	void SoundSource::SetMin3DDistance(float distance)
 	{
@@ -57,7 +57,7 @@ namespace Engine
 
 	void SoundSource::Enable3D(bool enable)
 	{
-		if (sound)
+		/*if (sound)
 		{
 			if (enable)
 			{
@@ -71,12 +71,12 @@ namespace Engine
 				is3D = false;
 				sound->setMode(FMOD_2D);
 			}
-		}
+		}*/
 	}
 
 	void SoundSource::EnableLoop(bool enable)
 	{
-		if (sound)
+		/*if (sound)
 		{
 			if (enable)
 			{
@@ -88,7 +88,7 @@ namespace Engine
 				isLooping = false;
 				sound->setMode(FMOD_LOOP_OFF);
 			}
-		}
+		}*/
 	}
 
 	void SoundSource::Serialize(Serializer &s)

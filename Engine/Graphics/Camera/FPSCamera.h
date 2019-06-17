@@ -2,8 +2,6 @@
 
 #include "Camera.h"
 
-#include "include\glm\glm.hpp"
-
 namespace Engine
 {
 	class FPSCamera : public Camera

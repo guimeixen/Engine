@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Program\Serializer.h"
-
-#include "include\glm\glm.hpp"
+#include "Program/Serializer.h"
 
 namespace Engine
 {
@@ -33,6 +31,8 @@ namespace Engine
 			s.Read(color);
 			s.Read(castShadows);
 		}
+
+		virtual ~Light(){}
 	};
 
 	struct DirLight : public Light

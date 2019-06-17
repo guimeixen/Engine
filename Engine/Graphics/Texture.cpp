@@ -1,11 +1,5 @@
 #include "Texture.h"
 
-#include "Graphics\Renderer.h"
-#include "Graphics\GL\GLTexture2D.h"
-#include "Graphics\GL\GLTexture3D.h"
-#include "Graphics\VK\VKTexture2D.h"
-
-
 namespace Engine
 {
 	bool Texture::IsDepthTexture(TextureInternalFormat format)

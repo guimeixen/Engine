@@ -109,10 +109,13 @@ namespace Engine
 		//glm::vec2 invScreenRes;
 		glm::vec2 vignetteParams;
 
-		//glm::vec2 padding;
+		glm::vec4 terrainEditParams;
+		glm::vec4 terrainEditParams2;
 
 		unsigned int frameNumber;
-		unsigned int cloudUpdateBlockSize;		
+		unsigned int cloudUpdateBlockSize;
+		float deltaTime;
+		float padding;
 	};
 
 	struct alignas(16) PointLights

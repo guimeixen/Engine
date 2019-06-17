@@ -1,6 +1,6 @@
 #pragma once
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
 
 namespace Engine
 {
@@ -79,9 +79,6 @@ namespace Engine
 	class Frustum
 	{
 	public:
-		Frustum();
-		~Frustum();
-
 		void UpdateProjection(float left, float right, float bottom, float top, float near, float far);
 		void UpdateProjection(float fov, float aspectRatio, float near, float far);
 		void Update(const glm::vec3 &pos, const glm::vec3 &center, const glm::vec3 &up);
@@ -90,6 +87,8 @@ namespace Engine
 		FrustumIntersect BoxInFrustum(const glm::vec3 &min, const glm::vec3 &max) const;
 
 		const FrustumCorners &GetCorners() const { return corners; }
+
+		FrustumType GetType() const { return frustumType; }
 
 	private:
 		glm::vec3 GetVertexPositive(const glm::vec3 &normal, const glm::vec3 &min, const glm::vec3 &max) const;

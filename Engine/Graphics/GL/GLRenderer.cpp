@@ -56,11 +56,11 @@ namespace Engine
 
 		if (err != GLEW_OK)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLEW - Error: %d", err);
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLEW - Error: %d\n", err);
 			return false;
 		}
 		else
-			Log::Print(LogLevel::LEVEL_INFO, "GLEW successfuly initialized");
+			Log::Print(LogLevel::LEVEL_INFO, "GLEW successfuly initialized\n");
 
 		//Log::Message("GL version: " + glGetString(GL_VERSION));
 		//Log::Message("GPU: " << glGetString(GL_RENDERER));
@@ -197,7 +197,7 @@ namespace Engine
 		return fb;
 	}
 
-	Shader *GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs)
+	Shader *GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		unsigned int id = SID(vertexName + fragmentName + defines);
 
@@ -214,9 +214,9 @@ namespace Engine
 		return shader;
 	}
 
-	Shader *GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs)
+	Shader *GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
-		return CreateShader(vertexName, fragmentName, "", descs);
+		return CreateShader(vertexName, fragmentName, "", descs, blendState);
 	}
 
 	Shader *GLRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
@@ -861,7 +861,7 @@ namespace Engine
 			mainLightUBO = nullptr;
 		}*/
 
-		Log::Print(LogLevel::LEVEL_INFO, "GL renderer exiting");
+		Log::Print(LogLevel::LEVEL_INFO, "GL renderer exiting\n");
 	}
 
 	void GLRenderer::SortCommands()

@@ -1,15 +1,15 @@
 #include "ModelManager.h"
 
-#include "Game\Game.h"
-#include "Game\ComponentManagers\TransformManager.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Material.h"
-#include "Program\StringID.h"
-#include "Program\Log.h"
-#include "Graphics\VertexArray.h"
+#include "Game/Game.h"
+#include "Game/ComponentManagers/TransformManager.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
+#include "Program/StringID.h"
+#include "Program/Log.h"
+#include "Graphics/VertexArray.h"
 
-#include "include\assimp\Importer.hpp"
-#include "include\assimp\postprocess.h"
+#include "include/assimp/Importer.hpp"
+#include "include/assimp/postprocess.h"
 
 namespace Engine
 {
@@ -32,6 +32,8 @@ namespace Engine
 		data.lodDistance = (float*)(data.castShadows + initialCapacity);
 		data.originalAABB = (AABB*)(data.lodDistance + initialCapacity);
 		data.worldSpaceAABB = (AABB*)(data.originalAABB + initialCapacity);
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Model manager\n");
 	}
 
 	void ModelManager::Update()
@@ -92,11 +94,13 @@ namespace Engine
 
 		if (data.buffer)
 			delete[] data.buffer;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Model manager\n");
 	}
 
 	void ModelManager::Cull(unsigned int passAndFrustumCount, unsigned int *passIds, const Frustum *frustums, std::vector<VisibilityIndices*> &out)
 	{
-		const glm::vec3 &camPos = game->GetMainCamera()->GetPosition();
+		/*const glm::vec3 &camPos = game->GetMainCamera()->GetPosition();
 
 		float lodDist = 100000.0f;
 
@@ -113,12 +117,40 @@ namespace Engine
 				if (frustums[i].BoxInFrustum(mi.aabb.min, mi.aabb.max) != FrustumIntersect::OUTSIDE)
 					out[i]->push_back(j);
 			}
+		}*/
+
+		/*if (out.size() > 0)
+			out[0]->push_back(0);*/
+
+		for (unsigned int i = 0; i < passAndFrustumCount; i++)
+		{
+			out[i]->push_back(0);
 		}
 	}
 
 	void ModelManager::GetRenderItems(unsigned int passCount, unsigned int *passIds, const VisibilityIndices &visibility, RenderQueue &outQueues)
 	{
-		for (auto m : uniqueModels)
+		if (models.size() > 0)
+		{
+			const ModelInstance &mi = models[0];
+			Model *model = mi.model;
+
+			const std::vector<MeshMaterial> &meshesAndMaterials = model->GetMeshesAndMaterials();
+			const MeshMaterial &mm = meshesAndMaterials[0];
+
+			RenderItem ri = {};
+			ri.mesh = &mm.mesh;
+			ri.matInstance = mm.mat;
+			//ri.shaderPass = l;
+			//ri.transform = &localToWorld;
+			//ri.meshParams = &transforms[0][0].x;
+			//ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
+			outQueues.push_back(ri);
+		}
+
+		
+
+		/*for (auto m : uniqueModels)
 		{
 			m.second->ClearInstanceData();
 		}
@@ -246,7 +278,7 @@ namespace Engine
 					}
 				}
 			}
-		}
+		}*/
 
 		/*for (size_t i = 0; i < usedModels; i++)
 		{
@@ -642,8 +674,8 @@ namespace Engine
 
 		if (!tempScene || !tempScene->mRootNode)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load animation file");
-			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s", importer.GetErrorString());
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load animation file\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
 			return nullptr;
 		}
 
@@ -828,7 +860,7 @@ namespace Engine
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s", importer.GetErrorString());
+			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
 			return;
 		}
 

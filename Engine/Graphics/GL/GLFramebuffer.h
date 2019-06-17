@@ -19,8 +19,6 @@ namespace Engine
 		static void SetDefault(int width, int height, int x = 0, int y = 0);
 
 		GLuint GetHandle() const { return id; }
-		unsigned int GetWidth() const { return width; }
-		unsigned int GetHeight() const { return height; }
 
 	private:
 		void Create(const FramebufferDesc &desc);

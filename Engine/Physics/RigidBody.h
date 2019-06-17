@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Game\ComponentManagers\PhysicsManager.h"
-#include "Program\Serializer.h"
+#include "Game/ComponentManagers/PhysicsManager.h"
 
 namespace Engine
 {
@@ -10,7 +9,6 @@ namespace Engine
 	public:
 		RigidBody();
 		RigidBody(btCollisionShape *shape, float mass);
-		~RigidBody();
 
 		btRigidBody *GetHandle() const { return rigidBody; }
 

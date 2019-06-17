@@ -1,7 +1,8 @@
 #include "VolumetricClouds.h"
 
-#include "Graphics\VertexArray.h"
-#include "Program\Random.h"
+#include "Graphics/VertexArray.h"
+#include "Program/Random.h"
+#include "Program/Log.h"
 
 namespace Engine
 {
@@ -87,7 +88,7 @@ namespace Engine
 		TexData *noise = new TexData[resolution * resolution * resolution];
 
 		FILE *file = nullptr;
-		fopen_s(&file, "Data/Resources/Textures/clouds/noise.data", "rb");
+		file = fopen("Data/Resources/Textures/clouds/noise.data", "rb");
 
 		if (file == nullptr)
 		{
@@ -156,7 +157,7 @@ namespace Engine
 		const unsigned int highFreqRes = 32;
 		HighFreqNoise *highFreqNoise = new HighFreqNoise[highFreqRes * highFreqRes * highFreqRes];
 
-		fopen_s(&file, "Data/Resources/Textures/clouds/highFreqNoise.data", "rb");
+		file = fopen("Data/Resources/Textures/clouds/highFreqNoise.data", "rb");
 
 		if (file == nullptr)
 		{
@@ -259,6 +260,8 @@ namespace Engine
 			weatherTexture->RemoveReference();
 		if (previousFrameTexture)
 			previousFrameTexture->RemoveReference();
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing volumetric clouds\n");
 	}
 
 	void VolumetricClouds::Resize(unsigned int width, unsigned int height, FrameGraph &frameGraph)

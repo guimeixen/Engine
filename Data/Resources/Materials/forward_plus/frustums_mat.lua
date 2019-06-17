@@ -6,5 +6,5 @@ frustums_mat =
 		{
 			computeShader="frustums",
 		}
-	},
+	}
 }

@@ -193,7 +193,7 @@ namespace Engine
 
 		if (t.empty())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s", path.c_str());
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s\n", path.c_str());
 			path = "Data/Resources/Textures/white.dds";
 			t = gli::load(path);
 		}
@@ -269,7 +269,7 @@ namespace Engine
 
 		if (t.empty())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s", path.c_str());
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s\n", path.c_str());
 			path = "Data/Resources/Textures/white.dds";
 			LoadDDS();
 			return;

@@ -6,6 +6,8 @@
 #include "Graphics/VertexArray.h"
 #include "Program/Serializer.h"
 
+#include <iostream>
+
 namespace Engine
 {
 	RenderingPath::RenderingPath()
@@ -150,7 +152,7 @@ namespace Engine
 
 		frameData.lightScreenPos = glm::vec2((lightScreenPos.x + 1.0f) / 2.0f, (lightScreenPos.y + 1.0f) / 2.0f);
 
-		float lightShaftsIntensity = 1.0f - std::sqrtf(frameData.lightScreenPos.x * frameData.lightScreenPos.x + frameData.lightScreenPos.y * frameData.lightScreenPos.y) * 0.15f;
+		float lightShaftsIntensity = 1.0f - sqrtf(frameData.lightScreenPos.x * frameData.lightScreenPos.x + frameData.lightScreenPos.y * frameData.lightScreenPos.y) * 0.15f;
 		lightShaftsIntensity = std::min(1.0f, lightShaftsIntensity);
 		lightShaftsIntensity = std::max(0.0f, lightShaftsIntensity);
 
@@ -251,8 +253,33 @@ namespace Engine
 
 		frameData.screenRes = glm::vec2((float)width, (float)height);
 		//frameData.invScreenRes = glm::vec2(1.0f / width, 1.0f / height);
+	
+		Terrain *terrain = game->GetTerrain();
+		if (terrain)
+		{
+			const glm::vec3 &p = terrain->GetIntersectionPoint();
+			frameData.terrainEditParams = glm::vec4(p.x, p.z, terrain->IsBeingEdited() ? 1.0f : 0.0f, terrain->GetBrushRadius());
+			frameData.terrainEditParams2 = glm::vec4(terrain->GetBrushStrength(), 0.0f, 0.0f, 0.0f);
+		}
+
+		frameData.deltaTime = game->GetDeltaTime();
 
 		frameUBO->Update(&frameData, sizeof(FrameUBO), 0);
+	}
+
+	void RenderingPath::EnableTerrainEditing()
+	{
+		SetupTerrainEditPass();
+		isTerrainEditingEnabled = true;
+
+		frameGraph.Bake(renderer);
+		frameGraph.Setup();
+	}
+
+	void RenderingPath::DisableTerrainEditing()
+	{
+		//frameGraph.RemovePass("terrainEdit");
+		isTerrainEditingEnabled = false;
 	}
 
 	void RenderingPath::SetMainCamera(Camera *camera)
@@ -710,6 +737,51 @@ namespace Engine
 			ri.matInstance = fxaaMat;
 
 			renderer->Submit(ri);
+		});
+	}
+
+	void RenderingPath::SetupTerrainEditPass()
+	{
+		Pass &p = frameGraph.AddPass("terrainEdit");
+		p.SetIsCompute(true);
+		p.AddImageOutput("terrainImg", game->GetTerrain()->GetMaterialInstance()->textures[0]);
+
+		p.SetOnSetup([this](const Pass *thisPass)
+		{
+			terrainEditMat = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/terrain_edit_mat.lua", {});
+			terrainEditMat->textures[0] = game->GetTerrain()->GetMaterialInstance()->textures[0];
+			renderer->UpdateMaterialInstance(terrainEditMat);
+		});
+
+		p.SetOnBarriers([this]()
+		{
+			// Make sure the image has been read
+			BarrierImage bi = {};
+			bi.image = game->GetTerrain()->GetMaterialInstance()->textures[0];
+			bi.readToWrite = true;
+			bi.baseMip = 0;
+			bi.numMips = 1;
+
+			Barrier b = {};
+			b.images.push_back(bi);
+			b.srcStage = PipelineStage::VERTEX;
+			b.dstStage = PipelineStage::COMPUTE;
+
+			renderer->PerformBarrier(b);
+		});
+
+		p.SetOnExecute([this]()
+		{
+			Texture *t = game->GetTerrain()->GetMaterialInstance()->textures[0];
+
+			DispatchItem item = {};
+			item.numGroupsX = t->GetWidth() / 16;
+			item.numGroupsY = t->GetHeight() / 16;
+			item.numGroupsZ = 1;
+			item.matInstance = terrainEditMat;
+			item.shaderPass = 0;
+
+			renderer->Dispatch(item);
 		});
 	}
 

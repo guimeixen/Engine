@@ -10,7 +10,7 @@
 #include <vector>
 #include <map>
 
-#define MAX_QUADS 2048 * 6	// * 6 because a quad has 6 vertices
+#define MAX_QUADS 512
 
 namespace Engine
 {
@@ -42,9 +42,8 @@ namespace Engine
 	{
 	public:
 		Font();
-		~Font();
 
-		void Init(Renderer *renderer, ScriptManager &scriptManager, const std::string &fontPath, const std::string &fontAtlasPath);
+		bool Init(Renderer *renderer, ScriptManager &scriptManager, const std::string &fontPath, const std::string &fontAtlasPath);
 		void Reload(const std::string &fontPath);
 		void PrepareText();
 		void EndTextUpdate();
@@ -65,7 +64,7 @@ namespace Engine
 		MaterialInstance *GetMaterialInstance() const { return matInstance; }
 
 	private:
-		void ReadFontFile(const std::string &fontPath);
+		bool ReadFontFile(const std::string &fontPath);
 
 	private:
 		Renderer *renderer;
@@ -80,8 +79,8 @@ namespace Engine
 
 		std::vector<Text> textBuffer;
 		std::map<int, Character> characters;
-		VertexPOS2D_UV_COLOR quadsBuffer[MAX_QUADS];
-		unsigned int maxCharsBuffer;					// max number of characters that are stored. Once it reaches the max we render them and start storing them again
+		VertexPOS2D_UV_COLOR quadsBuffer[MAX_QUADS * 4];		// 4 vertices per quad (with indices)
+		unsigned int maxCharsBuffer;							// max number of characters that are stored.
 		unsigned int curQuadCount;
 		int paddingWidth;
 		int padding[4];

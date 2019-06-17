@@ -1,21 +1,22 @@
 #include "AnimatedModel.h"
 
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\VertexArray.h"
-#include "Graphics\Buffers.h"
-#include "Graphics\Renderer.h"
-#include "Program\Log.h"
-#include "Game\Game.h"
-#include "Program\Input.h"
-#include "Graphics\Material.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Buffers.h"
+#include "Graphics/Renderer.h"
+#include "Program/Log.h"
+#include "Game/Game.h"
+#include "Program/Input.h"
+#include "Graphics/Material.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\glm.hpp"
-#include "include\glm\gtc\type_ptr.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/glm.hpp"
+#include "include/glm/gtc/type_ptr.hpp"
 
-#include "include\assimp\postprocess.h"
+#include "include/assimp/postprocess.h"
 
 #include <iostream>
+#include <cmath>
 
 namespace Engine
 {
@@ -100,7 +101,7 @@ namespace Engine
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s", importer.GetErrorString());
+			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
 		}
 
 		const aiMatrix4x4 &aim = scene->mRootNode->mTransformation;
@@ -653,10 +654,10 @@ namespace Engine
 			}
 
 			float curTimeInTicks = elapsedTime * animations[currentAnimation]->ticksPerSecond;
-			float curAnimTime = std::fmodf(curTimeInTicks, animations[currentAnimation]->duration);
+			float curAnimTime = fmodf(curTimeInTicks, animations[currentAnimation]->duration);
 
 			float nextTimeInTicks = elapsedTime * animations[nextAnim]->ticksPerSecond;
-			float nextAnimTime = std::fmodf(nextTimeInTicks, animations[nextAnim]->duration);
+			float nextAnimTime = fmodf(nextTimeInTicks, animations[nextAnim]->duration);
 
 			// Moved the if up here instead of right after when we set isAnimationFinished to true so we can pause an animation that is not looping at the end otherwise it would go to the initial pose
 			// We could force curAnimTime to be equal to the anim duration but there would be artifacts

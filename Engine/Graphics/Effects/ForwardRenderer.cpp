@@ -116,7 +116,8 @@ namespace Engine
 		depthAttachment.height = height;
 		depthAttachment.initialState = InitialState::CLEAR;
 
-		hdrPass.AddImageInput("voxelTextureMipmapped", vctgi.GetVoxelTexture(), true);
+		hdrPass.AddImageInput("terrainEdit");
+		hdrPass.AddImageInput("voxelTextureMipmapped", true);
 		hdrPass.AddBufferInput("voxelsIndirectBuffer", vctgi.GetIndirectBuffer());
 		hdrPass.AddBufferInput("voxelPositionsBuffer", vctgi.GetVoxelPositionsBuffer());
 		hdrPass.AddDepthInput("shadowMap");
@@ -125,6 +126,7 @@ namespace Engine
 		hdrPass.AddDepthInput("refractionDepth");
 		hdrPass.AddTextureOutput("color", colorAttachment);
 		hdrPass.AddDepthOutput("depth", depthAttachment);
+		
 
 		hdrPass.SetOnSetup([this](const Pass *thisPass)
 		{

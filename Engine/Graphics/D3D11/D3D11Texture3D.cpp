@@ -224,7 +224,7 @@ namespace Engine
 		{
 			tex->Release();
 			samplerState->Release();
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture3D unordered access view");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create texture3D unordered access view\n");
 			return false;
 		}
 

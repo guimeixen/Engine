@@ -4,7 +4,6 @@
 #include "Graphics\ResourcesLoader.h"
 #include "Graphics\VK\VKRenderer.h"
 #include "Graphics\Shader.h"
-#include "Random.h"
 #include "Graphics\GL\GLUtils.h"
 #include "Game\UI\UIManager.h"
 #include "Utils.h"
@@ -27,12 +26,12 @@ namespace Engine
 
 		if (glfwInit() != GLFW_TRUE)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLFW!");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to initialize GLFW!\n");
 			return false;
 		}
 		else
 		{
-			Log::Print(LogLevel::LEVEL_INFO, "GLFW successfuly initialized");
+			Log::Print(LogLevel::LEVEL_INFO, "GLFW successfuly initialized\n");
 		}
 
 		//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -81,14 +80,11 @@ namespace Engine
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 #endif
 
-		Random::Init();
-
 		return true;
 	}
 
 	void Window::Dispose()
 	{
-		Log::Close();
 		glfwTerminate();
 	}
 
@@ -112,9 +108,9 @@ namespace Engine
 
 	void Window::UpdateKeys(int key, int scancode, int action, int mods)
 	{
-		if (key == GLFW_KEY_ESCAPE)
+		/*if (key == GLFW_KEY_ESCAPE)
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
-
+		*/
 		inputManager.UpdateKeys(key, scancode, action, mods);
 
 #ifdef EDITOR

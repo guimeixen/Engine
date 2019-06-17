@@ -2,11 +2,9 @@
 
 #include "MaterialInfo.h"
 #include "Renderer.h"
-#include "Game\ComponentManagers\ScriptManager.h"
+#include "Game/ComponentManagers/ScriptManager.h"
 #include "RendererStructs.h"
 #include "Buffers.h"
-
-#include "include\glm\glm.hpp"
 
 #include <string>
 #include <map>
@@ -91,7 +89,7 @@ namespace Engine
 		std::vector<ShaderPass> &GetShaderPasses() { return shaderPasses; }
 		unsigned int GetShaderPassIndex(const std::string &passName) const;
 
-		unsigned int GetMeshParamsSize() const { return meshParamsSize; }
+		//unsigned int GetMeshParamsSize() const { return meshParamsSize; }
 
 		unsigned int GetTextureCount() const { return static_cast<unsigned int>(texturesInfo.size()); }
 		const std::vector<TextureInfo> &GetTexturesInfo() const { return texturesInfo; }
@@ -99,7 +97,7 @@ namespace Engine
 	private:
 		BlendFactor CompareBlendString(const std::string &str);
 		TextureWrap TextureWrapFromString(const std::string &str);
-		TextureFormat TextureFormatFromString(const std::string &str);
+		TextureInternalFormat TextureInternalFormatFromString(const std::string &str);
 		TextureFilter TextureFilterFromString(const std::string &str);
 		Topology CompareTopologyString(const std::string &str);
 
@@ -109,7 +107,7 @@ namespace Engine
 		std::string shaderName;
 		bool showInEditor;
 
-		unsigned int meshParamsSize;
+		//unsigned int meshParamsSize;
 		std::vector<unsigned int> passIDs;
 		std::vector<ShaderPass> shaderPasses;
 		std::vector<TextureInfo> texturesInfo;

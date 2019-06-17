@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Physics\Ray.h"
-#include "Game\EntityManager.h"
+#include "Physics/Ray.h"
+#include "Game/EntityManager.h"
 
-#include "include\bullet\btBulletDynamicsCommon.h"
-#include "include\bullet\btBulletCollisionCommon.h"			// Added include btGhostObject in the file, adding here would cause lots of include errors
+#include "include/bullet/btBulletDynamicsCommon.h"
+#include "include/bullet/btBulletCollisionCommon.h"			// Added include btGhostObject in the file
+#include "include/bullet/BulletCollision/CollisionDispatch/btGhostObject.h"
 
 #include <vector>
 #include <unordered_map>
@@ -62,7 +63,6 @@ namespace Engine
 	{
 	public:
 		PhysicsManager();
-		~PhysicsManager();
 
 		void Init(TransformManager *transformManager);
 		void Play();
@@ -140,7 +140,7 @@ namespace Engine
 		btSequentialImpulseConstraintSolver* solver;
 		btDiscreteDynamicsWorld* dynamicsWorld;
 
-		btGhostPairCallback *ghostCallback;
+		//btGhostPairCallback *ghostCallback;
 
 		std::vector<btCollisionShape*> collisionShapes;
 
@@ -157,7 +157,7 @@ namespace Engine
 		unsigned int usedTriggers = 0;
 
 		//btGhostObject ghost;
-		btPairCachingGhostObject ghost;		// Used to check overlaps to set the astar grid walkable areas
+		//btPairCachingGhostObject ghost;		// Used to check overlaps to set the astar grid walkable areas
 
 		//now only supporting one terrain collider
 		btCollisionObject *terrainCollider;

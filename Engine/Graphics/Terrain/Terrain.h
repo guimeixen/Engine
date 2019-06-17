@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Graphics\Camera\Camera.h"
+#include "Graphics/Camera/Camera.h"
 #include "TerrainNode.h"
-#include "Graphics\RendererStructs.h"
-#include "Graphics\Mesh.h"
-#include "Game\EntityManager.h"
+#include "Graphics/RendererStructs.h"
+#include "Graphics/Mesh.h"
+#include "Game/EntityManager.h"
 
 #include <string>
 
@@ -16,6 +16,14 @@ namespace Engine
 	class Model;
 	class Collider;
 	class Buffer;
+
+	enum class DeformType
+	{
+		RAISE,
+		LOWER,
+		FLATTEN,
+		SMOOTH
+	};
 
 	struct TerrainInfo
 	{
@@ -62,6 +70,13 @@ namespace Engine
 		bool IsVisible() const { return data.size() > 0; }
 		RenderItem GetTerrainRenderItem();
 
+		void UpdateEditing();
+		void EnableEditing();
+		void DisableEditing();
+		void DeformTerrain();
+		bool IsEditable() const { return editingEnabled; }
+		bool IsBeingEdited() const { return isBeingEdited; }
+
 		void AddVegetation(const std::string &modelPath);
 		void ChangeVegetationModel(Vegetation &v, int lod, const std::string &newModelPath);
 		void PaintVegetation(const std::vector<int> &ids, const glm::vec3 &rayOrigin, const glm::vec3 &rayDir);
@@ -71,9 +86,12 @@ namespace Engine
 		void CreateVegColliders();
 		void SetVegCollidersRefPoint(const glm::vec3 &point);
 
+		void SetMaterial(const std::string &path);
 		void SetHeightmap(const std::string &path);
 		void SetHeightScale(float scale);
 		void SetBrushRadius(float radius);
+		void SetBrushStrength(float strength);
+		void SetVegetationBrushRadius(float radius);
 
 		bool IntersectTerrain(const glm::vec3 &rayOrigin, const glm::vec3 &rayDir, glm::vec3 &intersectionPoint);
 
@@ -87,6 +105,9 @@ namespace Engine
 		glm::vec3 GetNormalAt(float x, float z);
 		float GetHeightScale() const { return heightScale; }
 		float GetBrushRadius() const { return brushRadius; }
+		float GetBrushStrength() const { return brushStrength; }
+		float GetVegetationBrushRadius() const { return vegBrushRadius; }
+		const glm::vec3 &GetIntersectionPoint() const { return intersectionPoint; }
 
 		std::vector<Vegetation> &GetVegetation() { return vegetation; }
 		const std::vector<ModelInstanceData> &GetVegetationInstanceData() const { return vegetationInstData; }
@@ -116,6 +137,14 @@ namespace Engine
 		Buffer *terrainInstancingBuffer;
 		int terrainShapeID = -1;
 
+		bool editingEnabled = false;
+		bool isBeingEdited = false;
+		glm::vec3 intersectionPoint;
+		DeformType deformType = DeformType::RAISE;
+		float brushRadius = 10.0f;
+		float brushStrength = 10.0f;
+		float flattenHeight = 0.0f;
+
 		unsigned int opaquePassID = 0;
 		unsigned int csmPassID = 0;
 
@@ -131,8 +160,7 @@ namespace Engine
 		float lodVisRanges[lodLevels];
 		const int meshSize = 16;			// If changing mesh size, the grid dim in the shader also needs to be changed
 
-		glm::vec3 intersectionPoint;
-		float brushRadius = 0.1f;
+		float vegBrushRadius = 0.1f;
 
 		std::vector<std::vector<TerrainNode*>> nodes;
 

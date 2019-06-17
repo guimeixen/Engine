@@ -1,9 +1,10 @@
 #include "FPSCamera.h"
 
-#include "Program\Input.h"
+#include "Program/Input.h"
+#include "Program/Log.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\gtx\euler_angles.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/gtx/euler_angles.hpp"
 
 namespace Engine
 {
@@ -74,19 +75,40 @@ namespace Engine
 	{
 		float velocity = moveSpeed * dt;
 
-		if (Input::IsKeyPressed(0x57))		// w
+#ifdef VITA
+		float leftX = Input::GetLeftAnalogueStickX();
+		if (leftX > 0.05f)
 		{
-			position += front * velocity;
+			position += right * velocity;
 		}
-		if (Input::IsKeyPressed(0x53))		// s
-		{
-			position -= front * velocity;
-		}
-		if (Input::IsKeyPressed(0x41))		// a
+		else if (leftX < -0.05f)
 		{
 			position -= right * velocity;
 		}
-		if (Input::IsKeyPressed(0x44))		// d
+
+		float leftY = Input::GetLeftAnalogueStickY();
+		if (leftY > 0.05f)
+		{
+			position -= front * velocity;
+		}
+		else if (leftY < -0.05f)
+		{
+			position += front * velocity;
+		}
+#else
+		if (Input::IsKeyPressed(KEY_W))		// w
+		{
+			position += front * velocity;
+		}
+		if (Input::IsKeyPressed(KEY_S))		// s
+		{
+			position -= front * velocity;
+		}
+		if (Input::IsKeyPressed(KEY_A))		// a
+		{
+			position -= right * velocity;
+		}
+		if (Input::IsKeyPressed(KEY_D))		// d
 		{
 			position += right * velocity;
 		}
@@ -98,10 +120,12 @@ namespace Engine
 		{
 			position -= worldUp * velocity;
 		}
+#endif
 	}
 
 	void FPSCamera::DoLook()
 	{
+#ifndef VITA
 		glm::vec2 mousePos = Input::GetMousePosition();
 
 		if (firstMove == true)
@@ -126,6 +150,7 @@ namespace Engine
 			pitch = -89.0f;
 
 		UpdateCameraVectors();
+#endif
 	}
 
 	void FPSCamera::UpdateCameraVectors()

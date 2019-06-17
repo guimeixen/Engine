@@ -114,7 +114,7 @@ namespace Engine
 		void AddDepthInput(const std::string &name);
 
 		void AddImageOutput(const std::string &name, Texture *texture, bool readWrite = false, bool overrideWriteFormat = false, TextureInternalFormat format = TextureInternalFormat::RGBA8);	// Default format doens't matter, because if override is false we will just use the image format
-		void AddImageInput(const std::string &name, Texture *texture, bool sampled = false);
+		void AddImageInput(const std::string &name, bool sampled = false);
 
 		void AddBufferOutput(const std::string &name, Buffer *buffer);
 		void AddBufferInput(const std::string &name, Buffer *buffer);
@@ -147,6 +147,7 @@ namespace Engine
 		unsigned int orderedIndex;
 		bool isCompute;
 		bool writesToFramebuffer;
+		bool isSetup;
 		//std::vector<OutputTextureInfo> outputTexturesInfo;
 
 		std::function<void()> onBarriers;
@@ -176,6 +177,7 @@ namespace Engine
 		void SetBackbufferSource(const std::string &name) { backBufferSource = name; }
 
 		void Bake(Renderer *renderer);
+		// Will only setup passes that have not yet been setup
 		void Setup();
 		void Execute(Renderer *renderer);
 		void Dispose();

@@ -1,29 +1,35 @@
 #include "ScriptManager.h"
 
-#include "Program\Input.h"
-#include "Program\Window.h"
+#include "Program/Input.h"
+#include "Program/Log.h"
+#include "Program/FileManager.h"
+#ifndef VITA
+#include "Program/Window.h"
+#endif
 
-#include "Game\UI\UIManager.h"
-#include "Game\UI\StaticText.h"
-#include "Game\UI\Button.h"
-#include "Game\UI\Image.h"
-#include "Game\UI\EditText.h"
-#include "Game\Game.h"
+#include "Game/UI/UIManager.h"
+#include "Game/UI/StaticText.h"
+#include "Game/UI/Button.h"
+#include "Game/UI/Image.h"
+#include "Game/UI/EditText.h"
+#include "Game/Game.h"
 
-#include "Physics\RigidBody.h"
-#include "Physics\Collider.h"
+#include "Physics/RigidBody.h"
+#include "Physics/Collider.h"
 
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Texture.h"
-#include "Graphics\ParticleSystem.h"
-#include "Graphics\Animation\AnimatedModel.h"
-#include "Graphics\Terrain\Terrain.h"
-#include "Graphics\Effects\MainView.h"
-#include "Graphics\Effects\TimeOfDayManager.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Texture.h"
+#include "Graphics/ParticleSystem.h"
+#include "Graphics/Animation/AnimatedModel.h"
+#include "Graphics/Terrain/Terrain.h"
+#include "Graphics/Effects/MainView.h"
+#include "Graphics/Effects/TimeOfDayManager.h"
 
-#include "Game\ComponentManagers\SoundManager.h"
+#include "Game/ComponentManagers/SoundManager.h"
 
-#include "Editor\EditorManager.h"
+#ifdef EDITOR
+#include "Editor/EditorManager.h"
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -34,8 +40,12 @@ namespace Engine
 {
 	void ScriptManager::Init(Game *game)
 	{
+		this->game = game;
+
 		L = luaL_newstate();
 		luaL_openlibs(L);
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Lua\n");
 
 		luabridge::getGlobalNamespace(L)
 
@@ -225,7 +235,7 @@ namespace Engine
 			.addData("radius", &PointLight::radius)
 			.endClass()
 
-			.beginClass<SoundManager>("SoundManager")
+			/*.beginClass<SoundManager>("SoundManager")
 			.addFunction("loadSoundEffect", &SoundManager::LoadSoundEffect)
 			.endClass()
 
@@ -240,7 +250,9 @@ namespace Engine
 			.endClass()
 
 			.beginClass<FMOD::Sound>("FMODSound")
-			.endClass();
+			.endClass()*/;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Lua Bridge\n");
 
 		luabridge::push(L, game);
 		lua_setglobal(L, "Game");
@@ -263,11 +275,14 @@ namespace Engine
 		luabridge::push(L, this);
 		lua_setglobal(L, "ScriptManager");
 
-		luabridge::push(L, &game->GetSoundManager());
-		lua_setglobal(L, "SoundManager");
+		/*luabridge::push(L, &game->GetSoundManager());
+		lua_setglobal(L, "SoundManager");*/
 
 		luabridge::push(L, game->GetUIManager());
 		lua_setglobal(L, "UI");
+
+		Log::Print(LogLevel::LEVEL_INFO, "Added engine globals to Lua\n");
+		Log::Print(LogLevel::LEVEL_INFO, "Init script manager\n");
 	}
 
 	void ScriptManager::Play()
@@ -329,6 +344,8 @@ namespace Engine
 		PartialDispose();
 
 		lua_close(L);
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Script manager\n");
 	}
 
 	Script *ScriptManager::AddScript(Entity e, const std::string &fileName)
@@ -355,6 +372,8 @@ namespace Engine
 		}
 
 		usedScripts++;
+
+		Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Added script %s to entity %d\n", fileName.c_str(), e.id);
 
 		return s;
 	}
@@ -416,11 +435,43 @@ namespace Engine
 
 	void ScriptManager::ExecuteFile(const std::string &fileName)
 	{
-		if (luaL_dofile(L, fileName.c_str()) != 0)
+		std::ifstream f = game->GetFileManager()->Open(fileName, std::ios::in | std::ios::ate);
+
+		if (f.fail())
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "%s\n", strerror(errno));
+			return;
+		}
+
+		if (!f.is_open())
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to open script file: %s\n", fileName.c_str());
+			return;
+		}
+
+		char *scriptString = game->GetFileManager()->ReadEntireFile(f, false);
+
+		if (!scriptString)
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to read script string\n");
+			return;
+		}
+
+		//Log::Print(LogLevel::LEVEL_INFO, "%s\n", scriptString);
+
+		if (luaL_dostring(L, scriptString) != 0)
+		{
+			Log::Print(LogLevel::LEVEL_INFO, "Error in script: %s\n", fileName.c_str());
+			Log::Print(LogLevel::LEVEL_INFO, "%s\n", lua_tostring(L, -1));
+		}
+
+		delete[] scriptString;
+
+		/*if (luaL_dofile(L, fileName.c_str()) != 0)
 		{
 			std::cout << "Error in script: " << fileName << "\n";
 			std::cout << lua_tostring(L, -1) << "\n";
-		}
+		}*/
 	}
 
 	void ScriptManager::CallFunction(const std::string &functionName)
@@ -709,13 +760,33 @@ namespace Engine
 			}
 		}
 		else
-		{
-			if (luaL_dofile(L, fileName.c_str()) == 0)
+		{		
+			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Loading script\n");
+
+			std::ifstream f = game->GetFileManager()->Open(fileName, std::ios::ate);
+
+			if (!f.is_open())
 			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to open script file: %s\n", fileName.c_str());
+				return nullptr;
+			}
+
+			char *scriptString = game->GetFileManager()->ReadEntireFile(f, false);
+
+			if (!scriptString)
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to read script string\n");
+				return nullptr;
+			}
+
+			if (luaL_dostring(L, scriptString) == 0)
+			{
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Loaded script\n");
 				luabridge::LuaRef table = luabridge::getGlobal(L, tableName.c_str());
 
 				if (table.isTable())
 				{
+					Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Reading table\n");
 					Script *script = new Script(L, tableName, fileName, table);
 					ReadTable(script, table);
 					return script;
@@ -723,8 +794,8 @@ namespace Engine
 			}
 			else
 			{
-				std::cout << "Error in script: " << fileName << "\n";
-				std::cout << lua_tostring(L, -1) << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "Error in script: %s\n", fileName.c_str());
+				Log::Print(LogLevel::LEVEL_ERROR, "%s\n", lua_tostring(L, -1));
 			}
 		}
 

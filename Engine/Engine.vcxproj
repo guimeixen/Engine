@@ -24,6 +24,10 @@
     <ClCompile Include="AI\AStarGrid.cpp" />
     <ClCompile Include="AI\AStarNodeHeap.cpp" />
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMShader.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMTexture2D.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMUniformBuffer.cpp" />
+    <ClCompile Include="Program\FileManager.cpp" />
     <ClCompile Include="Graphics\D3D11\D3D11DrawIndirectBuffer.cpp" />
     <ClCompile Include="Graphics\Effects\DeferredRenderer.cpp" />
     <ClCompile Include="Graphics\Effects\ForwardPlusRenderer.cpp" />
@@ -95,6 +99,12 @@
     <ClCompile Include="Graphics\VK\VKSwapChain.cpp" />
     <ClCompile Include="Graphics\VK\VKTexture2D.cpp" />
     <ClCompile Include="Graphics\VK\VKUtils.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMRenderer.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMUtils.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMFramebuffer.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMIndexBuffer.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMVertexArray.cpp" />
+    <ClCompile Include="Graphics\GXM\GXMVertexBuffer.cpp" />
     <ClCompile Include="Physics\Collider.cpp" />
     <ClCompile Include="Game\ComponentManagers\PhysicsManager.cpp" />
     <ClCompile Include="Physics\Ray.cpp" />
@@ -110,6 +120,9 @@
     <ClCompile Include="Graphics\Effects\ProjectedGridWater.cpp" />
     <ClCompile Include="Game\ComponentManagers\SoundManager.cpp" />
     <ClCompile Include="Graphics\Effects\RenderingPath.cpp" />
+    <ClCompile Include="Program\PSVCompiler.cpp" />
+    <ClCompile Include="PSVitaApplication.cpp" />
+    <ClCompile Include="Graphics\Effects\PSVitaRenderer.cpp" />
     <ClCompile Include="Sound\SoundSource.cpp" />
     <ClCompile Include="Graphics\VK\VKIndexBuffer.cpp" />
     <ClCompile Include="Graphics\VK\VKVertexArray.cpp" />
@@ -131,6 +144,10 @@
     <ClInclude Include="AI\AStarNode.h" />
     <ClInclude Include="AI\AStarNodeHeap.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Graphics\GXM\GXMShader.h" />
+    <ClInclude Include="Graphics\GXM\GXMTexture2D.h" />
+    <ClInclude Include="Graphics\GXM\GXMUniformBuffer.h" />
+    <ClInclude Include="Program\FileManager.h" />
     <ClInclude Include="Graphics\D3D11\D3D11DrawIndirectBuffer.h" />
     <ClInclude Include="Graphics\Effects\DeferredRenderer.h" />
     <ClInclude Include="Graphics\Effects\ForwardPlusRenderer.h" />
@@ -211,6 +228,12 @@
     <ClInclude Include="Graphics\VK\VKSwapChain.h" />
     <ClInclude Include="Graphics\VK\VKTexture2D.h" />
     <ClInclude Include="Graphics\VK\VKUtils.h" />
+    <ClInclude Include="Graphics\GXM\GXMRenderer.h" />
+    <ClInclude Include="Graphics\GXM\GXMUtils.h" />
+    <ClInclude Include="Graphics\GXM\GXMFramebuffer.h" />
+    <ClInclude Include="Graphics\GXM\GXMIndexBuffer.h" />
+    <ClInclude Include="Graphics\GXM\GXMVertexArray.h" />
+    <ClInclude Include="Graphics\GXM\GXMVertexBuffer.h" />
     <ClInclude Include="Physics\BoundingVolumes.h" />
     <ClInclude Include="Physics\Collider.h" />
     <ClInclude Include="Game\ComponentManagers\PhysicsManager.h" />
@@ -227,6 +250,9 @@
     <ClInclude Include="Graphics\VertexArray.h" />
     <ClInclude Include="Graphics\Effects\ProjectedGridWater.h" />
     <ClInclude Include="Graphics\Effects\RenderingPath.h" />
+    <ClInclude Include="Program\PSVCompiler.h" />
+    <ClInclude Include="PSVitaApplication.h" />
+    <ClInclude Include="Graphics\Effects\PSVitaRenderer.h" />
     <ClInclude Include="Sound\SoundSource.h" />
     <ClInclude Include="Game\ComponentManagers\SoundManager.h" />
     <ClInclude Include="Graphics\VK\VKIndexBuffer.h" />
@@ -245,7 +271,7 @@
     <ProjectGuid>{7EA2B1D8-42E4-43A4-B80A-856E4419DB53}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Engine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -317,7 +343,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine;$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine;$(SolutionDir);$(VITASDK)\arm-vita-eabi\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

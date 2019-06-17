@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Physics\BoundingVolumes.h"
-#include "Physics\Ray.h"
+#include "Physics/BoundingVolumes.h"
+#include "Physics/Ray.h"
+#include "Program/PSVCompiler.h"
 
 #include "imgui\imgui.h"
 
@@ -18,12 +19,10 @@
 #include "SkeletonTreeWindow.h"
 #include "ConsoleWindow.h"
 #include "AssetsBrowserWindow.h"
-
 #include "EditorNameManager.h"
 
 #include <stack>
 
-class Engine::Game;
 struct GLFWwindow;
 
 class EditorManager
@@ -84,8 +83,6 @@ private:
 	void UnsavedWarning();
 
 	void FindFilesInDirectory(const char *dir);
-	bool DirectoryExists(const std::string &path);
-	bool CreateFolder(const char *folderPath);
 
 	void SaveProject();
 	void Undo();
@@ -107,6 +104,8 @@ private:
 	ConsoleWindow consoleWindow;
 	AssetsBrowserWindow assetsBrowserWindow;
 	Gizmo gizmo;
+
+	Engine::PSVCompiler psvCompiler;
 
 	EditorNameManager editorNameManager;
 
@@ -140,6 +139,9 @@ private:
 	int currentScene = 0;
 
 	bool clickBeganOnGameView = false;
+
+	char vitaAppName[128];
+	char vitaAppTitleID[10];
 
 	// ImGui input
 	bool mousePressed[3] = { false, false, false };

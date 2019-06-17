@@ -1,9 +1,7 @@
 #include "ResourcesLoader.h"
 
-#include "Renderer.h"
-#include "Program\StringID.h"
+#include "Program/StringID.h"
 #include "Material.h"
-#include "Graphics\Material.h"
 
 #include <iostream>
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Game\EntityManager.h"
+#include "Game/EntityManager.h"
 
-#include "include\glm\glm.hpp"
-#include "include\glm\gtc\quaternion.hpp"
+#include "include/glm/glm.hpp"
+#include "include/glm/gtc/quaternion.hpp"
 
 #include <unordered_map>
 

@@ -65,8 +65,8 @@ namespace Engine
 		Buffer *CreateSSBO(unsigned int size, const void *data, unsigned int stride, BufferUsage usage) override;
 		Framebuffer *CreateFramebuffer(const FramebufferDesc &desc) override;
 
-		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs) override;
-		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs) override;
+		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
+		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
 		Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) override;
 		Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) override;
 		Shader *CreateComputeShader(const std::string &computePath, const std::string &defines) override;

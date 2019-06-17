@@ -4,6 +4,7 @@
 #include "Program/Utils.h"
 #include "Game/Game.h"
 #include "Game/ComponentManagers/TransformManager.h"
+#include "Program/Log.h"
 
 #include "include/glm/gtc/matrix_transform.hpp"
 #include "include/glm/gtx/norm.hpp"
@@ -18,6 +19,8 @@ namespace Engine
 	void LightManager::Init(Game *game, TransformManager *transformManager)
 	{
 		this->transformManager = transformManager;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Light manager\n");
 	}
 
 	void LightManager::Update(Camera *mainCamera)
@@ -32,9 +35,9 @@ namespace Engine
 		glm::vec3 camPos = mainCamera->GetPosition();
 
 		// Only sort the point lights if the camera moves
-		float absX = std::fabsf(lastCamPos.x - camPos.x);
-		float absY = std::fabsf(lastCamPos.y - camPos.y);
-		float absZ = std::fabsf(lastCamPos.z - camPos.z);
+		float absX = std::fabs(lastCamPos.x - camPos.x);
+		float absY = std::fabs(lastCamPos.y - camPos.y);
+		float absZ = std::fabs(lastCamPos.z - camPos.z);
 		if (needsSort || absX > 0.01f || absY > 0.01f || absZ > 0.01f)
 		{
 			std::sort(pointLights.begin(), pointLights.end(), [camPos](const PointLightInstance &a, const PointLightInstance &b) -> bool
@@ -99,6 +102,8 @@ namespace Engine
 	void LightManager::Dispose()
 	{
 		PartialDispose();
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Light manager\n");
 	}
 
 	PointLight *LightManager::AddPointLight(Entity e)

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Graphics\Renderer.h"
-#include "Game\Game.h"
-#include "Program\Window.h"
+#include "Graphics/Renderer.h"
+#include "Game/Game.h"
+#include "Program/Window.h"
+#include "Program/FileManager.h"
 
 namespace Engine
 {
@@ -23,6 +24,7 @@ namespace Engine
 		Game game;
 		Renderer *renderer;
 		InputManager inputManager;
+		FileManager fileManager;
 
 		float deltaTime = 0.0f;
 		float lastTime = 0.0f;

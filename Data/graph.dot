@@ -82,6 +82,8 @@ brightPass->DownsamplePass4;
 color->BrightPass;
 reflectionTex->base;
 refractionTex->base;
+terrainImg->"terrainImg Barrier RAW";
+"terrainImg Barrier RAW"->base;
 voxelTextureMipmapped->"voxelTextureMipmapped Barrier RAW";
 "voxelTextureMipmapped Barrier RAW"->base;
 lightGrid->"lightGrid Barrier RAW";

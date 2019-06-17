@@ -1,6 +1,9 @@
 #include "Log.h"
 
-#include <cstdarg>
+#ifdef VITA
+#include "psp2/io/fcntl.h"
+#endif
+
 #include <iostream>
 #include <chrono>
 #include <ctime>
@@ -17,12 +20,31 @@ namespace Engine
 
 	int Log::Print(LogLevel level, const char *str, ...)
 	{
+		int charsWritten = 0;
+
+#ifdef VITA
+		const unsigned int MAX_CHARS = 1024;
+		static char buf[MAX_CHARS];
+
+		va_list argList;
+		va_start(argList, str);
+		charsWritten = vsnprintf(buf, MAX_CHARS, str, argList);
+		va_end(argList);
+
+		int f = sceIoOpen("ux0:data/vita3d_log.txt", SCE_O_CREAT | SCE_O_WRONLY | SCE_O_APPEND, 0777);
+		if (f < 0)
+			return 0;
+
+		sceIoWrite(f, buf, strlen(buf));
+		sceIoClose(f);
+#else
 		va_list argList;
 		va_start(argList, str);
 
-		int charsWritten = VPrint(level, str, argList);
+		charsWritten = VPrint(level, str, argList);
 
 		va_end(argList);
+#endif
 
 		return charsWritten;
 	}
@@ -37,7 +59,7 @@ namespace Engine
 		if (callbackFunc)
 			callbackFunc(level, buffer);
 
-		std::cout << buffer << '\n';
+		std::cout << buffer;
 
 		if (logFile.is_open() == false)
 		{
@@ -67,7 +89,7 @@ namespace Engine
 
 	void Log::Close()
 	{
-		if (logFile.is_open())
-			logFile.close();
+		//if (logFile.is_open())
+		//	logFile.close();
 	}
 }

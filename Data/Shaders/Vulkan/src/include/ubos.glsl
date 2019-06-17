@@ -80,12 +80,15 @@ layout(std140, set = 0, binding = 2) uniform FrameUniforms
 	
 	vec2 screenRes;
 	//vec2 invScreenRes;
-	vec2 vignetteParams;		// x -> intensity, y -> falloff
+	vec2 vignetteParams;				// x -> intensity, y -> falloff
 	
-	//vec2 padding;
+	vec4 terrainEditParams; 			// xy -> intersection point, z = 0  editing disabled z = 1 editing enabled, w - brush radius
+	vec4 terrainEditParams2;		// x - brushStrength
 	
 	uint frameNumber;
 	uint cloudUpdateBlockSize;
+	float deltaTime;
+	float padding;
 };
 
 layout(std140, set = 0, binding = 3) uniform DirLight

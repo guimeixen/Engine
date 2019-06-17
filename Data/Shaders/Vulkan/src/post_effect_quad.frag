@@ -151,8 +151,8 @@ void main()
 
 	color.rgb = color.rgb * vignette;
 	
-	float t = 0.5 - 1.4 * 0.5; 
-    color.rgb = color.rgb * 1.4 + t;
+	//float t = 0.5 - 1.4 * 0.5; 
+    //color.rgb = color.rgb * 1.4 + t;
 	
 	color.a = 1.0;
 }

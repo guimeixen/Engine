@@ -296,7 +296,7 @@ namespace Engine
 		return fb;
 	}
 
-	Shader *D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs)
+	Shader *D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		unsigned int id = SID(vertexName + fragmentName + defines);
 
@@ -313,9 +313,9 @@ namespace Engine
 		return shader;
 	}
 
-	Shader *D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs)
+	Shader *D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
-		return CreateShader(vertexName, fragmentName, "", descs);
+		return CreateShader(vertexName, fragmentName, "", descs, blendState);
 	}
 
 	Shader *D3D11Renderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)

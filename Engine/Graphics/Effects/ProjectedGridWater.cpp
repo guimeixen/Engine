@@ -1,13 +1,15 @@
 #include "ProjectedGridWater.h"
 
-#include "Graphics\MeshDefaults.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\VertexArray.h"
-#include "Graphics\Renderer.h"
-#include "Graphics\Material.h"
+#include "Graphics/MeshDefaults.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Material.h"
 
-#include "include\glm\gtc\matrix_access.hpp"
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "Program/Log.h"
+
+#include "include/glm/gtc\matrix_access.hpp"
+#include "include/glm/gtc\matrix_transform.hpp"
 
 #include <iostream>
 
@@ -312,6 +314,8 @@ namespace Engine
 
 		if (projectedGridMesh.vao)
 			delete projectedGridMesh.vao;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing projected grid water\n");
 	}
 
 	void ProjectedGridWater::SetWaterHeight(float height)

@@ -7,12 +7,14 @@
 
 namespace Engine
 {
+	class VKBase;
+
 	class VKTexture2D : public Texture
 	{
 	public:
 		VKTexture2D();
 		VKTexture2D(VKBase *context, unsigned int width, unsigned int height, const TextureParams &params, const void *data);
-		VKTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData);
+		VKTexture2D(VKBase *context, const std::string &path, const TextureParams &params, bool storeTextureData);
 		~VKTexture2D();
 
 		void Bind(unsigned int slot) const override;

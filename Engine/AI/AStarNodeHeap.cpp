@@ -8,10 +8,6 @@ namespace Engine
 		items.resize(maxHeapSize);
 	}
 
-	AStarNodeHeap::~AStarNodeHeap()
-	{
-	}
-
 	void AStarNodeHeap::Add(AStarNode *item)
 	{
 		if (currentItemCount == static_cast<int>(items.size()))

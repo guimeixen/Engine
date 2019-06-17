@@ -9,6 +9,13 @@
 *.userosscache
 *.sln.docstates
 *_log.txt
+*.self
+*.velf
+*.vpk
+*.vpk_param.sfo
+*.o
+
+CMakeCache.txt
 
 Levels/
 
@@ -26,6 +33,9 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+bullet/
+bullet_old/
+CMakeFiles/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

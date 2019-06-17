@@ -13,7 +13,6 @@ namespace Engine
 	{
 	public:
 		AISystem();
-		~AISystem();
 
 		void Init(Game *game);
 		void Update();

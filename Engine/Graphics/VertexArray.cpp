@@ -1,10 +1,8 @@
 #include "VertexArray.h"
 
-#include "Graphics\Renderer.h"
-#include "Graphics\GL\GLVertexArray.h"
-#include "Graphics\Buffers.h"
-#include "Program\Utils.h"
-#include "VK\VKVertexArray.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Buffers.h"
+#include "Program/Utils.h"
 
 namespace Engine
 {

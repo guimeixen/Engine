@@ -1,14 +1,13 @@
 #pragma once
 
-#include "Game\EntityManager.h"
-#include "Game\ComponentManagers\TransformManager.h"
-#include "Graphics\Model.h"
+#include "Game/ComponentManagers/TransformManager.h"
+#include "Graphics/Model.h"
 #include "AnimationController.h"
 
-#include "Program\Utils.h"
+#include "Program/Utils.h"
 
-#include "include\glm\gtx\quaternion.hpp"
-#include "include\assimp\Importer.hpp"
+#include "include/glm/gtx/quaternion.hpp"
+#include "include/assimp/Importer.hpp"
 
 #include <map>
 

@@ -1,11 +1,12 @@
 #include "SoundManager.h"
 
-#include "Game\Game.h"
+#include "Game/Game.h"
 
-#include "Program\Utils.h"
-#include "Program\StringID.h"
+#include "Program/Utils.h"
+#include "Program/StringID.h"
+#include "Program/Log.h"
 
-#include "include\FMOD\fmod_errors.h"
+//#include "include/FMOD/fmod_errors.h"
 
 #include <iostream>
 
@@ -16,10 +17,6 @@ namespace Engine
 		isInit = false;
 	}
 
-	SoundManager::~SoundManager()
-	{
-	}
-
 	bool SoundManager::Init(Game *game, TransformManager *transformManager)
 	{
 		if (isInit)
@@ -28,7 +25,7 @@ namespace Engine
 		this->game = game;
 		this->transformManager = transformManager;
 
-		if (FMOD::System_Create(&fmodSystem) != FMOD_OK)
+		/*if (FMOD::System_Create(&fmodSystem) != FMOD_OK)
 		{
 			std::cout << "Error -> Failed to create FMOD System!\n";
 			return false;
@@ -60,9 +57,11 @@ namespace Engine
 		}
 
 
-		fmodSystem->set3DSettings(1.0f, 1.0f, 1.0f);
+		fmodSystem->set3DSettings(1.0f, 1.0f, 1.0f);*/
 
 		isInit = true;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Sound manager\n");
 
 		return true;
 	}
@@ -72,7 +71,7 @@ namespace Engine
 		if (!isInit)
 			return;
 
-		for (size_t i = 0; i < usedSoundSources; i++)
+		/*for (size_t i = 0; i < usedSoundSources; i++)
 		{
 			const SoundSourceInstance &ssi = soundSources[i];
 			SoundSource *ss = ssi.ss;
@@ -81,7 +80,7 @@ namespace Engine
 
 			if (ss->wantsPlay && !ss->isPlaying && !ss->wantsStop)
 			{
-				fmodSystem->playSound(ss->sound, nullptr, false, &ss->channel);
+				/fmodSystem->playSound(ss->sound, nullptr, false, &ss->channel);
 				ss->wantsPlay = false;
 			}
 
@@ -116,7 +115,7 @@ namespace Engine
 		FMOD_VECTOR velocity = { 0.0f, 0.0f, 0.0f };
 		fmodSystem->set3DListenerAttributes(0, &listenerPosition, &velocity, &forward, &up);
 
-		fmodSystem->update();
+		fmodSystem->update();*/
 	}
 
 	void SoundManager::Play()
@@ -173,7 +172,7 @@ namespace Engine
 		newSS->playOnStart = ss->playOnStart;
 		newSS->min3DDistance = ss->min3DDistance;
 		newSS->max3DDistance = ss->max3DDistance;
-		newSS->position = ss->position;
+		///newSS->position = ss->position;
 		
 		LoadSound(newSS, ss->path, ss->isStream);			// Load sound sets the path and isStream variables of sound source
 
@@ -201,7 +200,7 @@ namespace Engine
 			return;
 
 		// Check if we already have the sound stored
-		unsigned int id = SID(path);
+		/*unsigned int id = SID(path);
 
 		for (size_t i = 0; i < sounds.size(); i++)
 		{
@@ -252,7 +251,7 @@ namespace Engine
 			{
 				info.sound->setMode(FMOD_LOOP_NORMAL);
 			}
-		}
+		}*/
 	}
 
 	void SoundManager::ReloadSound(SoundSource *soundSource)
@@ -281,7 +280,7 @@ namespace Engine
 
 	void SoundManager::Dispose()
 	{
-		if (isInit)
+		/*if (isInit)
 		{
 			FMOD_RESULT res;
 			for (size_t i = 0; i < sounds.size(); i++)
@@ -302,7 +301,9 @@ namespace Engine
 			fmodSystem->close();
 			fmodSystem->release();
 			isInit = false;
-		}
+		}*/
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Sound manager\n");
 	}
 
 	bool SoundManager::HasSoundSource(Entity e) const
@@ -358,7 +359,7 @@ namespace Engine
 		}
 	}
 
-	FMOD::Sound *SoundManager::LoadSoundEffect(const std::string &path)
+	/*FMOD::Sound *SoundManager::LoadSoundEffect(const std::string &path)
 	{
 		// Check if we already have the sound stored
 		//std::string realPath = "Data/Levels/" + game->GetProjectName() + '/' + path;
@@ -390,9 +391,10 @@ namespace Engine
 		}
 
 		return info.sound;
-	}
+		return nullptr;
+	}*/
 
-	FMOD::Sound *SoundManager::LoadMusic(const std::string &path)
+	/*FMOD::Sound *SoundManager::LoadMusic(const std::string &path)
 	{
 		// Check if we already have the sound stored
 		//std::string realPath = "Data/Levels/" + game->GetProjectName() + '/' + path;
@@ -424,5 +426,5 @@ namespace Engine
 		}
 
 		return info.sound;
-	}
+	}*/
 }

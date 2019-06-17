@@ -10,7 +10,7 @@ namespace Engine
 		device = vkContext->GetDevice();
 
 		bufferImageGranularity = vkContext->GetDeviceLimits().bufferImageGranularity;
-		Log::Print(LogLevel::LEVEL_INFO, "Buffer Image Granularity: %d", bufferImageGranularity);
+		Log::Print(LogLevel::LEVEL_INFO, "Buffer Image Granularity: %d\n", bufferImageGranularity);
 
 		VkPhysicalDeviceMemoryProperties mp = vkContext->GetMemoryProperties();
 		memInfo.resize(mp.memoryTypeCount);
@@ -95,21 +95,21 @@ namespace Engine
 			block.alloc = {};
 			block.totalAvailableSize = 0;
 
-			Log::Print(LogLevel::LEVEL_INFO, "Free block found, freeing memory... Current allocs : %d", currentAllocations);
+			Log::Print(LogLevel::LEVEL_INFO, "Free block found, freeing memory... Current allocs : %d\n", currentAllocations);
 		}
 	}
 
 	void VKAllocator::PrintStats()
 	{
-		Log::Print(LogLevel::LEVEL_INFO, "\nCurrent allocations: %d", currentAllocations);
-		Log::Print(LogLevel::LEVEL_INFO, "Total allocations: %d", totalAllocationsMade);
+		Log::Print(LogLevel::LEVEL_INFO, "\nCurrent allocations: %d\n", currentAllocations);
+		Log::Print(LogLevel::LEVEL_INFO, "Total allocations: %d\n", totalAllocationsMade);
 		for (size_t i = 0; i < memInfo.size(); i++)
 		{
 			if (memInfo[i].totalUsedMemory == 0)
 				continue;
 
-			Log::Print(LogLevel::LEVEL_INFO, "Mem type index: %d\n\tTotal in use: %.2f mib", i, memInfo[i].totalUsedMemory / 1024.0f / 1024.0f);
-			Log::Print(LogLevel::LEVEL_INFO, "\tTotal Allocated: %.2f mib\n", memInfo[i].totalAllocatedMemory / 1024.0f / 1024.0f);
+			Log::Print(LogLevel::LEVEL_INFO, "Mem type index: %d\n\tTotal in use: %.2f mib\n", i, memInfo[i].totalUsedMemory / 1024.0f / 1024.0f);
+			Log::Print(LogLevel::LEVEL_INFO, "\tTotal Allocated: %.2f mib\n\n", memInfo[i].totalAllocatedMemory / 1024.0f / 1024.0f);
 		}
 	}
 
@@ -172,11 +172,11 @@ namespace Engine
 		if (res != VK_SUCCESS)
 		{
 			if (res == VK_ERROR_OUT_OF_DEVICE_MEMORY)
-				Log::Print(LogLevel::LEVEL_ERROR, "Out of device memory!");
+				Log::Print(LogLevel::LEVEL_ERROR, "Out of device memory!\n");
 			else if (res == VK_ERROR_TOO_MANY_OBJECTS)
-				Log::Print(LogLevel::LEVEL_ERROR, "Too many allocations!");
+				Log::Print(LogLevel::LEVEL_ERROR, "Too many allocations!\n");
 			else
-				Log::Print(LogLevel::LEVEL_ERROR, "Error allocating memory!");
+				Log::Print(LogLevel::LEVEL_ERROR, "Error allocating memory!\n");
 
 			return -1;
 		}
@@ -222,11 +222,11 @@ namespace Engine
 		if (res != VK_SUCCESS)
 		{
 			if (res == VK_ERROR_OUT_OF_DEVICE_MEMORY)
-				Log::Print(LogLevel::LEVEL_ERROR, "Out of device memory!");
+				Log::Print(LogLevel::LEVEL_ERROR, "Out of device memory!\n");
 			else if (res == VK_ERROR_TOO_MANY_OBJECTS)
-				Log::Print(LogLevel::LEVEL_ERROR, "Too many allocations!");
+				Log::Print(LogLevel::LEVEL_ERROR, "Too many allocations!\n");
 			else
-				Log::Print(LogLevel::LEVEL_ERROR, "Error allocating memory!");
+				Log::Print(LogLevel::LEVEL_ERROR, "Error allocating memory!\n");
 
 			return;
 		}

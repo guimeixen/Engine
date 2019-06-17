@@ -215,9 +215,9 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
     // Create the Vertex and Index buffers:
     size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
     size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
-    if (!fd->VertexBuffer || fd->VertexBufferSize < vertex_size)
+    if (fd->VertexBufferSize < vertex_size)
         CreateOrResizeBuffer(fd->VertexBuffer, fd->VertexBufferMemory, fd->VertexBufferSize, vertex_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    if (!fd->IndexBuffer || fd->IndexBufferSize < index_size)
+    if (fd->IndexBufferSize < index_size)
         CreateOrResizeBuffer(fd->IndexBuffer, fd->IndexBufferMemory, fd->IndexBufferSize, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
     // Upload Vertex and index Data:
@@ -348,7 +348,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
     }
 }
 
-IMGUI_API void ImGUI_ImplVulkan_SetGameViewTexture(Engine::Texture *texture, bool updateDescSet)
+void ImGUI_ImplVulkan_SetGameViewTexture(Engine::Texture *texture, bool updateDescSet)
 {
 	gameViewTexture = texture;
 
@@ -402,6 +402,33 @@ IMGUI_API void ImGUI_ImplVulkan_SetGameViewTexture(Engine::Texture *texture, boo
 
 		vkUpdateDescriptorSets(g_Device, 1, &write, 0, nullptr);
 	}
+}
+
+void ImGUI_ImplVulkan_CreateOrResizeBuffers(VkDeviceSize vertexSize, VkDeviceSize indexSize)
+{
+	FrameDataForRender* fd = &g_FramesDataBuffers[0];
+
+	// Both will be 0 when first starting, so there's no problem here
+	if (!fd->VertexBuffer && !fd->IndexBuffer)
+	{	
+		CreateOrResizeBuffer(fd->VertexBuffer, fd->VertexBufferMemory, fd->VertexBufferSize, vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+		CreateOrResizeBuffer(fd->IndexBuffer, fd->IndexBufferMemory, fd->IndexBufferSize, indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);		
+	}
+
+	fd = &g_FramesDataBuffers[1];
+
+	if (!fd->VertexBuffer && !fd->IndexBuffer)
+	{
+		CreateOrResizeBuffer(fd->VertexBuffer, fd->VertexBufferMemory, fd->VertexBufferSize, vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+		CreateOrResizeBuffer(fd->IndexBuffer, fd->IndexBufferMemory, fd->IndexBufferSize, indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	}
+	/*else if (vertexSize > 0 && indexSize > 0)
+	{
+		if (fd->VertexBufferSize < vertexSize)
+			CreateOrResizeBuffer(fd->VertexBuffer, fd->VertexBufferMemory, fd->VertexBufferSize, vertexSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+		if (fd->IndexBufferSize < indexSize)
+			CreateOrResizeBuffer(fd->IndexBuffer, fd->IndexBufferMemory, fd->IndexBufferSize, indexSize, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+	}*/
 }
 
 bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
@@ -799,6 +826,8 @@ bool    ImGui_ImplVulkan_Init(Engine::Renderer *renderer, ImGui_ImplVulkan_InitI
     g_CheckVkResultFn = info->CheckVkResultFn;
 
     ImGui_ImplVulkan_CreateDeviceObjects(renderer);
+
+	ImGUI_ImplVulkan_CreateOrResizeBuffers(125000, 30000);
 
     return true;
 }

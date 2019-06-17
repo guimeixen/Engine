@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
 
 namespace Engine
 {

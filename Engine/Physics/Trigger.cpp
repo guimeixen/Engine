@@ -1,9 +1,8 @@
 #include "Trigger.h"
 
-#include "Game\ComponentManagers\PhysicsManager.h"
-#include "Game\Script.h"
+#include "Game/Script.h"
 
-#include "include\glm\gtc\type_ptr.hpp"
+#include "include/glm/gtc/type_ptr.hpp"
 
 #include <iostream>
 
@@ -295,12 +294,12 @@ namespace Engine
 	{
 		int type = shape->getShapeType();
 
-		if (shape->getShapeType() == SPHERE_SHAPE_PROXYTYPE)
+		if (type == SPHERE_SHAPE_PROXYTYPE)
 		{
 			btSphereShape *sphere = static_cast<btSphereShape*>(shape);
 			return sphere->getRadius();
 		}
-		else if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE)
+		else if (type == CAPSULE_SHAPE_PROXYTYPE)
 		{
 			btCapsuleShape *capsule = static_cast<btCapsuleShape*>(shape);
 			return capsule->getRadius();

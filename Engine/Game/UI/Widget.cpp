@@ -1,14 +1,14 @@
 #include "Widget.h"
 
-#include "Game\Game.h"
-#include "Game\Script.h"
-#include "Program\Log.h"
+#include "Game/Game.h"
+#include "Game/Script.h"
+#include "Program/Log.h"
 
 #include "Button.h"
 
-#include "Graphics\ResourcesLoader.h"
+#include "Graphics/ResourcesLoader.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
 

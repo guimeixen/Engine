@@ -64,7 +64,7 @@ namespace Engine
 
 		if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create ssbo!");
+			Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create ssbo!\n");
 		}
 
 		// Buffer memory requirements

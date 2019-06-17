@@ -1,13 +1,13 @@
 #include "AStarGrid.h"
 
-#include "Game\Game.h"
-#include "Graphics\Effects\DebugDrawManager.h"
-#include "Program\Log.h"
+#include "Game/Game.h"
+#include "Graphics/Effects/DebugDrawManager.h"
+#include "Program/Log.h"
 
-#include "Program\Utils.h"
+#include "Program/Utils.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\gtx\norm.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/gtx/norm.hpp"
 
 #include <iostream>
 //#include <chrono>
@@ -19,10 +19,6 @@ namespace Engine
 		grid = nullptr;
 		gridSize = glm::vec2(0.0f);
 		gridCenter = glm::vec2(0.0f);
-	}
-
-	AStarGrid::~AStarGrid()
-	{
 	}
 
 	void AStarGrid::Init(Game *game, const glm::vec2 &gridCenter, const glm::vec2 &gridSize, float nodeRadius)
@@ -452,6 +448,9 @@ namespace Engine
 
 	void AStarGrid::LoadGridFromFile()
 	{
+		if (!isInit)
+			return;
+
 		Serializer s;
 		s.OpenForReading(game->GetProjectDir() + "aigrid.data");
 

@@ -6,12 +6,12 @@
 #include "Shader.h"
 #include "VertexArray.h"
 #include "Buffers.h"
-#include "Game\Game.h"
+#include "Game/Game.h"
 
-#include "Program\Utils.h"
+#include "Program/Utils.h"
 
-#include "include\assimp\Importer.hpp"
-#include "include\assimp\postprocess.h"
+#include "include/assimp/Importer.hpp"
+#include "include/assimp/postprocess.h"
 
 #include <iostream>
 

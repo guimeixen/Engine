@@ -1,7 +1,8 @@
 #pragma once
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
 
+#include <cstdarg>
 #include <string>
 #include <functional>
 #include <fstream>

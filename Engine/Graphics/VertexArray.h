@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics\VertexTypes.h"
+#include "Graphics/VertexTypes.h"
 
 #include <vector>
 

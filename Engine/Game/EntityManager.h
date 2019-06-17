@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Program\Serializer.h"
+#include "Program/Serializer.h"
 
 #include <limits>
 #include <functional>
@@ -20,7 +20,6 @@ namespace Engine
 	{
 	public:
 		EntityManager();
-		~EntityManager();
 
 		Entity Create();
 		Entity Duplicate(Entity e);

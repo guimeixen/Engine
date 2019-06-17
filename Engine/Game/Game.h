@@ -1,14 +1,14 @@
 #pragma once
 
 #include "EntityManager.h"
-#include "ComponentManagers\ModelManager.h"
-#include "ComponentManagers\TransformManager.h"
-#include "ComponentManagers\ParticleManager.h"
-#include "ComponentManagers\PhysicsManager.h"
-#include "ComponentManagers\ScriptManager.h"
-#include "ComponentManagers\LightManager.h"
-#include "ComponentManagers\SoundManager.h"
-#include "UI\UIManager.h"
+#include "ComponentManagers/ModelManager.h"
+#include "ComponentManagers/TransformManager.h"
+#include "ComponentManagers/ParticleManager.h"
+#include "ComponentManagers/PhysicsManager.h"
+#include "ComponentManagers/ScriptManager.h"
+#include "ComponentManagers/LightManager.h"
+#include "ComponentManagers/SoundManager.h"
+#include "UI/UIManager.h"
 
 #include "Graphics/Camera/FPSCamera.h"
 #include "AI/AISystem.h"
@@ -28,6 +28,7 @@ namespace Engine
 	class Terrain;
 	class MainView;
 	class DebugDrawManager;
+	class FileManager;
 
 	struct Scene
 	{
@@ -39,7 +40,7 @@ namespace Engine
 	public:
 		Game();
 
-		void Init(Renderer *renderer);
+		void Init(Renderer *renderer, FileManager *fileManager);
 		void Update(float dt);
 		void Render(Renderer *renderer);
 		// Used when creating a new or opening a project. It just disposes what is not necessary
@@ -84,6 +85,7 @@ namespace Engine
 
 		DebugDrawManager*		GetDebugDrawManager() const { return debugDrawManager; }
 		Renderer*				GetRenderer() const { return renderer; }
+		FileManager*			GetFileManager() const { return fileManager; }
 		AISystem&				GetAISystem() { return aiSystem; }
 		Terrain*				GetTerrain() const { return terrain; }
 
@@ -127,6 +129,7 @@ namespace Engine
 		unsigned int playebleHeight;
 
 		Renderer			*renderer;		
+		FileManager			*fileManager;
 		AISystem			aiSystem;
 		Terrain				*terrain;
 		DebugDrawManager	*debugDrawManager;

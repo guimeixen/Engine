@@ -1,12 +1,8 @@
 #pragma once
 
-#include "Game\ComponentManagers\PhysicsManager.h"
-#include "Program\Serializer.h"
-
-#include "include\glm\glm.hpp"
+#include "Game/ComponentManagers/PhysicsManager.h"
 
 #include <vector>
-#include <fstream>
 
 class btCollisionShape;
 

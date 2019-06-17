@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Game\ComponentManagers\ScriptManager.h"
+#include "Game/ComponentManagers/ScriptManager.h"
 #include "VertexTypes.h"
 
 #include <map>

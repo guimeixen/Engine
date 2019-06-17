@@ -1,20 +1,12 @@
 #include "Ray.h"
 
-#include "Program\Input.h"
-#include "Program\Log.h"
+#include "Program/Input.h"
+#include "Program/Log.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
 
 namespace Engine
 {
-	Ray::Ray()
-	{
-	}
-
-	Ray::~Ray()
-	{
-	}
-
 	void Ray::CalculateDirection(Camera *camera, const glm::vec2 &point)
 	{
 		glm::vec2 ndcCoords;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics\GL\GLRenderer.h"					// TODO: Switch from GLEW to GLAD. To remove this gl included before glew. Like this the GLRenderer could be in the window cpp
+#include "Graphics\GL\GLRenderer.h"					// TODO: Switch from GLEW to GLAD. To remove the gl included before glew error
 #include "include\GLFW\glfw3.h"
 
 #include "Graphics\Renderer.h"
@@ -31,7 +31,6 @@ namespace Engine
 		void SetEditorManager(EditorManager *editorManager) { this->editorManager = editorManager; }
 
 		GLFWwindow *GetHandle() const { return window; }
-
 		int ShouldClose() const { return glfwWindowShouldClose(window); }
 
 		unsigned int GetWidth() const { return width; }

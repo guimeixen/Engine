@@ -10,7 +10,6 @@ namespace Engine
 	{
 	public:
 		AStarNodeHeap(int maxHeapSize);
-		~AStarNodeHeap();
 
 		void Add(AStarNode *item);
 		AStarNode *RemoveFirst();

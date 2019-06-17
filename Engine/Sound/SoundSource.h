@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Program\Serializer.h"
+#include "Program/Serializer.h"
 
-#include "include\FMOD\fmod.hpp"
+//#include "include/FMOD/fmod.hpp"
 
 #include <string>
 
@@ -15,15 +15,15 @@ namespace Engine
 	public:
 		SoundSource();
 
-		FMOD::Sound *GetSoundHandle() const { return sound; }
+		//FMOD::Sound *GetSoundHandle() const { return sound; }
 
 		void Play() { wantsPlay = true; wantsStop = false; }
 		void Stop() { wantsPlay = false; wantsStop = true; }
 
-		void SetSound(FMOD::Sound *sound);
+		//void SetSound(FMOD::Sound *sound);
 		void SetVolume(float v) { volume = v;  if (volume <= 0.0f) volume = 0.01f; }
 		void SetPitch(float p) { pitch = p; if (pitch <= 0.0f) pitch = 0.01f; }
-		void SetPosition(const glm::vec3 &pos) { position.x = pos.x; position.y = pos.y; position.z = pos.z; }
+		void SetPosition(const glm::vec3 &pos) { /*position.x = pos.x; position.y = pos.y; position.z = pos.z;*/ }
 		void SetMin3DDistance(float distance);
 		void SetMax3DDistance(float distance);
 		void Enable3D(bool enable);
@@ -45,8 +45,8 @@ namespace Engine
 		void Deserialize(Serializer &s);
 
 	private:
-		FMOD::Sound *sound;
-		FMOD::Channel *channel;
+		//FMOD::Sound *sound;
+		//FMOD::Channel *channel;
 		std::string path;
 		bool isStream;
 		bool wantsPlay;
@@ -54,7 +54,7 @@ namespace Engine
 		bool isPlaying;
 		float volume;
 		float pitch;
-		FMOD_VECTOR position;
+		//FMOD_VECTOR position;
 		float min3DDistance;
 		float max3DDistance;
 		bool is3D;

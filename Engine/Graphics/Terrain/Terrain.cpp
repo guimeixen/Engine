@@ -1,24 +1,24 @@
 #include "Terrain.h"
 
-#include "Program\Log.h"
-#include "Graphics\Material.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Renderer.h"
-#include "Graphics\Mesh.h"
-#include "Graphics\Buffers.h"
-#include "Graphics\VertexArray.h"
-#include "Program\Input.h"
-#include "Game\Game.h"
-#include "Graphics\Model.h"
-#include "Program\Random.h"
-#include "Program\Utils.h"
-#include "Program\StringID.h"
+#include "Program/Log.h"
+#include "Graphics/Material.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Mesh.h"
+#include "Graphics/Buffers.h"
+#include "Graphics/VertexArray.h"
+#include "Program/Input.h"
+#include "Game/Game.h"
+#include "Graphics/Model.h"
+#include "Program/Random.h"
+#include "Program/Utils.h"
+#include "Program/StringID.h"
 
-#include "Physics\Collider.h"
+#include "Physics/Collider.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\gtx\quaternion.hpp"
-#include "include\stb_image.h"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/gtx/quaternion.hpp"
+#include "include/stb_image.h"
 
 #include <iostream>
 #include <fstream>
@@ -47,7 +47,6 @@ namespace Engine
 		this->game = game;
 		renderer = game->GetRenderer();
 
-		// Terrain vertex input desc is created here so that we can pass it to the material
 		VertexAttribute posUv = {};
 		posUv.count = 4;
 		posUv.offset = 0;
@@ -59,7 +58,7 @@ namespace Engine
 		instance.vertexAttribFormat = VertexAttributeFormat::FLOAT;
 
 		terrainInputDescs.resize(2);
-		terrainInputDescs[0].stride = 4 * sizeof(float);		// The order the descs matters. Desc 0 corresponds to the first vb, desc 1 to the second
+		terrainInputDescs[0].stride = 4 * sizeof(float);
 		terrainInputDescs[0].attribs = { posUv };
 		terrainInputDescs[0].instanced = false;
 
@@ -342,7 +341,7 @@ namespace Engine
 
 			TerrainMaterialUBO uboData;
 			uboData.terrainParams = glm::vec2((float)resolution, heightScale);
-			uboData.selectionPointAndRadius = glm::vec3(intersectionPoint.x / resolution, intersectionPoint.z / resolution, brushRadius / resolution);
+			uboData.selectionPointAndRadius = glm::vec3(intersectionPoint.x / resolution, intersectionPoint.z / resolution, vegBrushRadius / resolution);
 
 			matUbo->Update(&uboData, sizeof(TerrainMaterialUBO), 0);
 
@@ -472,6 +471,100 @@ namespace Engine
 		return ri;
 	}
 
+	void Terrain::UpdateEditing()
+	{
+		isBeingEdited = false;
+
+		if (Input::IsMouseButtonDown(0))
+		{
+			float delta = 0.25f;
+			float mint = 0.1f;		// cam near plane
+			float maxt = 200.0f;
+
+			glm::vec3 rayOrigin = game->GetMainCamera()->GetPosition();
+			glm::vec3 rayDir = utils::GetRayDirection(Input::GetMousePosition(), game->GetMainCamera());
+
+			for (float t = mint; t < maxt; t += delta)
+			{
+				intersectionPoint = rayOrigin + rayDir * t;
+
+				float height = GetExactHeightAt(intersectionPoint.x, intersectionPoint.z);
+
+				if (intersectionPoint.y < height)												// If we are below the terrain...
+				{
+					//interPoint.y = height;
+					intersectionPoint = ((rayOrigin + rayDir * t) + (rayOrigin + rayDir * (t - delta))) / 2.0f;
+					//rayIntersected = true;
+
+					if (InBounds((int)intersectionPoint.x, (int)intersectionPoint.z))
+					{
+						//if (paintingTerrain)
+							//Paint(deltaTime);
+						//PaintLowPoly(deltaTime);
+						//else
+							DeformTerrain();
+
+							isBeingEdited = true;
+					}
+
+					break;
+				}
+				//delta = 0.5f * t;
+			}
+		}
+//		rayIntersected = false;
+	}
+
+	void Terrain::EnableEditing()
+	{
+		editingEnabled = true;
+	}
+
+	void Terrain::DisableEditing()
+	{
+		editingEnabled = false;
+	}
+
+	void Terrain::DeformTerrain()
+	{
+		int x = (int)intersectionPoint.z;
+		int z = (int)intersectionPoint.x;
+
+		if (!InBounds(x, z))
+			return;
+
+		//float h = heights[x * resolution + z];
+		float deltaTime = game->GetDeltaTime();
+
+		glm::vec2 c = glm::vec2((float)x, (float)z);
+
+		if (deformType == DeformType::RAISE || deformType == DeformType::FLATTEN)
+		{
+			for (size_t xx = x - brushRadius; xx < x + brushRadius; xx++)
+			{
+				for (size_t zz = z - brushRadius; zz < z + brushRadius; zz++)
+				{
+					glm::vec2 d = glm::vec2((float)xx, (float)zz) - c;
+
+					if ((d.x*d.x + d.y*d.y < brushRadius * brushRadius) && InBounds(xx, zz))
+					{
+						float dist = glm::length(glm::vec2(xx, zz) - c) * 3.14159f / brushRadius;
+
+						heights[xx * resolution + zz] += (0.5f + 0.5f * glm::cos(dist)) * brushStrength * deltaTime;
+
+						if (deformType == DeformType::FLATTEN && heights[xx * resolution + zz] > flattenHeight)
+						{
+							heights[xx * resolution + zz] = flattenHeight;
+						}
+
+						if (heights[xx * resolution + zz] > 255.0f)
+							heights[xx * resolution + zz] = 255.0f;
+					}
+				}
+			}
+		}
+	}
+
 	void Terrain::AddVegetation(const std::string &modelPath)
 	{
 		for (size_t i = 0; i < vegetation.size(); i++)
@@ -576,8 +669,8 @@ namespace Engine
 
 				float angle = rMinusOne_One * 6.283186f;
 
-				float x = Random::Float() * brushRadius * glm::cos(angle);
-				float z = Random::Float() * brushRadius * glm::sin(angle);
+				float x = Random::Float() * vegBrushRadius * glm::cos(angle);
+				float z = Random::Float() * vegBrushRadius * glm::sin(angle);
 
 				glm::vec3 position = glm::vec3(intersectionPoint.x + x, 0.0f, intersectionPoint.z + z);
 
@@ -656,7 +749,7 @@ namespace Engine
 		}
 
 		unsigned int datIndex = 1;		// Start at 1 so we don't skip the first veg model
-		size_t size = dat.size();
+		//size_t size = dat.size();
 		for (size_t i = 0; i < vegetationInstData.size(); i++)
 		{
 			if (i + 1 > dat[datIndex].offset)		// i+1 otherwise the last instance of a veg type doesn't get updated
@@ -686,6 +779,23 @@ namespace Engine
 	void Terrain::SetVegCollidersRefPoint(const glm::vec3 &point)
 	{
 		collidersRefPoint = point;
+	}
+
+	void Terrain::SetMaterial(const std::string &path)
+	{
+		MaterialInstance *mat = renderer->CreateMaterialInstance(game->GetScriptManager(), path, terrainInputDescs);
+
+		for (size_t i = 0; i < matInstance->textures.size(); i++)
+		{
+			if (matInstance->textures[i])
+				matInstance->textures[i]->RemoveReference();
+		}
+
+		renderer->RemoveMaterialInstance(matInstance);	
+
+		matInstance = mat;
+
+		SetHeightmap(matInstance->textures[0]->GetPath());
 	}
 
 	void Terrain::SetHeightmap(const std::string &path)
@@ -727,7 +837,7 @@ namespace Engine
 		}
 
 		// Reallocate the heights if the res is not the same
-		if (resolution != width || !heights)
+		if ((unsigned int)resolution != width || !heights)
 		{
 			resolution = width;
 			updateMaterialUBO = true;
@@ -916,12 +1026,12 @@ namespace Engine
 			}
 		}
 
-		if (nodes.size() != topNodeCount)
+		if (nodes.size() != (size_t)topNodeCount)
 			nodes.resize(topNodeCount);
 
 		for (int z = 0; z < topNodeCount; z++)
 		{
-			if (nodes[z].size() != topNodeCount)
+			if (nodes[z].size() != (size_t)topNodeCount)
 				nodes[z].resize(topNodeCount);
 
 			for (int x = 0; x < topNodeCount; x++)
@@ -972,6 +1082,16 @@ namespace Engine
 	void Terrain::SetBrushRadius(float radius)
 	{
 		brushRadius = radius;
+	}
+
+	void Terrain::SetBrushStrength(float strength)
+	{
+		brushStrength = strength;
+	}
+
+	void Terrain::SetVegetationBrushRadius(float radius)
+	{
+		vegBrushRadius = radius;
 		updateMaterialUBO = true;
 	}
 
@@ -1249,9 +1369,6 @@ namespace Engine
 			vegInstancingBufferLOD1 = renderer->CreateVertexBuffer(nullptr, vegetationInstData.size() * sizeof(ModelInstanceData), BufferUsage::DYNAMIC);
 			vegInstancingBufferLOD2 = renderer->CreateVertexBuffer(nullptr, vegetationInstData.size() * sizeof(ModelInstanceData), BufferUsage::DYNAMIC);
 		}
-		/*vegInstancingBufferLOD0 = VertexBuffer::Create(nullptr, vegetationInstData.size() * sizeof(ModelInstanceData), BufferUsage::DYNAMIC);
-		vegInstancingBufferLOD1 = VertexBuffer::Create(nullptr, vegetationInstData.size() * sizeof(ModelInstanceData), BufferUsage::DYNAMIC);
-		vegInstancingBufferLOD2 = VertexBuffer::Create(nullptr, vegetationInstData.size() * sizeof(ModelInstanceData), BufferUsage::DYNAMIC);*/
 #endif
 	}
 
@@ -1272,7 +1389,7 @@ namespace Engine
 			file << "veg=" << folder << "vegetation_" << sceneName << ".dat\n";		// Replace with path to vegetation file
 		}
 
-		file.close();
+		//file.close();
 
 		std::ofstream vegFile(folder + "vegetation_" + sceneName + ".dat");
 
@@ -1311,7 +1428,7 @@ namespace Engine
 			vegFile << "model=" << v.model->GetPath() << '\n';		
 		}
 
-		vegFile.close();
+		//vegFile.close();
 
 		Serializer s;
 		s.OpenForWriting();
@@ -1347,7 +1464,7 @@ namespace Engine
 			counter++;
 		}
 
-		Log::Print(LogLevel::LEVEL_INFO, "Saved %d vegetation instances", counter);
+		Log::Print(LogLevel::LEVEL_INFO, "Saved %d vegetation instances\n", counter);
 
 		s.Save(folder + "vegetation_" + sceneName + ".data");
 		s.Close();

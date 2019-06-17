@@ -1,7 +1,5 @@
 #include "Input.h"
 
-#include "include\GLFW\glfw3.h"
-
 namespace Engine
 {
 	InputManager *Input::inputManager = nullptr;
@@ -27,10 +25,6 @@ namespace Engine
 		charUpdated = false;
 
 		scrollWheelY = 0.0f;
-	}
-
-	InputManager::~InputManager()
-	{
 	}
 
 	void InputManager::Update()
@@ -123,13 +117,13 @@ namespace Engine
 	{
 		if (key >= 0 && key < 512)
 		{
-			if (action == GLFW_PRESS)
+			if (action == KEY_PRESSED)
 			{
 				keys[key].state = true;
 				keys[key].justReleased = false;
 				keys[key].justPressed = true;
 			}
-			else if (action == GLFW_RELEASE)
+			else if (action == KEY_RELEASED)
 			{
 				keys[key].state = false;
 				keys[key].justReleased = true;
@@ -149,30 +143,30 @@ namespace Engine
 		if (button < 0 || button > 1)
 			return;
 
-		if (button == GLFW_MOUSE_BUTTON_LEFT)
+		if (button == MOUSE_BUTTON_LEFT)
 		{
-			if (action == GLFW_PRESS)
+			if (action == KEY_PRESSED)
 			{
 				mouseButtonsState[0].state = true;
 				mouseButtonsState[0].justReleased = false;
 				mouseButtonsState[0].justPressed = true;
 			}
-			else if (action == GLFW_RELEASE)
+			else if (action == KEY_RELEASED)
 			{
 				mouseButtonsState[0].state = false;
 				mouseButtonsState[0].justReleased = true;
 				mouseButtonsState[0].justPressed = false;
 			}
 		}
-		else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+		else if (button == MOUSE_BUTTON_RIGHT)
 		{
-			if (action == GLFW_PRESS)
+			if (action == KEY_PRESSED)
 			{
 				mouseButtonsState[1].state = true;
 				mouseButtonsState[1].justReleased = false;
 				mouseButtonsState[1].justPressed = true;
 			}
-			else if (action == GLFW_RELEASE)
+			else if (action == KEY_RELEASED)
 			{
 				mouseButtonsState[1].state = false;
 				mouseButtonsState[1].justReleased = true;
@@ -183,5 +177,25 @@ namespace Engine
 	void InputManager::SetScrollWheelYOffset(float yoffset)
 	{
 		scrollWheelY += yoffset;
+	}
+
+	void InputManager::UpdateVitaButtons(int buttons)
+	{
+		this->buttons = buttons;
+	}
+
+	void InputManager::UpdateVitaSticks(unsigned char leftStickX, unsigned char leftStickY, unsigned char rightStickX, unsigned char rightStickY)
+	{
+		this->leftStickX = (float)leftStickX;
+		this->leftStickX -= (this->leftStickX - 128.0f) / 128.0f;
+		
+		this->leftStickY = (float)leftStickY;
+		this->leftStickY -= (this->leftStickY - 128.0f) / 128.0f;
+
+		this->rightStickX = (float)rightStickX;
+		this->rightStickX -= (this->rightStickX - 128.0f) / 128.0f;
+
+		this->rightStickY = (float)rightStickY;
+		this->rightStickY -= (this->rightStickY - 128.0f) / 128.0f;
 	}
 }

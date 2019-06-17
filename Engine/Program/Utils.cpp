@@ -1,16 +1,22 @@
 #include "Utils.h"
 
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Material.h"
-#include "Physics\RigidBody.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
+#include "Physics/RigidBody.h"
+#include "Program/Log.h"
 
-#include "include\glm\gtx\quaternion.hpp"
+#include "include/glm/gtx/quaternion.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#ifndef VITA
+#include <filesystem>
+#endif
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 namespace Engine
 {
@@ -200,6 +206,7 @@ namespace Engine
 
 		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension, bool includeSubDirectories, bool addPathToFileName)
 		{
+#ifdef _WIN32
 			WIN32_FIND_DATAA findData;
 			HANDLE h = FindFirstFileA(dir.c_str(), &findData);
 
@@ -226,6 +233,34 @@ namespace Engine
 			} while (FindNextFileA(h, &findData));
 
 			FindClose(h);
+#endif
+		}
+
+		bool CreateFolder(const char *folderPath)
+		{
+#ifdef _WIN32
+			Log::Print(LogLevel::LEVEL_INFO, "Creating folder at %s ...\n", folderPath);
+
+			if (CreateDirectoryA(folderPath, NULL))
+			{
+				Log::Print(LogLevel::LEVEL_INFO, "Done\n");
+				return true;
+			}
+
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create folder: %s    Error: %lu\n", folderPath, GetLastError());
+
+#endif
+
+			return false;
+		}
+
+		bool DirectoryExists(const std::string &path)
+		{
+#ifndef VITA
+			return std::experimental::filesystem::exists(path);
+#else
+			return false;
+#endif
 		}
 	}
 }

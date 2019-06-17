@@ -4,13 +4,12 @@
 #include "VertexArray.h"
 #include "Material.h"
 #include "Renderer.h"
-#include "Buffers.h"
 #include "ResourcesLoader.h"
-#include "Program\Random.h"
-#include "Game\Game.h"
+#include "Program/Random.h"
+#include "Game/Game.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\gtc\type_ptr.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/gtc/type_ptr.hpp"
 
 #include <iostream>
 
@@ -164,7 +163,7 @@ namespace Engine
 						int index1 = (int)glm::floor(atlasProgression);
 						int index2 = index1 < stageCount - 1 ? index1 + 1 : index1;
 
-						p.blendFactor = std::fmodf(atlasProgression, 1.0f);
+						p.blendFactor = fmodf(atlasProgression, 1.0f);
 						p.texOffset1 = SetTextureOffset(index1);
 						p.texOffset2 = SetTextureOffset(index2);
 					}

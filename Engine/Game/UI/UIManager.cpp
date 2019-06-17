@@ -1,24 +1,25 @@
 #include "UIManager.h"
 
-#include "Game\Game.h"
+#include "Game/Game.h"
 
-#include "Graphics\Renderer.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Material.h"
-#include "Graphics\MeshDefaults.h"
-#include "Graphics\Effects\MainView.h"
-#include "Graphics\VertexArray.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
+#include "Graphics/MeshDefaults.h"
+#include "Graphics/Effects/MainView.h"
+#include "Graphics/VertexArray.h"
 
 #include "StaticText.h"
 #include "Button.h"
 #include "Image.h"
 #include "EditText.h"
 
-#include "Program\Input.h"
-#include "Program\Utils.h"
-#include "Program\StringID.h"
+#include "Program/Input.h"
+#include "Program/Utils.h"
+#include "Program/StringID.h"
+#include "Program/Log.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
 #include <ostream>
@@ -40,6 +41,8 @@ namespace Engine
 		cursor->SetRectSize(glm::vec2(16.0f, 26.0f));
 		cursor->SetColorTintRGBA(glm::vec4(1.0f));
 		cursor->SetDepth(0.0f);*/
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init UI manager\n");
 	}
 
 	void UIManager::PartialDispose()
@@ -60,7 +63,9 @@ namespace Engine
 			delete mesh.vao;
 
 		if (cursor)
-			delete cursor;	
+			delete cursor;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing UI manager\n");
 	}
 
 	void UIManager::Update(float dt)
@@ -75,7 +80,7 @@ namespace Engine
 	void UIManager::UpdateInGame(float dt)
 	{
 #ifndef EDITOR
-		if (!cursor)
+		/*if (!cursor)
 		{
 			cursor = new Image(game);
 			cursor->SetRectPosPercent(glm::vec2(50.0f, 50.0f));
@@ -104,7 +109,7 @@ namespace Engine
 				posPercent.y = 100.0f;
 
 			cursor->SetRectPosPercent(posPercent);
-		}
+		}*/
 #endif
 
 		for (unsigned int i = 0; i < usedWidgets; i++)

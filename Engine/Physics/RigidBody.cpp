@@ -1,8 +1,8 @@
 #include "RigidBody.h"
 
-#include "Program\Log.h"
+#include "Program/Log.h"
 
-#include "include\glm\gtc\type_ptr.hpp"
+#include "include/glm/gtc/type_ptr.hpp"
 
 #include <iostream>
 
@@ -34,16 +34,12 @@ namespace Engine
 
 		if (!rigidBody)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create rigid body");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create rigid body\n");
 			return;
 		}
 
 		if (mass < 0.01f)
 			rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_STATIC_OBJECT);
-	}
-
-	RigidBody::~RigidBody()
-	{
 	}
 
 	void RigidBody::SetTransform(const glm::mat4 &transform)
@@ -252,12 +248,12 @@ namespace Engine
 	{
 		int type = shape->getShapeType();
 
-		if (shape->getShapeType() == SPHERE_SHAPE_PROXYTYPE)
+		if (type == SPHERE_SHAPE_PROXYTYPE)
 		{
 			btSphereShape *sphere = static_cast<btSphereShape*>(shape);
 			return sphere->getRadius();
 		}
-		else if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE)
+		else if (type == CAPSULE_SHAPE_PROXYTYPE)
 		{
 			btCapsuleShape *capsule = static_cast<btCapsuleShape*>(shape);
 			return capsule->getRadius();

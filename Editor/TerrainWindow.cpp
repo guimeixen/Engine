@@ -54,6 +54,29 @@ void TerrainWindow::Render()
 
 		heightScale = currentTerrain->GetHeightScale();
 		brushRadius = currentTerrain->GetBrushRadius();
+		brushStrength = currentTerrain->GetBrushStrength();
+		vegBrushRadius = currentTerrain->GetVegetationBrushRadius();
+
+		if (ImGui::Button("Change material"))
+		{
+			std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+
+			files.clear();
+			FindFilesInDirectory(dir, ".mat");
+
+			ImGui::OpenPopup("Choose material:");
+		}
+
+		if (ImGui::BeginPopup("Choose material:"))
+		{
+			for (size_t i = 0; i < files.size(); i++)
+			{
+				if (ImGui::Selectable(files[i].c_str()))
+					currentTerrain->SetMaterial(files[i]);
+			}
+
+			ImGui::EndPopup();
+		}
 
 		if (ImGui::Button("Load heightmap"))
 		{
@@ -77,13 +100,33 @@ void TerrainWindow::Render()
 			ImGui::EndPopup();
 		}
 
+		if (currentTerrain->IsEditable() == false)
+		{
+			if (ImGui::Button("Enable terrain editing"))
+				currentTerrain->EnableEditing();
+		}
+		else
+		{
+			if (ImGui::Button("Disable terrain editing"))
+				currentTerrain->DisableEditing();
+		}
+
+		if (ImGui::SliderFloat("Brush radius", &brushRadius, 0.1f, 50.0f))
+		{
+			currentTerrain->SetBrushRadius(brushRadius);
+		}
+		if (ImGui::SliderFloat("Brush strength", &brushStrength, 0.1f, 100.0f))
+		{
+			currentTerrain->SetBrushStrength(brushStrength);
+		}
+
 		Engine::MaterialInstance *matInstance = currentTerrain->GetMaterialInstance();
 		const std::vector<Engine::Texture*> &textures = matInstance->textures;
 		
 		int popupNamesID = 0;
 
 		// Start at 1 to skip the heightmap
-		/*for (size_t i = 1; i < textures.size(); i++)
+		for (size_t i = 1; i < textures.size(); i++)
 		{
 			//ImGui::Text(textures[i]->GetPath().c_str());
 			ImGui::Text(texturesPopupNames[i-1].c_str());
@@ -121,7 +164,7 @@ void TerrainWindow::Render()
 				ImGui::EndPopup();
 				popupNamesID++;
 			}
-		}*/
+		}
 
 		resStr = "Resolution: " + std::to_string(currentTerrain->GetResolution());
 		ImGui::Text(resStr.c_str());
@@ -131,11 +174,29 @@ void TerrainWindow::Render()
 			currentTerrain->SetHeightScale(heightScale);
 		}*/
 
+		/*if (ImGui::Button("Save material"))
+		{
+			std::ofstream file(editorManager->GetCurrentProjectDir() + "/terrain_" + game->GetScenes()[game->GetCurrentSceneId()].name + ".dat");
+
+			if (!file.is_open())
+			{
+				std::cout << "Error! Failed to save terrain!\n";
+				return;
+			}
+
+			file << "mat=" << matInstance->path << '\n';
+
+			if (vegetation.size() > 0)
+			{
+				file << "veg=" << folder << "vegetation_" << sceneName << ".dat\n";		// Replace with path to vegetation file
+			}
+		}*/
+
 		popupOpen = false;
 
-		if (ImGui::DragFloat("Brush Radius", &brushRadius, 0.1f, 0.0f))
+		if (ImGui::DragFloat("Vegetation brush radius", &vegBrushRadius, 0.1f, 0.0f))
 		{
-			currentTerrain->SetBrushRadius(brushRadius);
+			currentTerrain->SetVegetationBrushRadius(vegBrushRadius);
 		}
 
 		if (ImGui::Button("Reseat vegetation"))

@@ -12,20 +12,16 @@ terrain_mat =
 			shader='depth_prepass',
 		}
 	},
-	--materialUBO =
-	--{
-	--	terrainParams="vec2",
-	--	selectionPointAndRadius="vec3"
-	--},
 	resources =
 	{
 		heightmap =
 		{
-			resType="texture2D",
-			uv="clamp",
-			texFormat="red",
+			resType='texture2D',
+			uv='clamp',
+			texFormat='red',
 			storeData=true,
 			useMipMaps=false,
+			usedAsStorageInCompute=true,
 		},
 		diffuseR =
 		{

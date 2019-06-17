@@ -1,16 +1,17 @@
 #include "TimeOfDayManager.h"
 
-#include "Game\Game.h"
-#include "Graphics\Texture.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\MeshDefaults.h"
-#include "Graphics\VertexArray.h"
-#include "Graphics\Renderer.h"
-#include "Graphics\Material.h"
+#include "Game/Game.h"
+#include "Graphics/Texture.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/MeshDefaults.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Material.h"
 
-#include "Program\Input.h"
+#include "Program/Input.h"
+#include "Program/Log.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
 
 #include <iostream>
 
@@ -435,12 +436,13 @@ namespace Engine
 			delete skydomeMesh.vao;
 			skydomeMesh.vao = nullptr;
 		}
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing time of day manager\n");
 	}
 
 	void TimeOfDayManager::SetCurrentTime(float time)
 	{
 		worldTime = time;
-		hour = std::floorf(worldTime);
+		hour = floorf(worldTime);
 		minute = (worldTime - (float)((int)worldTime)) * 60.0f;
 
 		DayOfYear();

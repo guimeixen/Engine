@@ -1,13 +1,13 @@
 #include "Button.h"
 
-#include "Program\Input.h"
-#include "Graphics\Renderer.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Material.h"
-#include "Graphics\Effects\MainView.h"
+#include "Program/Input.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
+#include "Graphics/Effects/MainView.h"
 
-#include "Game\Game.h"
-#include "Game\Script.h"
+#include "Game/Game.h"
+#include "Game/Script.h"
 
 #include <iostream>
 

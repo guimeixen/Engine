@@ -1,17 +1,12 @@
 #pragma once
 
-#include "Graphics\Camera\Camera.h"
-
-#include "include\glm\glm.hpp"
+#include "Graphics/Camera/Camera.h"
 
 namespace Engine
 {
 	class Ray
 	{
 	public:
-		Ray();
-		~Ray();
-
 		void CalculateDirection(Camera *camera, const glm::vec2 &point);
 
 		const glm::vec3 &GetRayDirection() const { return direction; }

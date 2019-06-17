@@ -1,9 +1,8 @@
 #include "TerrainNode.h"
 
-#include "Graphics\Camera\Camera.h"
-#include "Graphics\Model.h"
-
-#include "Program\Utils.h"
+#include "Graphics/Camera/Camera.h"
+#include "Graphics/Model.h"
+#include "Program/Utils.h"
 
 #include <algorithm>
 

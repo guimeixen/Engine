@@ -1,13 +1,14 @@
 #include "DebugDrawManager.h"
 
-#include "Graphics\MeshDefaults.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Material.h"
-#include "Graphics\Buffers.h"
-#include "Graphics\VertexArray.h"
+#include "Graphics/MeshDefaults.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
+#include "Graphics/Buffers.h"
+#include "Graphics/VertexArray.h"
 
-#include "Program\Utils.h"
-#include "Program\StringID.h"
+#include "Program/Utils.h"
+#include "Program/StringID.h"
+#include "Program/Log.h"
 
 namespace Engine
 {
@@ -15,23 +16,35 @@ namespace Engine
 	{
 		opaqueQueueID = SID("opaque");
 
+		cubeMesh = {};
+		sphereMesh = {};
+		translationGizmoMesh = {};
+
 		gizmoRed = glm::vec3(1.0f, 0.0f, 0.0f);
 		gizmoGreen = glm::vec3(0.0f, 1.0f,0.0f);
 		gizmoBlue = glm::vec3(0.0f, 0.0f, 1.0f);
 
-		cubeMesh = MeshDefaults::CreateCube(renderer, 0.5f, true, true);
+		/*cubeMesh = MeshDefaults::CreateCube(renderer, 0.5f, true, true);
 		sphereMesh = MeshDefaults::CreateSphere(renderer, 0.5f, true);
 		translationGizmoMesh = MeshDefaults::CreateCube(renderer);
 
 		cubeInstanceBuffer = renderer->CreateVertexBuffer(nullptr, 1000 * sizeof(DebugInstanceData), BufferUsage::DYNAMIC);
 		sphereInstanceBuffer = renderer->CreateVertexBuffer(nullptr, 1000 * sizeof(DebugInstanceData), BufferUsage::DYNAMIC);
 
-		cubeMesh.vao->AddVertexBuffer(cubeInstanceBuffer);
-		sphereMesh.vao->AddVertexBuffer(sphereInstanceBuffer);
+		if (cubeMesh.vao)
+			cubeMesh.vao->AddVertexBuffer(cubeInstanceBuffer);
+		if(sphereMesh.vao)
+			sphereMesh.vao->AddVertexBuffer(sphereInstanceBuffer);
 
-		const std::vector<VertexInputDesc> &cubeDesc = cubeMesh.vao->GetVertexInputDescs();
-		matInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/debugDraw_mat.lua", cubeDesc);
-		gizmoMatInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/gizmo_mat.lua", translationGizmoMesh.vao->GetVertexInputDescs());
+		if (cubeMesh.vao)
+		{
+			const std::vector<VertexInputDesc> &cubeDesc = cubeMesh.vao->GetVertexInputDescs();
+			matInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/debugDraw_mat.lua", cubeDesc);
+		}
+		if (translationGizmoMesh.vao)
+			gizmoMatInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/gizmo_mat.lua", translationGizmoMesh.vao->GetVertexInputDescs());*/
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Debug draw manager\n");
 	}
 
 	DebugDrawManager::~DebugDrawManager()
@@ -44,6 +57,8 @@ namespace Engine
 
 		if (translationGizmoMesh.vao)
 			delete translationGizmoMesh.vao;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Debug draw manager\n");
 	}
 
 	void DebugDrawManager::Cull(unsigned int passAndFrustumCount, unsigned int *passIds, const Frustum *frustums, std::vector<VisibilityIndices*> &out)
@@ -58,7 +73,7 @@ namespace Engine
 
 	void DebugDrawManager::GetRenderItems(unsigned int passCount, unsigned int *passIds, const VisibilityIndices &visibility, RenderQueue &outQueues)
 	{
-		for (unsigned int i = 0; i < passCount; i++)
+		/*for (unsigned int i = 0; i < passCount; i++)
 		{
 			if (passIds[i] == opaqueQueueID)
 			{
@@ -109,12 +124,12 @@ namespace Engine
 
 				break;
 			}
-		}
+		}*/
 	}
 
 	void DebugDrawManager::Update()
 	{
-		cubeMesh.instanceCount = 0;
+		/*cubeMesh.instanceCount = 0;
 
 		if (cubeData.size() > 0)
 		{
@@ -132,7 +147,7 @@ namespace Engine
 			sphereInstanceBuffer->Update(sphereData.data(), sphereData.size() * sizeof(DebugInstanceData), 0);
 		}
 
-		sphereData.clear();
+		sphereData.clear();*/
 	}
 
 	void DebugDrawManager::Clear()

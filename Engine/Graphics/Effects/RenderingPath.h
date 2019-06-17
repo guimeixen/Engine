@@ -50,6 +50,9 @@ namespace Engine
 		virtual void Resize(unsigned int width, unsigned int height);
 		virtual void Render();
 
+		void EnableTerrainEditing();
+		void DisableTerrainEditing();
+
 		void SetMainCamera(Camera *camera);
 		Camera *GetMainCamera() const { return mainCamera; }
 
@@ -84,6 +87,7 @@ namespace Engine
 		void SetupRefractionPass();
 		void SetupVoxelizationPass();
 		void SetupFXAAPass();
+		void SetupTerrainEditPass();
 
 		void PerformCSMPass();
 		void PerformBrightPass();
@@ -171,5 +175,10 @@ namespace Engine
 		// FXAA
 		MaterialInstance *fxaaMat;
 		Framebuffer *fxaaFB;
+
+		// Terrain Edit Compute Pass
+		MaterialInstance *terrainEditMat;
+		bool isTerrainEditingEnabled = false;
+
 	};
 }

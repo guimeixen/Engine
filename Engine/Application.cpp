@@ -1,8 +1,9 @@
 #include "Application.h"
 
-#include "Program\Utils.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Effects\MainView.h"
+#include "Program/Utils.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Program/Random.h"
+#include "Program/Log.h"
 
 #include <chrono>
 #include <iostream>
@@ -14,9 +15,13 @@ namespace Engine
 		if (!window.Init(api, width, height))
 			return false;
 
-		renderer = Renderer::Create(window.GetHandle(), api, width, height, window.GetMonitorWidth(), window.GetMonitorHeight());
+		fileManager.Init();
 
-		game.Init(renderer);
+		Random::Init();
+
+		renderer = Renderer::Create(window.GetHandle(), api, &fileManager, width, height, window.GetMonitorWidth(), window.GetMonitorHeight());
+
+		game.Init(renderer, &fileManager);
 
 #ifdef EDITOR
 		editorManager.Init(window.GetHandle(), &game);
@@ -82,6 +87,8 @@ namespace Engine
 			delete renderer;
 
 		window.Dispose();
+
+		Log::Close();
 	}
 
 	int Application::Run()

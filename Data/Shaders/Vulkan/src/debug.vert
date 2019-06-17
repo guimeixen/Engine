@@ -21,4 +21,5 @@ void main()
 	mat4 toWorldSpace = GetModelMatrix(startIndex);
 	
 	gl_Position =  projView * toWorldSpace * vec4(pos, 1.0);
+	gl_Position.z = 0.0;
 }

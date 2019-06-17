@@ -2,14 +2,6 @@
 
 namespace Engine
 {
-	Frustum::Frustum()
-	{
-	}
-
-	Frustum::~Frustum()
-	{
-	}
-
 	void Frustum::UpdateProjection(float left, float right, float bottom, float top, float near, float far)
 	{
 		frustumType = FrustumType::ORTHOGRAPHIC;

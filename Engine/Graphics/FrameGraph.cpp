@@ -1,8 +1,9 @@
 #include "FrameGraph.h"
 
-#include "Program\StringID.h"
+#include "Program/StringID.h"
 #include "Framebuffer.h"
 #include "Buffers.h"
+#include "Program/Log.h"
 
 #include <iostream>
 #include <algorithm>
@@ -28,6 +29,7 @@ namespace Engine
 		depthOutput = nullptr;
 		fb = nullptr;
 		isCompute = false;
+		isSetup = false;
 	}
 
 	void Pass::Resize(unsigned int width, unsigned int height)
@@ -102,11 +104,11 @@ namespace Engine
 		imageOutputs.push_back(tr);
 	}
 
-	void Pass::AddImageInput(const std::string &name, Texture *texture, bool sampled)
+	void Pass::AddImageInput(const std::string &name, bool sampled)
 	{
 		TextureResource *tr = fg->GetTextureResource(name);
 		tr->IsReadInPass(passIndex);
-		tr->SetTexture(texture);			// Always set the texture. Doesn't matter because the texture needs to be the same in output and input
+		//tr->SetTexture(texture);			// Always set the texture. Doesn't matter because the texture needs to be the same in output and input
 
 		imageInputs.push_back(tr);
 	}
@@ -208,7 +210,7 @@ namespace Engine
 		// Start at the back buffer and work our way up
 		backBufferNameID = SID(backBufferSource);
 
-		auto &it = std::find_if(passes.begin(), passes.end(),
+		auto it = std::find_if(passes.begin(), passes.end(),
 		[this](const Pass &pass)
 		{
 			return pass.GetNameID() == backBufferNameID; 
@@ -330,292 +332,6 @@ namespace Engine
 			}
 		}
 
-		// Build barriers
-
-		/*for (size_t i = 0; i < orderedPassesIndices.size(); i++)
-		{
-			Pass &pass = passes[orderedPassesIndices[i]];
-			pass.barrier.isABeforeBarrier = true;
-
-			unsigned int srcStage = 0, dstStage = 0;
-
-			for (size_t j = 0; j < pass.imageOutputs.size(); j++)
-			{
-				TextureResource *res = pass.imageOutputs[j];
-
-				unsigned int lastPassReading = 0;
-				// Find where it is consumed last
-				// This might not always work
-				// If the latest pass has a smaller index then we wouldn't select it, which would be wrong
-				for (const unsigned int &index : res->GetReadPasses())
-				{
-					if (index > lastPassReading)
-						lastPassReading = index;
-				}
-
-				const Pass &lastReadPass = passes[lastPassReading];
-
-				if (lastReadPass.isCompute)
-				{
-					if (pass.isCompute)
-					{
-						srcStage |= PipelineStage::COMPUTE;
-						dstStage |= PipelineStage::COMPUTE;
-					}
-					else
-					{
-						srcStage |= PipelineStage::COMPUTE;
-						dstStage |= PipelineStage::FRAGMENT;
-					}
-				}
-				else
-				{
-					if (pass.isCompute)
-					{
-						srcStage |= PipelineStage::FRAGMENT;
-						dstStage |= PipelineStage::COMPUTE;
-					}
-					else
-					{
-						srcStage |= PipelineStage::FRAGMENT;
-						dstStage |= PipelineStage::FRAGMENT;
-					}
-				}
-
-				// Set this image resource to safe so we don't add it in other read after write barriers
-				//res->SetIsSafe(true);
-
-				BarrierImage barrier = {};
-				barrier.image = res->GetTexture();
-				barrier.readToWrite = true;
-
-				pass.barrier.images.push_back(barrier);
-			}
-
-			if (pass.imageOutputs.size())
-			{
-				pass.barrier.srcStage = srcStage;
-				pass.barrier.dstStage = dstStage;
-			}
-
-			srcStage = 0;
-			dstStage = 0;
-
-			for (size_t j = 0; j < pass.bufferOutputs.size(); j++)
-			{
-				BufferResource *res = pass.bufferOutputs[j];
-
-				unsigned int lastPassReading = 0;
-				// Find where it is consumed last
-				// This might not always work
-				// If the latest pass has a smaller index then we wouldn't select it, which would be wrong
-				for (const unsigned int &index : res->GetReadPasses())
-				{
-					if (index > lastPassReading)
-						lastPassReading = index;
-				}
-
-				
-				const Pass &lastReadPass = passes[lastPassReading];
-
-				if (lastReadPass.isCompute)
-				{
-					if (pass.isCompute)
-					{
-						srcStage |= PipelineStage::COMPUTE;
-						dstStage |= PipelineStage::COMPUTE;
-					}
-					else
-					{
-						if (res->GetBuffer()->GetType() == BufferType::DrawIndirectBuffer)
-						{
-							srcStage |= PipelineStage::INDIRECT;
-							dstStage |= PipelineStage::COMPUTE;
-						}
-						else
-						{
-							srcStage |= PipelineStage::COMPUTE;
-							dstStage |= PipelineStage::VERTEX;
-						}
-					}
-				}
-				else
-				{
-					if (pass.isCompute)
-					{
-						if (res->GetBuffer()->GetType() == BufferType::DrawIndirectBuffer)
-						{
-							srcStage |= PipelineStage::INDIRECT;
-							dstStage |= PipelineStage::COMPUTE;
-						}
-						else
-						{
-							srcStage |= PipelineStage::VERTEX;
-							dstStage |= PipelineStage::COMPUTE;
-						}
-					}
-					else
-					{
-						srcStage |= PipelineStage::FRAGMENT;
-						dstStage |= PipelineStage::FRAGMENT;
-					}
-				}
-
-
-				// Set this image resource to safe so we don't add it in other read after write barriers
-				//res->SetIsSafe(true);
-
-				BarrierBuffer barrier = {};
-				barrier.buffer = res->GetBuffer();
-				barrier.readToWrite = true;
-
-				pass.barrier.buffers.push_back(barrier);			
-			}
-
-			if (pass.bufferOutputs.size())
-			{
-				pass.barrier.srcStage = srcStage;
-				pass.barrier.dstStage = dstStage;
-			}
-
-			srcStage = 0;
-			dstStage = 0;
-
-			for (size_t j = 0; j < pass.imageInputs.size(); j++)
-			{
-				TextureResource *res = pass.imageInputs[j];
-
-				unsigned int passThatWritesIndex = std::numeric_limits<unsigned int>::max();
-				// TODO: Check if this works when we have more than one pass writing to the same resource
-				// If we have more than one we need the one that writes to it before this pass
-				for (const unsigned int &index : res->GetWritePasses())
-				{
-					if (index < passThatWritesIndex)
-						passThatWritesIndex = index;
-				}
-
-				PipelineStage stages;
-
-				const Pass &passThatWrites = passes[passThatWritesIndex];
-
-				if (passThatWrites.isCompute)
-				{
-					if (pass.isCompute)
-					{
-						srcStage |= PipelineStage::COMPUTE;
-						dstStage |= PipelineStage::COMPUTE;
-					}
-					else
-					{
-						srcStage |= PipelineStage::COMPUTE;
-						dstStage |= PipelineStage::FRAGMENT;
-					}
-				}
-				else
-				{
-					if (pass.isCompute)
-					{
-						srcStage |= PipelineStage::FRAGMENT;
-						dstStage |= PipelineStage::COMPUTE;
-					}
-					else
-					{
-						srcStage |= PipelineStage::FRAGMENT;
-						dstStage |= PipelineStage::FRAGMENT;
-					}
-				}
-
-				BarrierImage barrier = {};
-				barrier.image = res->GetTexture();
-				barrier.readToWrite = false;
-				//barrier.
-
-				pass.barrier.images.push_back(barrier);
-			}
-
-			if (pass.imageInputs.size() > 0)
-			{
-				pass.barrier.srcStage = srcStage;
-				pass.barrier.dstStage = dstStage;
-			}
-
-			srcStage = 0;
-			dstStage = 0;
-
-			for (size_t j = 0; j < pass.bufferInputs.size(); j++)
-			{
-				BufferResource *res = pass.bufferInputs[j];
-
-				unsigned int passThatWritesIndex = std::numeric_limits<unsigned int>::max();
-				// TODO: Check if this works when we have more than one pass writing to the same resource
-				// If we have more than one we need the one that writes to it before this pass
-				for (const unsigned int &index : res->GetWritePasses())
-				{
-					if (index < passThatWritesIndex)
-						passThatWritesIndex = index;
-				}
-
-				PipelineStage stages;
-
-				const Pass &passThatWrites = passes[passThatWritesIndex];
-
-				if (passThatWrites.isCompute)
-				{
-					if (pass.isCompute)
-					{
-						srcStage |= PipelineStage::COMPUTE;
-						dstStage |= PipelineStage::COMPUTE;
-					}
-					else
-					{
-						if (res->GetBuffer()->GetType() == BufferType::DrawIndirectBuffer)
-						{
-							srcStage |= PipelineStage::COMPUTE;
-							dstStage |= PipelineStage::INDIRECT;
-						}
-						else
-						{
-							srcStage |= PipelineStage::COMPUTE;
-							dstStage |= PipelineStage::VERTEX;
-						}
-					}
-				}
-				else
-				{
-					if (pass.isCompute)
-					{
-						if (res->GetBuffer()->GetType() == BufferType::DrawIndirectBuffer)
-						{
-							srcStage |= PipelineStage::INDIRECT;
-							dstStage |= PipelineStage::COMPUTE;
-						}
-						else
-						{
-							srcStage |= PipelineStage::VERTEX;
-							dstStage |= PipelineStage::COMPUTE;
-						}
-					}
-					else
-					{
-						srcStage |= PipelineStage::FRAGMENT;
-						dstStage |= PipelineStage::FRAGMENT;
-					}
-				}
-
-				BarrierBuffer barrier = {};
-				barrier.buffer = res->GetBuffer();
-				barrier.readToWrite = false;
-
-				pass.barrier.buffers.push_back(barrier);
-			}
-
-			if (pass.bufferInputs.size() > 0)
-			{
-				pass.barrier.srcStage = srcStage;
-				pass.barrier.dstStage = dstStage;
-			}
-		}*/
-
 		std::cout << "Done baking frame graph\n";
 	}
 
@@ -625,9 +341,12 @@ namespace Engine
 		{
 			unsigned int index = orderedPassesIndices[i];
 
-			const Pass &pass = passes[index];
-			if (pass.onSetup)
+			Pass &pass = passes[index];
+			if (pass.onSetup && pass.isSetup == false)
+			{
 				pass.Setup();
+				pass.isSetup = true;
+			}
 		}
 	}
 
@@ -643,7 +362,7 @@ namespace Engine
 
 			if (pass.isCompute)
 			{
-				bool needsBarrier = false;
+				//bool needsBarrier = false;
 
 				/*for (size_t i = 0; i < pass.imageInputs.size(); i++)
 				{
@@ -723,6 +442,7 @@ namespace Engine
 			if (bufferResources[i])
 				delete bufferResources[i];
 		}
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Framegraph\n");
 	}
 
 	void FrameGraph::ExportGraphVizFile()

@@ -45,7 +45,7 @@ namespace Engine
 
 		if (FAILED(hr))
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create ssbo");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create ssbo\n");
 			return;
 		}
 
@@ -63,7 +63,7 @@ namespace Engine
 				buffer->Release();
 				buffer = nullptr;
 			}
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create ssbo srv");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create ssbo srv\n");
 		}
 
 		if (usage == BufferUsage::STATIC)
@@ -88,7 +88,7 @@ namespace Engine
 					srv->Release();
 					srv = nullptr;
 				}
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create ssbo unordered access view");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create ssbo unordered access view\n");
 			}
 		}
 	}

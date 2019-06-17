@@ -34,6 +34,8 @@ private:
 
 	float heightScale = 1.0f;
 	float brushRadius = 1.0f;
+	float brushStrength = 1.0f;
+	float vegBrushRadius = 1.0f;
 	std::string resStr;
 
 	std::vector<bool> selection;

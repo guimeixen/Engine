@@ -1,11 +1,6 @@
 #pragma once
 
-#include "Game\ComponentManagers\PhysicsManager.h"
-#include "Program\Serializer.h"
-
-#include "include\glm\glm.hpp"
-
-#include <fstream>
+#include "Game/ComponentManagers/PhysicsManager.h"
 
 class btCollisionShape;
 class btCollisionObject;
@@ -18,7 +13,6 @@ namespace Engine
 		Collider();
 		Collider(btCollisionObject *collider, btCollisionShape *shape);
 		Collider(btCollisionShape *shape);
-		virtual ~Collider();
 
 		btCollisionObject *GetHandle() const { return collider; }
 

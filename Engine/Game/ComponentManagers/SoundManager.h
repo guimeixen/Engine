@@ -1,9 +1,9 @@
 #pragma once
 
-#include "include\FMOD\fmod_common.h"
+//#include "include/FMOD/fmod_common.h"
 
 #include "Sound/SoundSource.h"
-#include "Game\EntityManager.h"
+#include "Game/EntityManager.h"
 
 #include <vector>
 #include <string>
@@ -16,7 +16,7 @@ namespace Engine
 
 	struct SoundInfo
 	{
-		FMOD::Sound *sound;
+		//FMOD::Sound *sound;
 		unsigned int id;
 	};
 
@@ -30,7 +30,6 @@ namespace Engine
 	{
 	public:
 		SoundManager();
-		~SoundManager();
 
 		bool Init(Game *game, TransformManager *transformManager);
 		void Update(const glm::vec3 &listenerPos);
@@ -49,13 +48,13 @@ namespace Engine
 		void Deserialize(Serializer &s, bool reload = false);
 
 		// Script functions
-		FMOD::Sound *LoadSoundEffect(const std::string &path);		// Path is relative to the project folder
-		FMOD::Sound *LoadMusic(const std::string &path);
+		//FMOD::Sound *LoadSoundEffect(const std::string &path);		// Path is relative to the project folder
+		//FMOD::Sound *LoadMusic(const std::string &path);
 
 	private:
 		Game *game;
 		TransformManager *transformManager;
-		FMOD::System *fmodSystem;
+		//FMOD::System *fmodSystem;
 		bool isInit;
 		std::vector<SoundInfo> sounds;
 		std::vector<SoundSourceInstance> soundSources;

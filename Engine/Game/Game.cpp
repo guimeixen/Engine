@@ -1,32 +1,35 @@
 #include "Game.h"
 
-#include "Program\Utils.h"
-#include "Program\StringID.h"
-#include "Program\Input.h"
-#include "Program\Log.h"
+#include "Program/Utils.h"
+#include "Program/StringID.h"
+#include "Program/Input.h"
+#include "Program/Log.h"
 
-#include "Physics\RigidBody.h"
-#include "Physics\Collider.h"
-#include "Physics\Trigger.h"
+#include "Physics/RigidBody.h"
+#include "Physics/Collider.h"
+#include "Physics/Trigger.h"
 
-#include "AI\AIObject.h"
+#include "AI/AIObject.h"
 
-#include "UI\UIManager.h"
+#include "UI/UIManager.h"
 
-#include "Graphics\Renderer.h"
-#include "Graphics\Model.h"
-#include "Graphics\Material.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Effects\DebugDrawManager.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Animation\AnimatedModel.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Model.h"
+#include "Graphics/Material.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Effects/DebugDrawManager.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Animation/AnimatedModel.h"
 #include "Graphics/Effects/ForwardRenderer.h"
 #include "Graphics/Effects/ForwardPlusRenderer.h"
+#include "Graphics/Effects/PSVitaRenderer.h"
 
-#include "include\glm\gtx\quaternion.hpp"
-#include "include\glm\gtc\matrix_transform.hpp"
+#include "include/glm/gtx/quaternion.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
 
+#ifndef VITA
 #include <Windows.h>
+#endif
 
 #include <iostream>
 #include <cstdio>
@@ -52,9 +55,12 @@ namespace Engine
 		gameState = GameState::STOPPED;
 	}
 
-	void Game::Init(Renderer *renderer)
+	void Game::Init(Renderer *renderer, FileManager *fileManager)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Starting Game\n");
+
 		this->renderer = renderer;
+		this->fileManager = fileManager;
 
 		transformManager.Init(50);
 		scriptManager.Init(this);
@@ -65,7 +71,11 @@ namespace Engine
 		particleManager.Init(this);		
 		uiManager.Init(this);
 
+#ifdef VITA
+		renderingPath = new PSVitaRenderer();
+#else
 		renderingPath = new ForwardPlusRenderer();
+#endif
 		renderingPath->Init(this);
 		lightManager.Init(this, &transformManager);
 
@@ -94,15 +104,20 @@ namespace Engine
 
 		fpsCamera = new FPSCamera();
 		fpsCamera->SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
-		editorCam.SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
-		fpsCamera->SetMoveSpeed(32.0f);
+		//fpsCamera->SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
+		//fpsCamera->SetPitch(0.0f);
+		//fpsCamera->SetYaw(0.0f);
+		//fpsCamera->SetFrontAndUp(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		fpsCamera->SetMoveSpeed(2.0f);
 
+		editorCam.SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
+		
 		debugDrawManager = new DebugDrawManager(renderer, scriptManager);
 
 		renderer->AddRenderQueueGenerator(&uiManager);
-		renderer->AddRenderQueueGenerator(debugDrawManager);
 		renderer->AddRenderQueueGenerator(&modelManager);
 		renderer->AddRenderQueueGenerator(&particleManager);
+		renderer->AddRenderQueueGenerator(debugDrawManager);
 
 #ifdef EDITOR
 		renderingPath->SetMainCamera(&editorCam);
@@ -112,6 +127,8 @@ namespace Engine
 		mainCamera = fpsCamera;
 		gameState = GameState::PLAYING;
 #endif
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Game\n");
 	}
 
 	void Game::Update(float dt)
@@ -137,7 +154,11 @@ namespace Engine
 		
 		if (gameState == GameState::PLAYING)
 		{
+#ifdef EDITOR
 			fpsCamera->Update(deltaTime, true, true);
+#else
+			fpsCamera->Update(deltaTime, true, false);
+#endif
 			physicsManager.Simulate(deltaTime);
 			physicsManager.Update();
 			scriptManager.UpdateInGame(deltaTime);
@@ -173,6 +194,9 @@ namespace Engine
 
 		if (terrain)
 		{
+			if (terrain->IsEditable())
+				terrain->UpdateEditing();
+
 			terrain->UpdateVegColliders(mainCamera);
 			terrain->UpdateLOD(mainCamera);
 		}
@@ -203,14 +227,23 @@ namespace Engine
 
 	void Game::Dispose()
 	{
+#ifndef VITA
 		// Delete the temp file create by play mode
 		std::remove("Data/temp.bin");
 		std::remove("Data/uitemp.bin");
+#endif
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing game\n");
 
 		renderingPath->Dispose();
 
+		Log::Print(LogLevel::LEVEL_INFO, "Rendering path disposed\n");
+
 		if (fpsCamera)
 			delete fpsCamera;
+
+		Log::Print(LogLevel::LEVEL_INFO, "FPS Camera disposed\n");
+
 		if (debugDrawManager)
 			delete debugDrawManager;
 
@@ -233,6 +266,8 @@ namespace Engine
 		modelManager.Dispose();
 		uiManager.Dispose();
 		transformManager.Dispose();
+
+		Log::Print(LogLevel::LEVEL_INFO, "Game disposed\n");
 	}
 
 	void Game::Resize(unsigned int width, unsigned int height)
@@ -250,6 +285,7 @@ namespace Engine
 	{
 		bool canSave = false;
 
+#ifndef VITA
 		if (CreateDirectory((LPCWSTR)"Data/Levels", NULL))
 			canSave = true;
 		else if (ERROR_ALREADY_EXISTS == GetLastError())
@@ -259,6 +295,7 @@ namespace Engine
 			std::cout << "Failed to create levels directory. Error: " << GetLastError() << '\n';
 			return false;
 		}
+#endif
 
 		if (canSave)
 		{
@@ -352,7 +389,7 @@ namespace Engine
 
 		if (!projFile.is_open())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to open project file for saving!");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to open project file for saving!\n");
 			return false;
 		}
 
@@ -616,8 +653,10 @@ namespace Engine
 
 		gameState = GameState::STOPPED;
 
+#ifndef VITA
 		std::remove("Data/temp.bin");
 		std::remove("Data/uitemp.bin");
+#endif
 	}
 
 	Entity Game::AddEntity()
@@ -658,7 +697,12 @@ namespace Engine
 		if (terrain)
 		{
 			if (terrain->Init(this, info))
+			{
 				renderer->AddRenderQueueGenerator(terrain);
+#ifdef EDITOR
+				renderingPath->EnableTerrainEditing();
+#endif
+			}
 		}
 		else
 			std::cout << "Failed to create terrain\n";

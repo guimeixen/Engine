@@ -13,7 +13,6 @@ namespace Engine
 	{
 	public:
 		AStarGrid();
-		~AStarGrid();
 
 		void Init(Game *game, const glm::vec2 &gridCenter, const glm::vec2 &gridSize, float nodeRadius);
 		void Update();

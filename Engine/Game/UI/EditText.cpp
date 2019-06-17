@@ -1,9 +1,9 @@
 #include "EditText.h"
 
-#include "Game\Game.h"
-#include "Graphics\Effects\MainView.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Program\Input.h"
+#include "Game/Game.h"
+#include "Graphics/Effects/MainView.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Program/Input.h"
 
 namespace Engine
 {

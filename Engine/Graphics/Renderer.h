@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Camera\Camera.h"
+#include "Camera/Camera.h"
 #include "Font.h"
 #include "Framebuffer.h"
 #include "Lights.h"
 #include "RendererStructs.h"
-#include "Physics\BoundingVolumes.h"
+#include "Physics/BoundingVolumes.h"
 #include "Mesh.h"
 #include "MaterialInfo.h"
 #include "UniformBufferTypes.h"
@@ -14,11 +14,14 @@ struct GLFWwindow;
 
 namespace Engine
 {
+	class FileManager;
+
 	enum class GraphicsAPI : unsigned short
 	{
 		OpenGL,
 		Vulkan,
-		D3D11
+		D3D11,
+		GXM
 	};
 
 	struct RenderStats
@@ -92,8 +95,8 @@ namespace Engine
 		virtual Buffer *CreateSSBO(unsigned int size, const void *data, unsigned int stride, BufferUsage usage) = 0;
 		virtual Framebuffer *CreateFramebuffer(const FramebufferDesc &desc) = 0;
 
-		virtual Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs) = 0;
-		virtual Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs) = 0;
+		virtual Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) = 0;
+		virtual Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) = 0;
 		virtual Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) = 0;
 		virtual Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) = 0;
 		virtual Shader *CreateComputeShader(const std::string &defines, const std::string &computePath) = 0;
@@ -155,11 +158,12 @@ namespace Engine
 		unsigned int GetHeight() const { return height; }
 		Camera *GetCamera() const { return camera; }
 		const RenderStats &GetRendererStats() const { return renderStats; }
+		FileManager *GetFileManager() const { return fileManager; }
 
 		void AddGlobalDefine(const std::string &define) { globalDefines += define + '\n'; }
 		const std::string &GetGlobalDefines() const { return globalDefines; }
 
-		static Renderer *Create(GLFWwindow *window, GraphicsAPI api, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight);
+		static Renderer *Create(GLFWwindow *window, GraphicsAPI api, FileManager *fileManager, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight);
 		static GraphicsAPI GetCurrentAPI() { return currentAPI; };
 		static unsigned int GetBlendFactorValue(BlendFactor blendFactor);
 		static unsigned int GetTopologyValue(Topology topology);
@@ -172,6 +176,8 @@ namespace Engine
 
 	protected:
 		static GraphicsAPI currentAPI;
+
+		FileManager *fileManager;
 
 		unsigned int width;
 		unsigned int height;

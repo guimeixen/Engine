@@ -1,23 +1,18 @@
 #include "ParticleManager.h"
 
-#include "Graphics\ParticleSystem.h"
-#include "Game\Game.h"
-#include "Graphics\Material.h"
+#include "Graphics/ParticleSystem.h"
+#include "Game/Game.h"
+#include "Graphics/Material.h"
+#include "Program/Log.h"
 
 namespace Engine
 {
-	ParticleManager::ParticleManager()
-	{
-	}
-
-	ParticleManager::~ParticleManager()
-	{
-	}
-
 	void ParticleManager::Init(Game *game)
 	{
 		this->game = game;
 		transformManager = &game->GetTransformManager();
+
+		Log::Print(LogLevel::LEVEL_INFO, "Init Particle manager\n");
 	}
 
 	void ParticleManager::Dispose()
@@ -27,11 +22,13 @@ namespace Engine
 			delete particleSystems[i].ps;
 		}
 		particleSystems.clear();
+
+		Log::Print(LogLevel::LEVEL_INFO, "Disposing Particle manager\n");
 	}
 
 	void ParticleManager::Cull(unsigned int passAndFrustumCount, unsigned int *passIds, const Frustum *frustums, std::vector<VisibilityIndices*> &out)
 	{
-		const glm::vec3 &camPos = game->GetMainCamera()->GetPosition();
+		//const glm::vec3 &camPos = game->GetMainCamera()->GetPosition();
 
 		for (unsigned int i = 0; i < passAndFrustumCount; i++)
 		{

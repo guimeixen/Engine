@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Physics\BoundingVolumes.h"
-#include "Graphics\Camera\Camera.h"
+#include "Physics/BoundingVolumes.h"
+#include "Graphics/Camera/Camera.h"
 
 #include <string>
 #include <vector>
@@ -21,5 +21,7 @@ namespace Engine
 
 		// It's necessary to clear the vector before calling the function if you don't want the values from a previous find to remain in the vector
 		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension, bool includeSubDirectories = true, bool addPathToFileName = true);
+		bool CreateFolder(const char *folderPath);
+		bool DirectoryExists(const std::string &path);
 	}
 }

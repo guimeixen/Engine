@@ -95,22 +95,22 @@ namespace Engine
 		{
 			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frameResources[i].imageAvailableSemaphore) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore\n");
 				return false;
 			}
 			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frameResources[i].renderFinishedSemaphore) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create semaphore\n");
 				return false;
 			}
 			if (vkCreateFence(device, &fenceInfo, nullptr, &frameResources[i].frameFence) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create fence");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create fence\n");
 				return false;
 			}
 			/*if (vkCreateFence(device, &fenceInfo, nullptr, &frameResources[i].computeFence) != VK_SUCCESS)
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute fence");
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute fence\n");
 				return false;
 			}*/
 
@@ -180,7 +180,7 @@ namespace Engine
 
 		if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create descriptor pool");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create descriptor pool\n");
 			return false;
 		}
 
@@ -220,7 +220,7 @@ namespace Engine
 	{
 		/*VKTexture3D *voxelTex = static_cast<VKTexture3D*>(voxelTexture);
 		if (!voxelTex)
-			Log::Print(LogLevel::LEVEL_WARNING, "Voxel texture not set!");
+			Log::Print(LogLevel::LEVEL_WARNING, "Voxel texture not set!\n");
 
 		VkDescriptorImageInfo voxelImageInfo = {};
 		voxelImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -385,7 +385,7 @@ namespace Engine
 		return fb;
 	}
 
-	Shader *VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs)
+	Shader *VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		unsigned int id = SID(vertexName + fragmentName + defines);
 
@@ -402,9 +402,9 @@ namespace Engine
 		return shader;
 	}
 
-	Shader *VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs)
+	Shader *VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
-		return CreateShader(vertexName, fragmentName, descs);
+		return CreateShader(vertexName, fragmentName, descs, blendState);
 	}
 
 	Shader *VKRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
@@ -553,7 +553,7 @@ namespace Engine
 			return tex;
 		}
 
-		VKTexture2D *tex = new VKTexture2D(path, params, storeTextureData);
+		VKTexture2D *tex = new VKTexture2D(&base, path, params, storeTextureData);
 		tex->AddReference();
 		tex->Load(base.GetAllocator(), base.GetPhysicalDevice(), base.GetDevice());
 
@@ -717,7 +717,7 @@ namespace Engine
 		// Check for camera limits here
 		if (curDynamicCameraOffset >= (int32_t)MAX_CAMERAS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Too many cameras!");
+			Log::Print(LogLevel::LEVEL_ERROR, "Too many cameras!\n");
 			return;
 		}
 	
@@ -816,7 +816,7 @@ namespace Engine
 		vkCmdEndRenderPass(cb);
 
 		/*if (vkEndCommandBuffer(cb) != VK_SUCCESS)
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer");*/
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer\n");*/
 	}
 
 	void VKRenderer::ClearRenderTarget(Framebuffer *rt)
@@ -1325,7 +1325,7 @@ namespace Engine
 
 		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &globalSet) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set\n");
 			return;
 		}
 
@@ -1755,9 +1755,9 @@ namespace Engine
 	void VKRenderer::Present()
 	{
 		if (vkEndCommandBuffer(frameResources[currentFrame].frameCmdBuffer) != VK_SUCCESS)
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record command buffer\n");
 		/*if (vkEndCommandBuffer(frameResources[currentFrame].computeCmdBuffer) != VK_SUCCESS)
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record compute command buffer");*/
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to record compute command buffer\n");*/
 
 		VkDevice device = base.GetDevice();
 
@@ -2009,7 +2009,7 @@ namespace Engine
 
 		swapChain.Dispose(device);
 		base.Dispose();
-		Log::Print(LogLevel::LEVEL_INFO, "Vulkan renderer shutdown");
+		Log::Print(LogLevel::LEVEL_INFO, "Vulkan renderer shutdown\n");
 	}
 
 	void VKRenderer::DisposeStagingResources()
@@ -2403,7 +2403,7 @@ namespace Engine
 
 		if (vkCreateRenderPass(base.GetDevice(), &renderPassInfo, nullptr, &defaultRenderPass) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create render pass");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create render pass\n");
 			return false;
 		}
 
@@ -2470,7 +2470,11 @@ namespace Engine
 				base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tex->GetMipLevels());
 				const std::vector<VkBufferImageCopy> &copyRegions = tex->GetCopyRegions();
 				vkCmdCopyBufferToImage(transferCommandBuffer, tex->GetStagingBuffer(), tex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(copyRegions.size()), copyRegions.data());
-				base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tex->GetMipLevels());
+
+				if (tex->GetTextureParams().usedAsStorageInCompute || tex->GetTextureParams().usedAsStorageInGraphics)
+					base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, tex->GetMipLevels());
+				else
+					base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tex->GetMipLevels());
 			}
 		}
 		// Used as storage, so transition to GENERAL
@@ -2635,12 +2639,12 @@ namespace Engine
 
 		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &setInfo.set[0]) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set\n");
 			return;
 		}
 		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &setInfo.set[1]) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set\n");
 			return;
 		}	
 		sets.push_back(setInfo);

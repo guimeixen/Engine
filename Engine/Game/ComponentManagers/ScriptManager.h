@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Game\Script.h"
-#include "Game\EntityManager.h"
+#include "Game/Script.h"
 
 #include <unordered_map>
 
@@ -69,6 +68,7 @@ namespace Engine
 
 	private:
 		lua_State *L;
+		Game *game;
 
 		std::vector<ScriptInstance> scripts;
 		std::unordered_map<unsigned int, unsigned int> map;

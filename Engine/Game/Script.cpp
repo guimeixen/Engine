@@ -1,12 +1,5 @@
 #include "Script.h"
 
-#include "Game\UI\StaticText.h"
-#include "Game\UI\Button.h"
-#include "Game\UI\Image.h"
-#include "Game\UI\EditText.h"
-#include "Game\Game.h"
-#include "Game\UI\UIManager.h"
-
 #include <iostream>
 
 namespace Engine
@@ -204,17 +197,9 @@ namespace Engine
 	{
 		functions[id] = func;
 
-		switch (id)
+		if (id == OnTriggerEnter || id == OnTriggerStay || id == OnTriggerExit)
 		{
-		case OnTriggerEnter:
 			hasTriggerFunctions = true;
-			break;
-		case OnTriggerStay:
-			hasTriggerFunctions = true;
-			break;
-		case OnTriggerExit:
-			hasTriggerFunctions = true;
-			break;
 		}
 	}
 
@@ -285,7 +270,7 @@ namespace Engine
 			found = false;
 			for (size_t j = 0; j < newProperties.size(); j++)
 			{
-				if (newProperties[j] == i)
+				if (newProperties[j] == (int)i)
 				{
 					found = true;
 					break;

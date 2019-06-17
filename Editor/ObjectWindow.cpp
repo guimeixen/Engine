@@ -103,7 +103,7 @@ void ObjectWindow::Render()
 			return;
 		}	
 
-		if (Engine::Input::WasKeyReleased(KEY_DEL))
+		if (Engine::Input::WasKeyReleased(Engine::Keys::KEY_DEL))
 		{
 			game->GetEntityManager().Destroy(selectedEntity);
 			editorManager->GetGizmo().DeselectEntity();
@@ -1449,7 +1449,7 @@ void ObjectWindow::HandleSoundSource()
 
 		bool buttonClicked = false;
 
-		if (selectedSoundSource->GetSoundHandle() == nullptr)
+		/*if (selectedSoundSource->GetSoundHandle() == nullptr)
 		{
 			if (soundComboId == 0)
 			{
@@ -1474,7 +1474,7 @@ void ObjectWindow::HandleSoundSource()
 				if (ImGui::Button("Replace Music"))
 					buttonClicked = true;
 			}
-		}
+		}*/
 
 		if (buttonClicked)
 		{

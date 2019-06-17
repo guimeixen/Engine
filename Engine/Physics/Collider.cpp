@@ -1,8 +1,8 @@
 #include "Collider.h"
 
-#include "include\bullet\btBulletDynamicsCommon.h"
+#include "include/bullet/btBulletDynamicsCommon.h"
 
-#include "include\glm\gtc\type_ptr.hpp"
+#include "include/glm/gtc/type_ptr.hpp"
 
 namespace Engine
 {
@@ -25,10 +25,6 @@ namespace Engine
 		this->shape = shape;
 		center = glm::vec3(0.0f);
 		position = glm::vec3(0.0f);
-	}
-
-	Collider::~Collider()
-	{
 	}
 
 	void Collider::GetTransform(glm::mat4 &transform) const
@@ -163,12 +159,12 @@ namespace Engine
 	{
 		int type = shape->getShapeType();
 
-		if (shape->getShapeType() == SPHERE_SHAPE_PROXYTYPE)
+		if (type == SPHERE_SHAPE_PROXYTYPE)
 		{
 			btSphereShape *sphere = static_cast<btSphereShape*>(shape);
 			return sphere->getRadius();
 		}
-		else if (shape->getShapeType() == CAPSULE_SHAPE_PROXYTYPE)
+		else if (type == CAPSULE_SHAPE_PROXYTYPE)
 		{
 			btCapsuleShape *capsule = static_cast<btCapsuleShape*>(shape);
 			return capsule->getRadius();

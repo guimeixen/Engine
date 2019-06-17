@@ -7,10 +7,6 @@ namespace Engine
 		nextEntity = {};
 	}
 
-	EntityManager::~EntityManager()
-	{
-	}
-
 	Entity EntityManager::Create()
 	{	
 		if (freeIndices.size() > 0)

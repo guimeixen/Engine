@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Program\Serializer.h"
+#include "Program/Serializer.h"
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
 
 namespace Engine
 {

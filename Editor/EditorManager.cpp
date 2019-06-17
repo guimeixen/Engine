@@ -38,13 +38,15 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
-#include <filesystem>
+
 
 EditorManager::EditorManager()
 {
 	gameViewSize = ImVec2();
 	availableSize = ImVec2();
-	std::memset(projectName, 0, 256);
+	memset(projectName, 0, 256);
+	memset(vitaAppName, 0, 128);
+	memset(vitaAppTitleID, 0, 10);
 }
 
 EditorManager::~EditorManager()
@@ -137,7 +139,13 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game)
 	});
 
 	editorImguiPass.SetOnResized([this](const Engine::Pass *thisPass){});
-	editorImguiPass.SetOnExecute([this]() { Render(); });
+	editorImguiPass.SetOnExecute([this]()
+	{
+		//if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
+		//	ImGUI_ImplVulkan_CreateOrResizeBuffers(ImGui::GetDrawData()->TotalVtxCount, ImGui::GetDrawData()->TotalIdxCount);
+
+		Render();
+	});
 
 	game->GetRenderingPath()->GetFrameGraph().SetBackbufferSource("EditorImGUI");		// Post process pass writes to backbuffer
 }
@@ -377,15 +385,15 @@ void EditorManager::Render()
 	else if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::D3D11)
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-	if (Engine::Input::IsKeyPressed(KEY_LEFT_CONTROL) && Engine::Input::WasKeyReleased(KEY_S))
+	if (Engine::Input::IsKeyPressed(Engine::Keys::KEY_LEFT_CONTROL) && Engine::Input::WasKeyReleased(Engine::Keys::KEY_S))
 	{
 		SaveProject();
 	}
-	if (Engine::Input::IsKeyPressed(KEY_LEFT_CONTROL) && Engine::Input::WasKeyReleased(KEY_Z) && !Engine::Input::IsKeyPressed(KEY_LEFT_SHIFT))
+	if (Engine::Input::IsKeyPressed(Engine::Keys::KEY_LEFT_CONTROL) && Engine::Input::WasKeyReleased(Engine::Keys::KEY_Z) && !Engine::Input::IsKeyPressed(Engine::Keys::KEY_LEFT_SHIFT))
 	{
 		Undo();
 	}
-	if (Engine::Input::IsKeyPressed(KEY_LEFT_CONTROL) && Engine::Input::IsKeyPressed(KEY_LEFT_SHIFT) && Engine::Input::WasKeyReleased(KEY_Z))
+	if (Engine::Input::IsKeyPressed(Engine::Keys::KEY_LEFT_CONTROL) && Engine::Input::IsKeyPressed(Engine::Keys::KEY_LEFT_SHIFT) && Engine::Input::WasKeyReleased(Engine::Keys::KEY_Z))
 	{
 		Redo();
 	}
@@ -436,12 +444,8 @@ void EditorManager::UpdateKeys(int key, int action, int mods)
 	io.KeyAlt = io.KeysDown[GLFW_KEY_LEFT_ALT] || io.KeysDown[GLFW_KEY_RIGHT_ALT];
 	io.KeySuper = io.KeysDown[GLFW_KEY_LEFT_SUPER] || io.KeysDown[GLFW_KEY_RIGHT_SUPER];
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE
-		&& !needsLoading && !needsSaving && !needsProjectCreation
-		&& game->GetState() == Engine::GameState::STOPPED)
-	{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE && !needsLoading && !needsSaving && !needsProjectCreation && game->GetState() == Engine::GameState::STOPPED)
 		showExitPopup = true;
-	}
 }
 
 void EditorManager::UpdateScroll(double yoffset)
@@ -478,6 +482,7 @@ void EditorManager::OnFocus()
 
 void EditorManager::ShowMainMenuBar()
 {
+	bool b = false;
 	ImGui::BeginMainMenuBar();
 	if (ImGui::BeginMenu("File"))
 	{
@@ -493,6 +498,10 @@ void EditorManager::ShowMainMenuBar()
 		if (ImGui::MenuItem("Save", "CTRL+S"))
 		{
 			SaveProject();
+		}
+		if (ImGui::MenuItem("Compile for PS Vita"))
+		{
+			b = true;
 		}
 		ImGui::EndMenu();
 	}
@@ -643,6 +652,29 @@ void EditorManager::ShowMainMenuBar()
 	mainMenuHeight = (int)ImGui::GetWindowSize().y;
 
 	ImGui::EndMainMenuBar();
+
+	if (b)
+		ImGui::OpenPopup("Compile options");
+
+	if (ImGui::BeginPopupModal("Compile options", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::InputText("App name", vitaAppName, 128, ImGuiInputTextFlags_EnterReturnsTrue);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Name that appears in LiveArea");
+
+		ImGui::InputText("Title ID", vitaAppTitleID, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_CharsNoBlank);
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Unique ID. XXXXYYYYY  where X -> unique string of the developer and Y -> unique number for this app");
+
+		ImGui::Text("After it's done, copy the VPK inside the\nfolder PSVita_Build in the project folder");
+
+		if (ImGui::Button("Compile"))
+		{
+			psvCompiler.Compile(curLevelDir, vitaAppName, vitaAppTitleID);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
 }
 
 void EditorManager::ShowGameViewToolBar()
@@ -750,12 +782,12 @@ void EditorManager::HandleProjectCreation()
 				{
 					curLevelDir = "Data/Levels/";
 					
-					if (!DirectoryExists(curLevelDir))
-						CreateFolder(curLevelDir.c_str());
+					if (!Engine::utils::DirectoryExists(curLevelDir))
+						Engine::utils::CreateFolder(curLevelDir.c_str());
 
 					curLevelDir += projectName;
 
-					CreateFolder(curLevelDir.c_str());
+					Engine::utils::CreateFolder(curLevelDir.c_str());
 
 					game->AddScene("main");		// Add default main scene
 					game->Save(curLevelDir + '/', std::string(projectName));			
@@ -792,7 +824,7 @@ void EditorManager::HandleProjectCreation()
 				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 				auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Level load time: %lld ms", duration);
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Level load time: %lld ms\n", duration);
 
 				assetsBrowserWindow.SetFiles(curLevelDir);
 
@@ -879,9 +911,9 @@ void EditorManager::SaveAs()
 			std::string projectNameStr = std::string(projectName);
 			std::string path = "Data/Levels/" + projectNameStr + '/';
 			if (game->Save(path, projectNameStr))
-				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Project saved");
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Project saved\n");
 			else
-				Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to save project");
+				Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to save project\n");
 
 			const std::string &name = game->GetScenes()[currentScene].name;
 
@@ -975,26 +1007,6 @@ void EditorManager::FindFilesInDirectory(const char *dir)
 	FindClose(h);
 }
 
-bool EditorManager::DirectoryExists(const std::string &path)
-{
-	return std::experimental::filesystem::exists(path);
-}
-
-bool EditorManager::CreateFolder(const char *folderPath)
-{
-	Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Creating folder at %s ...", folderPath);
-
-	if (CreateDirectoryA(folderPath, NULL))
-	{
-		Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Done");
-		return true;
-	}
-
-	Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to create folder: %s    Error: %lu", folderPath, GetLastError());
-
-	return false;
-}
-
 void EditorManager::SaveProject()
 {
 	if (!firstLevelSave)
@@ -1002,9 +1014,9 @@ void EditorManager::SaveProject()
 		std::string projectNameStr = std::string(projectName);
 		std::string path = "Data/Levels/" + projectNameStr + '/';
 		if (game->Save(path, projectNameStr))
-			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Project saved");
+			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Project saved\n");
 		else
-			Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to save project");
+			Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Failed to save project\n");
 
 		const std::string &name = game->GetScenes()[currentScene].name;
 
