@@ -140,11 +140,12 @@ private:
 
 	bool clickBeganOnGameView = false;
 
-	char vitaAppName[128];
-	char vitaAppTitleID[10];
-
 	// ImGui input
 	bool mousePressed[3] = { false, false, false };
 	float mouseWheel = 0.0f;
+
+	// Vita
+	char vitaAppName[128];
+	char vitaAppTitleID[10];
 };
 

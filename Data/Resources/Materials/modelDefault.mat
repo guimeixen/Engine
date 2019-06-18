@@ -1,3 +1,0 @@
-defines="NORMAL_MATRIX"
-baseMat=Data/Resources/Materials/model_mat.lua
-diffuse=Data/Textures/white.dds

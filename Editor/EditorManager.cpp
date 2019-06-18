@@ -502,6 +502,30 @@ void EditorManager::ShowMainMenuBar()
 		if (ImGui::MenuItem("Compile for PS Vita"))
 		{
 			b = true;
+			std::ifstream settings(curLevelDir + "/PSVita_Build/settings.txt");
+			if (settings.is_open())
+			{
+				std::string line;
+				while (std::getline(settings, line))
+				{
+					if (line.substr(0, 8) == "appName=")
+					{
+						std::string name = line.substr(8);
+						if (name.length() < 128)
+						{
+							std::strcpy(vitaAppName, name.c_str());
+						}
+					}
+					else if (line.substr(0, 11) == "appTitleID=")
+					{
+						std::string id = line.substr(11);
+						if (id.length() == 9)
+						{
+							strcpy(vitaAppTitleID, id.c_str());
+						}
+					}
+				}
+			}
 		}
 		ImGui::EndMenu();
 	}
@@ -670,7 +694,9 @@ void EditorManager::ShowMainMenuBar()
 
 		if (ImGui::Button("Compile"))
 		{
-			psvCompiler.Compile(curLevelDir, vitaAppName, vitaAppTitleID);
+			//SaveProject();
+			psvCompiler.Compile(game, curLevelDir, projectName, vitaAppName, vitaAppTitleID);
+
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();

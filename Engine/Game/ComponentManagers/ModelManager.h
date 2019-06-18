@@ -55,6 +55,7 @@ namespace Engine
 		void AddAnimation(Animation *anim, const std::string &path);
 		void RemoveModelNoEntity(Model *model);
 
+		const std::map<unsigned int, Model*> &GetUniqueModels() const { return uniqueModels; }
 		const std::map<unsigned int, Animation*> &GetAnimations() const { return animations; }
 
 		void Serialize(Serializer &s);

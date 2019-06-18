@@ -1,3 +1,0 @@
-defines="ANIMATED"
-baseMat=Data/Resources/Materials/modelAnimated_mat.lua
-diffuse=Data/Textures/white.dds

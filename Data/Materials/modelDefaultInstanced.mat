@@ -1,0 +1,3 @@
+defines="INSTANCING"
+baseMat=Data/Resources/Materials/model_inst_mat.lua
+diffuse=Data/Textures/white.dds

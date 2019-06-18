@@ -13,7 +13,7 @@ public:
 		if (!PSVitaApplication::Init())
 			return false;
 		
-		float vertices[] = {
+		/*float vertices[] = {
 			-0.5f, -0.5f, 0.0f, 0.0f,
 			0.5f, -0.5f, 1.0f, 0.0f,
 			-0.5f, 0.5f, 0.0f, 1.0f,
@@ -35,26 +35,24 @@ public:
 		Engine::VertexInputDesc desc = {};
 		desc.attribs.push_back(pos);
 		desc.attribs.push_back(uv);
-		desc.stride = 4 * sizeof(float);
+		desc.stride = 4 * sizeof(float);*/
 		
 		Engine::Entity e = game.AddEntity();
-		game.GetScriptManager().AddScript(e, "Data/test.lua");
+		//game.GetScriptManager().AddScript(e, "Data/test.lua");
 		
-		triangle = Engine::MeshDefaults::CreateFromVertices(renderer, desc, 4, vertices, sizeof(vertices), 6, indices, sizeof(indices));
+		//triangle = Engine::MeshDefaults::CreateFromVertices(renderer, desc, 4, vertices, sizeof(vertices), 6, indices, sizeof(indices));
 
-		Engine::MaterialInstance *mat = renderer->CreateMaterialInstance(game.GetScriptManager(), "Data/Materials/sand.mat", { desc });	
+		/*Engine::MaterialInstance *mat = renderer->CreateMaterialInstance(game.GetScriptManager(), "Data/Materials/sand.mat", { desc });*/
 
-		if (mat->textures[0] == nullptr)
-		{
-			Engine::TextureParams params = {};
-			params.format = Engine::TextureFormat::RGBA;
-			mat->textures[0] = renderer->CreateTexture2D("Data/Textures/sand.png", params);
-		}
-
-		Engine::Model *model = game.GetModelManager().AddModelFromMesh(e, triangle, mat, {});
+		game.GetModelManager().AddModel(e, "Data/Models/trash_can.obj");
 		
-		//game.GetModelManager().AddModel(e, "Data/Models/trash_can.oj");
-
+		//Engine::Model *model = game.GetModelManager().AddModelFromMesh(e, triangle, mat, {});
+		
+		Engine::FPSCamera *fpsCamera = static_cast<Engine::FPSCamera*>(game.GetMainCamera());
+		fpsCamera->SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
+		fpsCamera->SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
+		fpsCamera->SetPitch(0.0f);
+		fpsCamera->SetYaw(180.0f);
 		return true;
 	}
 
@@ -65,9 +63,6 @@ public:
 
 	void Render()
 	{
-		//Engine::RenderItem ri = {};
-		//ri.mesh = triange;
-		//renderer->Submit(ri);
 		PSVitaApplication::Render();
 	}
 

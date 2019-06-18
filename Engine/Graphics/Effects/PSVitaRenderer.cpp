@@ -2,6 +2,7 @@
 
 #include "Game/Game.h"
 #include "Program/Log.h"
+#include "Program/Input.h"
 
 namespace Engine
 {
@@ -28,8 +29,6 @@ namespace Engine
 		p.SetOnSetup([this](const Pass *thisPass)
 		{
 			font.Init(renderer, this->game->GetScriptManager(), "Data/Textures/jorvik.fnt", "Data/Textures/jorvik.png");
-			//font.Resize(width, height);
-
 		});
 
 		p.SetOnExecute([this]()
@@ -42,6 +41,8 @@ namespace Engine
 			font.AddText(std::to_string(this->game->GetDeltaTime()), glm::vec2(50.0f, 50.0f), glm::vec2(0.5f));
 			glm::vec3 f = this->mainCamera->GetFront();
 			font.AddText(std::to_string(f.x) + ' ' + std::to_string(f.y) + ' ' + std::to_string(f.z), glm::vec2(40.0f, 80.0f), glm::vec2(0.4f));
+			font.AddText(std::to_string(Input::GetLeftAnalogueStickX()) + ' ' + std::to_string(Input::GetLeftAnalogueStickY()), glm::vec2(40.0f, 100.0f), glm::vec2(0.4f));
+
 
 			// Text
 			font.PrepareText();

@@ -7,13 +7,13 @@
 #include "VertexArray.h"
 #include "Buffers.h"
 #include "Game/Game.h"
+#include "Program/FileManager.h"
+#include "Program/Log.h"
 
 #include "Program/Utils.h"
 
 #include "include/assimp/Importer.hpp"
 #include "include/assimp/postprocess.h"
-
-#include <iostream>
 
 namespace Engine
 {
@@ -33,14 +33,21 @@ namespace Engine
 		AddReference();
 		type = ModelType::BASIC;	
 
-		this->isInstanced = isInstanced;
+#ifdef VITA
+		this->path = renderer->GetFileManager()->GetAppPath();
+		this->path += path;
+#else
 		this->path = path;
+#endif
+
+		Log::Print(LogLevel::LEVEL_INFO, "Loading model at %s\n", this->path.c_str());
+
+		this->isInstanced = isInstanced;
 		castShadows = true;
 
 		lodDistance = 10000.0f;
 
-		const std::vector<std::string> matNames = {};
-		LoadModelFile(renderer, matNames, scriptManager, loadVertexColors);
+		LoadModelFile(renderer, {}, scriptManager, loadVertexColors);
 	}
 
 	Model::Model(Renderer *renderer, const std::string &path, bool isInstanced, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors)
@@ -97,9 +104,12 @@ namespace Engine
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
-			std::cout << "Assimp Error: " << importer.GetErrorString() << "\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
 			return;
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Model imported\n");
+		Log::Print(LogLevel::LEVEL_INFO, "Num Meshes: %d\n", scene->mNumMeshes);
 
 		// Load all the model meshes
 		for (unsigned int i = 0; i < scene->mNumMeshes; i++)
@@ -154,7 +164,7 @@ namespace Engine
 				{
 					MeshMaterial mm;
 					mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);
-					mm.mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefaultInstanced.mat", mm.mesh.vao->GetVertexInputDescs());
+					mm.mat = renderer->CreateMaterialInstance(scriptManager, "Data/Materials/modelDefaultInstanced.mat", mm.mesh.vao->GetVertexInputDescs());
 
 					if (aiMat)
 					{
@@ -171,6 +181,8 @@ namespace Engine
 
 	Mesh Model::ProcessMesh(Renderer *renderer, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Processing mesh\n");
+
 		std::vector<unsigned short> indices;
 
 		for (unsigned int i = 0; i < aimesh->mNumFaces; i++)
@@ -300,7 +312,9 @@ namespace Engine
 				{
 					v.uv = glm::vec2(0.0f, 0.0f);
 				}
-			}	
+			}
+
+			Log::Print(LogLevel::LEVEL_INFO, "Creating buffers\n");
 		
 			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL), BufferUsage::STATIC);
 			Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
@@ -361,15 +375,21 @@ namespace Engine
 
 			return m;
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Mesh processed\n");
 	}
 
 	MaterialInstance *Model::LoadMaterialFromAssimpMat(Renderer *renderer, ScriptManager &scriptManager, const Mesh &mesh, const aiMaterial *aiMat)
 	{
 		MaterialInstance *mat = nullptr;
 
+		Log::Print(LogLevel::LEVEL_INFO, "Load material\n");
+
 		if (aiMat)
 		{
 			unsigned int count = aiMat->GetTextureCount(aiTextureType_DIFFUSE);
+
+			Log::Print(LogLevel::LEVEL_INFO, "Num Textures: %u\n", count);
 
 			if (count > 0)
 			{
@@ -388,30 +408,32 @@ namespace Engine
 				params.useMipmapping = true;
 				params.wrap = TextureWrap::REPEAT;
 
-				mat = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/model_mat_gi.lua", mesh.vao->GetVertexInputDescs());
+				mat = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Materials/model_mat.lua", mesh.vao->GetVertexInputDescs());
 				mat->textures[0] = renderer->CreateTexture2D(directory + '/' + filename, params);
 
 				if (mat->textures[0] == nullptr)
 				{
-					mat->textures[0] = renderer->CreateTexture2D("Data/Resources/Textures/white.dds", params);
+					mat->textures[0] = renderer->CreateTexture2D("Data/Textures/white.png", params);
 				}
 				renderer->UpdateMaterialInstance(mat);
 			}
 			else
 			{
 				if (type == ModelType::ANIMATED)
-					mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefaultAnimated.mat", mesh.vao->GetVertexInputDescs());
+					mat = renderer->CreateMaterialInstance(scriptManager, "Data/Materials/modelDefaultAnimated.mat", mesh.vao->GetVertexInputDescs());
 				else
-					mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
+					mat = renderer->CreateMaterialInstance(scriptManager, "Data/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
 			}
 		}
 		else
 		{
 			if (type == ModelType::ANIMATED)
-				mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefaultAnimated.mat", mesh.vao->GetVertexInputDescs());
+				mat = renderer->CreateMaterialInstance(scriptManager, "Data/Materials/modelDefaultAnimated.mat", mesh.vao->GetVertexInputDescs());
 			else
-				mat = renderer->CreateMaterialInstance(scriptManager, "Data/Resources/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
+				mat = renderer->CreateMaterialInstance(scriptManager, "Data/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Done loading material\n");
 
 		return mat;
 	}

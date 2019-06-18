@@ -1,12 +1,14 @@
 #include "PSVCompiler.h"
 
+#include "Game/Game.h"
 #include "Utils.h"
+#include "Program/Log.h"
 
 #include <fstream>
 
 namespace Engine
 {
-	void PSVCompiler::Compile(const std::string &curProjectDir, const std::string &appName, const std::string &appTitleID)
+	void PSVCompiler::Compile(Game *game, const std::string &curProjectDir, const std::string &curProjectName, const std::string &appName, const std::string &appTitleID)
 	{
 		std::string folderPath = curProjectDir + "/PSVita_Build";
 
@@ -16,7 +18,7 @@ namespace Engine
 		std::string cmakelists = "cmake_minimum_required(VERSION 2.8)\n";
 		cmakelists += "cmake_policy(SET CMP0015 NEW)\n";
 		cmakelists += "if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)\n\tif (DEFINED ENV{VITASDK})\n\t\tset(CMAKE_TOOLCHAIN_FILE \"$ENV{VITASDK}/share/vita.toolchain.cmake\" CACHE PATH \"toolchain file\")\n\telse()\n\t\tmessage(FATAL_ERROR \"Please define VITASDK to point to your SDK path!\")\n\tendif()\nendif()\n";
-		cmakelists += "project(vitaTestApp)\n";
+		cmakelists += "project(" + appName + ")\n";
 		cmakelists += "include(\"${VITASDK}/share/vita.cmake\" REQUIRED)\n";
 		cmakelists += "set(VITA_APP_NAME \"";
 		cmakelists += appName;
@@ -25,19 +27,50 @@ namespace Engine
 		cmakelists += appTitleID;
 		cmakelists += "\")\n";
 		cmakelists += "set(VITA_VERSION \"01.00\")\n";			// Make user give version
-		cmakelists += "set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} -Wall\")\nset(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -std=c++11\")\nset(VITA_MKSFOEX_FLAGS \"${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1\")\n";
+		cmakelists += "set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} -Wall -O3\")\nset(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -O3 -std=gnu++11 -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DVITA\")\nset(VITA_MKSFOEX_FLAGS \"${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1\")\n";
 		cmakelists += "include_directories(\n\t../../../../\n\t../../../../Engine\n\t../../../../include/bullet\n)\n";
-		cmakelists += "link_directories(\n\t${CMAKE_CURRENT_BINARY_DIR}\n\t../../../../\n)\n";
-		cmakelists += "add_executable(vitaTestApp main.cpp)\n";
-		cmakelists += "target_link_libraries(vitaTestApp\n\tVitaEngine\n\tLua5_3_4\n\tassimp\n\tzlib\n\tBulletDynamics\n\tBulletCollision\n\tBulletSoftBody\n\tLinearMath\n\tSceLibKernel_stub\n\tSceGxm_stub\n\tSceDisplay_stub\n\tSceCtrl_stub\n)\n";
-		cmakelists += "vita_create_self(vitaTestApp.self vitaTestApp UNSAFE)\n";
-		cmakelists += "vita_create_vpk(vitaTestApp.vpk ${VITA_TITLEID} vitaTestApp.self VERSION ${VITA_VERSION} NAME ${VITA_APP_NAME} FILE sce_sys/icon0.png sce_sys/icon0.png\nFILE sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png\nFILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png\nFILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml)\n";
+		cmakelists += "link_directories(\n\t${CMAKE_CURRENT_BINARY_DIR}\n\t../../../../\n../../../../vitalibs\n)\n";
+		cmakelists += "add_executable(" + appName + " main.cpp)\n";
+		cmakelists += "target_link_libraries(" + appName + "\n\tVitaEngine\n\tLua5_3_4\n\tassimp\n\tzlib\n\tBulletDynamics\n\tBulletCollision\n\tBulletSoftBody\n\tLinearMath\n\tSceLibKernel_stub\n\tSceGxm_stub\n\tSceDisplay_stub\n\tSceCtrl_stub\n)\n";
+		cmakelists += "vita_create_self(" + appName + ".self " + appName + " UNSAFE)\n";
+		cmakelists += "vita_create_vpk(" + appName + ".vpk ${VITA_TITLEID} " + appName + ".self VERSION ${VITA_VERSION} NAME ${VITA_APP_NAME} FILE sce_sys sce_sys\n";
+
+		// Add used files
+		cmakelists += "FILE ../" + curProjectName + ".proj Data/" + curProjectName + ".proj\n";
+		cmakelists += "FILE ../main.bin Data/main.bin\n";
+		cmakelists += "FILE ../main.rendersettings Data/main.rendersettings\n";
+
+		const std::map<unsigned int, Model*> &uniqueModels = game->GetModelManager().GetUniqueModels();
+
+		for (auto it = uniqueModels.begin(); it != uniqueModels.end(); it++)
+		{
+			Model *m = it->second;
+
+			const std::string &p = m->GetPath();
+			size_t slashIndex = p.find('/', 12) + 1;		// Add offset of 12 to skip  Data/Levels/     +1 to not include the slash
+			size_t nameIndex = p.find_last_of('/', slashIndex) + 1;
+			std::string s = p.substr(slashIndex);
+			std::string n = p.substr(nameIndex);
+
+			cmakelists += "FILE ../" + s + "Data/Models/" + n + '\n';
+		}
+
+		cmakelists += ")\n";
 
 		std::ofstream file = std::ofstream(folderPath + "/CMakeLists.txt");
 		if (file.is_open())
 		{
 			file << cmakelists;
 		}
+		file.close();
+
+		std::ofstream settings = std::ofstream(folderPath + "/settings.txt");
+		if (settings.is_open())
+		{
+			settings << "appName=" << appName << '\n';
+			settings << "appTitleID=" << appTitleID << '\n';
+		}
+		settings.close();
 
 		std::ofstream main = std::ofstream(folderPath + "/main.cpp");
 		if (main.is_open())
@@ -57,5 +90,36 @@ namespace Engine
 			return 1;\
 			return app.Run();}";
 		}
+		main.close();
+
+#ifdef _WIN32
+		std::ofstream buildFile(folderPath + "/build.bat");
+		if (buildFile.is_open())
+		{
+			//buildFile << "mkdir Data\n";
+			buildFile << "xcopy /s/h/e/k/f/c \"../../../Vita\" \".\"\n";
+			buildFile << "cmake -G \"Unix Makefiles\" .\n";
+			buildFile << "make";
+		}
+		buildFile.close();
+#elif __linux__
+		std::ofstream buildFile(folderPath + "/build.sh");
+		if (buildFile.is_open())
+		{
+			//buildFile << "mkdir Data\n";
+			buildFile << "cp -avr ../../../Vita .";
+			buildFile << "cmake -G \"Unix Makefiles\" .\n";
+			buildFile << "make";
+		}
+		buildFile.close();
+#endif
+		std::string cmd = "cd " + folderPath + " & build.bat";
+		if (std::system(cmd.c_str()) != 0)
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "build.bat failed!\n");
+			return;
+		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Project compiled for the PS Vita\n");
 	}
 }

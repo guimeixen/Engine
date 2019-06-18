@@ -104,9 +104,9 @@ namespace Engine
 
 		fpsCamera = new FPSCamera();
 		fpsCamera->SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
-		//fpsCamera->SetPosition(glm::vec3(0.0f, 0.0f, 3.0f));
-		//fpsCamera->SetPitch(0.0f);
-		//fpsCamera->SetYaw(0.0f);
+		fpsCamera->SetPosition(glm::vec3(0.0f, 0.0f, 1.0f));
+		fpsCamera->SetPitch(0.0f);
+		fpsCamera->SetYaw(180.0f);
 		//fpsCamera->SetFrontAndUp(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		fpsCamera->SetMoveSpeed(2.0f);
 

@@ -93,6 +93,19 @@ namespace Engine
 							return;
 						}
 					}
+					else if (j == 2)
+					{
+						const SceGxmProgramParameter *param = sceGxmProgramFindParameterByName(vertexProgramGxp, "inNormal");
+						if (param)
+						{
+							va.regIndex = sceGxmProgramParameterGetResourceIndex(param);
+						}
+						else
+						{
+							Log::Print(LogLevel::LEVEL_ERROR, "Unable to find program parameter! The third vertex attribute must be named inNormal on shader %s\n", vertexName.c_str());
+							return;
+						}
+					}
 
 					vertexAttributes.push_back(va);
 				}
@@ -130,7 +143,6 @@ namespace Engine
 		Log::Print(LogLevel::LEVEL_INFO, "F DEFAULT UNIFORM BUFFER SIZE:  %u\n", sceGxmProgramGetDefaultUniformBufferSize(fragmentProgramGxp));
 
 		modelMatrixParam = sceGxmProgramFindParameterByName(vertexProgramGxp, "modelMatrix");
-		Log::Print(LogLevel::LEVEL_INFO, "Created dawdwd\n");
 	}
 
 	GXMShader::~GXMShader()

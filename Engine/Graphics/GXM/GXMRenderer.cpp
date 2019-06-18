@@ -216,6 +216,8 @@ namespace Engine
 
 		sceGxmSetVertexUniformBuffer(context, 0, cameraUBOs[currentCameraIndex]->GetUBO());
 
+		sceGxmSetCullMode(context, SCE_GXM_CULL_CW);
+
 		depthStencilState.depthEnable = true;
 		//depthStencilState.depthFunc = ;
 		depthStencilState.depthWrite = true;
@@ -244,21 +246,9 @@ namespace Engine
 		glm::mat4 view = camera->GetViewMatrix();
 
 		viewProjUBO ubo = {};
-
-		if (camera->GetFrustum().GetType() == FrustumType::ORTHOGRAPHIC)
-		{
-			ubo.proj = glm::transpose(proj);
-			ubo.view = glm::transpose(view);
-			ubo.projView = glm::transpose(proj * view);
-		}
-		else
-		{
-			ubo.proj = proj;
-			ubo.view = view;
-			ubo.projView = proj * view;
-		}
-
-		
+		ubo.proj = proj;
+		ubo.view = view;
+		ubo.projView = proj * view;	
 		ubo.invView = glm::inverse(ubo.view);
 		ubo.invProj = glm::inverse(ubo.proj);
 		ubo.clipPlane = clipPlane;
@@ -308,16 +298,6 @@ namespace Engine
 		return new GXMUniformBuffer(data, size, BufferUsage::STATIC);
 	}
 
-	Buffer *GXMRenderer::CreateDrawIndirectBuffer(unsigned int size, const void *data)
-	{
-		return nullptr;
-	}
-
-	Buffer *GXMRenderer::CreateSSBO(unsigned int size, const void *data, unsigned int stride, BufferUsage usage)
-	{
-		return nullptr;
-	}
-
 	Framebuffer *GXMRenderer::CreateFramebuffer(const FramebufferDesc &desc)
 	{
 		return nullptr;
@@ -334,37 +314,14 @@ namespace Engine
 		}
 
 		// Else create a new one
-		Log::Print(LogLevel::LEVEL_INFO, "Created shadddddddddd\n");
 		GXMShader *shader = new GXMShader(shaderPatcher, fileManager, vertexName, fragmentName, descs, blendState);		// No need to pass the defines because the shaders are compiled when building in the editor. When load the shader in the Vita it already has been compiled with the defines
-		Log::Print(LogLevel::LEVEL_INFO, "Created shader\n");
 		shaders[id] = shader;
-		Log::Print(LogLevel::LEVEL_INFO, "Created shader 0\n");
 		return shader;
 	}
 
 	Shader *GXMRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		return CreateShader(vertexName, fragmentName, "", descs, blendState);
-	}
-
-	Shader *GXMRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
-	{
-		return nullptr;
-	}
-
-	Shader *GXMRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc>& descs)
-	{
-		return nullptr;
-	}
-
-	Shader *GXMRenderer::CreateComputeShader(const std::string &defines, const std::string &computePath)
-	{
-		return nullptr;
-	}
-
-	Shader *GXMRenderer::CreateComputeShader(const std::string &computePath)
-	{
-		return nullptr;
 	}
 
 	MaterialInstance *GXMRenderer::CreateMaterialInstance(ScriptManager &scriptManager, const std::string &matInstPath, const std::vector<VertexInputDesc> &inputDescs)
@@ -380,10 +337,6 @@ namespace Engine
 		materialInstances.push_back(m);
 
 		return m;
-	}
-
-	void GXMRenderer::ReloadMaterial(Material *baseMaterial)
-	{
 	}
 
 	Texture *GXMRenderer::CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData)
@@ -408,11 +361,6 @@ namespace Engine
 		return tex;
 	}
 
-	Texture *GXMRenderer::CreateTexture3D(const std::string &path, const void *data, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params)
-	{
-		return nullptr;
-	}
-
 	Texture *GXMRenderer::CreateTextureCube(const std::vector<std::string> &faces, const TextureParams &params)
 	{
 		return nullptr;
@@ -424,11 +372,6 @@ namespace Engine
 	}
 
 	Texture *GXMRenderer::CreateTexture2DFromData(unsigned int width, unsigned int height, const TextureParams &params, const void *data)
-	{
-		return nullptr;
-	}
-
-	Texture *GXMRenderer::CreateTexture3DFromData(unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params, const void *data)
 	{
 		return nullptr;
 	}
@@ -535,10 +478,12 @@ namespace Engine
 		sceGxmSetFragmentUniformBuffer(context, 1, ubo[fragmentIndex]->GetUBO());
 		
 		const SceGxmProgramParameter *modelMatrixParam = shader->GetModelMatrixParam();
-		if (modelMatrixParam)
+		if (modelMatrixParam && renderItem.transform)
 		{
-			glm::mat4 m = glm::mat4(1.0f);
-			m = glm::rotate(m, glm::radians(time), glm::vec3(0.0f, 1.0f, 0.0f));
+			//glm::mat4 m = glm::mat4(1.0f);
+			//m = glm::rotate(m, glm::radians(time), glm::vec3(0.0f, 1.0f, 0.0f));
+
+			const glm::mat4 &m = *renderItem.transform;
 
 			void *buf;
 			sceGxmReserveVertexDefaultUniformBuffer(context, &buf);
@@ -562,14 +507,6 @@ namespace Engine
 		{
 			sceGxmDraw(context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, ib->GetIndicesHandle(), renderItem.mesh->indexCount);
 		}
-	}
-
-	void GXMRenderer::SubmitIndirect(const RenderItem &renderItem, Buffer *indirectBuffer)
-	{
-	}
-
-	void GXMRenderer::Dispatch(const DispatchItem &item)
-	{
 	}
 
 	void GXMRenderer::Present()
@@ -606,14 +543,6 @@ namespace Engine
 	}
 
 	void GXMRenderer::PerformBarrier(const Barrier &barrier)
-	{
-	}
-
-	void GXMRenderer::CopyImage(Texture *src, Texture *dst)
-	{
-	}
-
-	void GXMRenderer::ClearImage(Texture *tex)
 	{
 	}
 

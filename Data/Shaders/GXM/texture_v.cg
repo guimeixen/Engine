@@ -11,7 +11,7 @@ void main(
 	float4 out outPos : POSITION,
 	float2 out outUv : TEXCOORD0)
 {
-	outPos = mul(modelMatrix, float4(inPos, 0.0f, 1.0f));
-	outPos = mul(cam.projView, outPos);
+	outPos = mul(float4(inPos, 0.0f, 1.0f), modelMatrix);
+	outPos = mul(outPos, cam.projView);
 	outUv = inUv;
 }

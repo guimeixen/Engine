@@ -79,25 +79,6 @@ vita_create_self(vitaTestApp.self vitaTestApp)
 vita_create_vpk(vitaTestApp.vpk ${VITA_TITLEID} vitaTestApp.self
   VERSION ${VITA_VERSION}
   NAME ${VITA_APP_NAME}
-  FILE sce_sys/icon0.png sce_sys/icon0.png
-  FILE sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png
-  FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
-  FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
-  FILE Data/test.lua Data/test.lua
-  FILE Data/Shaders/GXM/color_v_cg.gxp Data/Shaders/GXM/color_v_cg.gxp
-  FILE Data/Shaders/GXM/color_f_cg.gxp Data/Shaders/GXM/color_f_cg.gxp
-  FILE Data/Shaders/GXM/texture_v_cg.gxp Data/Shaders/GXM/texture_v_cg.gxp
-  FILE Data/Shaders/GXM/texture_f_cg.gxp Data/Shaders/GXM/texture_f_cg.gxp
-  FILE Data/Shaders/GXM/text_v_cg.gxp Data/Shaders/GXM/text_v_cg.gxp
-  FILE Data/Shaders/GXM/text_f_cg.gxp Data/Shaders/GXM/text_f_cg.gxp
-  FILE Data/Materials/color_mat.lua Data/Materials/color_mat.lua
-  FILE Data/Materials/texture_mat.lua Data/Materials/texture_mat.lua
-  FILE Data/Materials/text_mat.lua Data/Materials/text_mat.lua
-  FILE Data/Textures/sand.png Data/Textures/sand.png
-  FILE Data/Textures/jorvik.png Data/Textures/jorvik.png
-  FILE Data/Textures/jorvik.fnt Data/Textures/jorvik.fnt
-  FILE Data/Materials/sand.mat Data/Materials/sand.mat
-  FILE Data/Materials/col.mat Data/Materials/col.mat
-  FILE Data/Models/trash_can.obj Data/Models/trash_can.obj
-  FILE Data/Models/trash_can_d.jpg Data/Models/trash_can_d.jpg
+  FILE sce_sys sce_sys
+  FILE Data Data
 )

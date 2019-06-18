@@ -187,15 +187,15 @@ namespace Engine
 	void InputManager::UpdateVitaSticks(unsigned char leftStickX, unsigned char leftStickY, unsigned char rightStickX, unsigned char rightStickY)
 	{
 		this->leftStickX = (float)leftStickX;
-		this->leftStickX -= (this->leftStickX - 128.0f) / 128.0f;
+		this->leftStickX = (this->leftStickX - 128.0f) / 128.0f;
 		
 		this->leftStickY = (float)leftStickY;
-		this->leftStickY -= (this->leftStickY - 128.0f) / 128.0f;
+		this->leftStickY = (this->leftStickY - 128.0f) / 128.0f;
 
 		this->rightStickX = (float)rightStickX;
-		this->rightStickX -= (this->rightStickX - 128.0f) / 128.0f;
+		this->rightStickX = (this->rightStickX - 128.0f) / 128.0f;
 
 		this->rightStickY = (float)rightStickY;
-		this->rightStickY -= (this->rightStickY - 128.0f) / 128.0f;
+		this->rightStickY = (this->rightStickY - 128.0f) / 128.0f;
 	}
 }

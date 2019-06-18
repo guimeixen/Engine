@@ -77,21 +77,21 @@ namespace Engine
 
 #ifdef VITA
 		float leftX = Input::GetLeftAnalogueStickX();
-		if (leftX > 0.05f)
+		if (leftX > 0.1f)
 		{
 			position += right * velocity;
 		}
-		else if (leftX < -0.05f)
+		else if (leftX < -0.1f)
 		{
 			position -= right * velocity;
 		}
 
 		float leftY = Input::GetLeftAnalogueStickY();
-		if (leftY > 0.05f)
+		if (leftY > 0.1f)
 		{
 			position -= front * velocity;
 		}
-		else if (leftY < -0.05f)
+		else if (leftY < -0.1f)
 		{
 			position += front * velocity;
 		}
@@ -148,19 +148,30 @@ namespace Engine
 			pitch = 89.0f;
 		if (pitch < -89.0f)
 			pitch = -89.0f;
+#else
+		glm::vec2 rightXY = glm::vec2(Input::GetRightAnalogueStickX(), Input::GetRightAnalogueStickY());
+
+		if (rightXY.x > 0.05f || rightXY.x < -0.05f)
+		{
+			yaw -= rightXY.x * sensitivity * 5.0f;
+		}
+		if (rightXY.y > 0.05f || rightXY.y < -0.05f)
+		{
+			pitch += rightXY.y * sensitivity * 5.0f;
+		}
+
+		if (pitch > 89.0f)
+			pitch = 89.0f;
+		if (pitch < -89.0f)
+			pitch = -89.0f;
+#endif
 
 		UpdateCameraVectors();
-#endif
 	}
 
 	void FPSCamera::UpdateCameraVectors()
 	{
 		glm::mat4 m = glm::eulerAngleYX(glm::radians(yaw), glm::radians(pitch));
-
-		//front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-		//front.y = sin(glm::radians(pitch));
-		//front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-		//front = glm::normalize(front);
 
 		front = glm::normalize(m[2]);
 		right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));

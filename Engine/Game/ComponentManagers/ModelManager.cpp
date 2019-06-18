@@ -138,17 +138,18 @@ namespace Engine
 			const std::vector<MeshMaterial> &meshesAndMaterials = model->GetMeshesAndMaterials();
 			const MeshMaterial &mm = meshesAndMaterials[0];
 
+			const glm::mat4 &localToWorld = transformManager->GetLocalToWorld(mi.e);
+
 			RenderItem ri = {};
 			ri.mesh = &mm.mesh;
 			ri.matInstance = mm.mat;
+			ri.transform = &localToWorld;
 			//ri.shaderPass = l;
 			//ri.transform = &localToWorld;
 			//ri.meshParams = &transforms[0][0].x;
 			//ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
 			outQueues.push_back(ri);
-		}
-
-		
+		}	
 
 		/*for (auto m : uniqueModels)
 		{
@@ -357,6 +358,8 @@ namespace Engine
 		{
 			return GetModel(e);
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Adding model\n");
 
 		Engine::Model *model = LoadModel(path, animated, false);
 
@@ -617,6 +620,8 @@ namespace Engine
 
 			return model;
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Done loading model\n");
 
 		return nullptr;
 	}
@@ -882,14 +887,14 @@ namespace Engine
 				if (isInstanced == false)
 				{
 					Mesh mesh = ProcessMesh(index, aiMesh, scene, isInstanced, loadVertexColors);		// If we're loading the model without providing material names then we're loading it																															
-					MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
+					MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
 					MeshMaterial m = { mesh,mat };
 					data.model[index].meshes.push_back(m);
 				}
 				else                                                                                                                // through the editor so load our default material
 				{
 					Mesh mesh = ProcessMesh(index, aiMesh, scene, isInstanced, loadVertexColors);
-					MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/modelDefaultInstanced.mat", mesh.vao->GetVertexInputDescs());
+					MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Materials/modelDefaultInstanced.mat", mesh.vao->GetVertexInputDescs());
 					MeshMaterial m = { mesh,mat };
 					data.model[index].meshes.push_back(m);
 				}

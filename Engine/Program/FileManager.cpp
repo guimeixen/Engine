@@ -66,9 +66,10 @@ namespace Engine
 		if (isBinary)
 			buf = new char[size];
 		else
+		{
 			buf = new char[size + 1];
-
-		memset(buf, 0, size + 1);
+			memset(buf, 0, size + 1);
+		}
 
 		file.seekg(0);				// Go back the beginning of the file
 		file.read(buf, size);		// Now read it all at once
