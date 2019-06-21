@@ -33,7 +33,7 @@ namespace Engine
 #ifndef VITA
 		if (api == GraphicsAPI::OpenGL)
 		{
-			renderer = new GLRenderer(static_cast<GLuint>(width), static_cast<GLuint>(height));
+			renderer = new GLRenderer(fileManager, static_cast<GLuint>(width), static_cast<GLuint>(height));
 			if (!renderer->Init())
 				return nullptr;
 			/*GLint flags;
@@ -50,7 +50,7 @@ namespace Engine
 		}
 		else if (api == GraphicsAPI::Vulkan)
 		{
-			renderer = new VKRenderer(window, width, height, monitorWidth, monitorHeight);
+			renderer = new VKRenderer(fileManager, window, width, height, monitorWidth, monitorHeight);
 			if (!renderer->Init())
 				return nullptr;
 

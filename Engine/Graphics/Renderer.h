@@ -195,6 +195,7 @@ namespace Engine
 
 		std::string globalDefines;
 
+#ifndef VITA
 		Buffer *meshParamsUBO = nullptr;
 		std::vector<const void*> meshParamsData;
 		unsigned int meshParamsOffset = 0;
@@ -202,6 +203,7 @@ namespace Engine
 
 		unsigned int instanceDataOffset = 0;
 		std::vector<const void*> instanceData;
-		void *instanceBuffer[16000];	
+		void *instanceBuffer[16000];
+#endif
 	};
 }

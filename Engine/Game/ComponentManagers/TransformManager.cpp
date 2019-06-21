@@ -1,18 +1,22 @@
 #include "TransformManager.h"
 
 #include "Program/Log.h"
+#include "Program/Allocator.h"
 
 #include "include/glm/gtc/matrix_transform.hpp"
 
 namespace Engine
 {
-	void TransformManager::Init(unsigned int initialCapacity)
+	void TransformManager::Init(Allocator *allocator, unsigned int initialCapacity)
 	{
 		if (isInit)
 			return;
 
+		this->allocator = allocator;
+
 		instanceData = {};
-		instanceData.buffer = new unsigned char[initialCapacity * (sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(glm::quat) + sizeof(glm::vec3) + sizeof(Entity) * 4 + sizeof(bool))];
+		//instanceData.buffer = new unsigned char[initialCapacity * (sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(glm::quat) + sizeof(glm::vec3) + sizeof(Entity) * 4 + sizeof(bool))];
+		instanceData.buffer = (unsigned char*)allocator->Allocate(initialCapacity * (sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(glm::quat) + sizeof(glm::vec3) + sizeof(Entity) * 4 + sizeof(bool)));
 		instanceData.capacity = initialCapacity;
 		instanceData.size = 0;
 
@@ -34,7 +38,7 @@ namespace Engine
 	void TransformManager::Dispose()
 	{
 		if (instanceData.buffer)
-			delete[] instanceData.buffer;
+			allocator->Free(instanceData.buffer);
 
 		Log::Print(LogLevel::LEVEL_INFO, "Disposing Transform manager\n");
 	}
@@ -399,7 +403,11 @@ namespace Engine
 
 	void TransformManager::Deserialize(Serializer &s)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing transform manager\n");
+
 		s.Read(instanceData.size);
+
+		Log::Print(LogLevel::LEVEL_INFO, "Size: %u\n", instanceData.size);
 
 		if (instanceData.size >= instanceData.capacity)
 		{

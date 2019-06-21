@@ -7,6 +7,7 @@
 #include "psp2/display.h"
 #include "psp2/ctrl.h"
 #include "psp2/kernel/processmgr.h"
+#include "psp2/kernel/sysmem.h"
 
 #include <chrono>
 
@@ -16,19 +17,38 @@ namespace Engine
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Engine startup\n");
 
+		SceKernelFreeMemorySizeInfo info = {};
+		info.size = sizeof(SceKernelFreeMemorySizeInfo);
+		sceKernelGetFreeMemorySize(&info);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_CDRAM_RW memory available size: %d\n", info.size_cdram);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_MAIN_PHYCONT_*_RW available size: %d\n", info.size_phycont);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_RW available size: %d\n\n", info.size_user);
+
 		fileManager.Init();
 
 		Random::Init();
 
 		renderer = Renderer::Create(nullptr, GraphicsAPI::GXM, &fileManager, 960, 544, 960, 544);
 
+		sceKernelGetFreeMemorySize(&info);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_CDRAM_RW memory available size: %d\n", info.size_cdram);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_MAIN_PHYCONT_*_RW available size: %d\n", info.size_phycont);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_RW available size: %d\n\n", info.size_user);
+
 		if (!renderer)
 			return false;
 
-		game.Init(renderer, &fileManager);
+		game.Init(&allocator, renderer, &fileManager);
 		///game.GetRenderingPath()->GetFrameGraph().Setup();
 
+		sceKernelGetFreeMemorySize(&info);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_CDRAM_RW memory available size: %d\n", info.size_cdram);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_MAIN_PHYCONT_*_RW available size: %d\n", info.size_phycont);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_RW available size: %d\n\n", info.size_user);
+
 		renderer->PostLoad();
+
+		allocator.PrintStats();
 
 		// Enable analog stick
 		sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
@@ -99,12 +119,8 @@ namespace Engine
 			deltaTime = (float)currentTime - lastTime;
 			lastTime = (float)currentTime;
 
-			// If the application paused when pressing the PS Button? If not we could detect and pause it here
-			/*if (!window.IsMinimized())
-			{*/
-				Update();
-				Render();
-			//}
+			Update();
+			Render();
 
 			frameCounter++;
 			auto tEnd = std::chrono::high_resolution_clock::now();

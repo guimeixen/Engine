@@ -236,19 +236,18 @@ namespace Engine
 #endif
 		}
 
-		bool CreateFolder(const char *folderPath)
+		bool CreateDir(const char *folderPath)
 		{
 #ifdef _WIN32
 			Log::Print(LogLevel::LEVEL_INFO, "Creating folder at %s ...\n", folderPath);
 
-			if (CreateDirectoryA(folderPath, NULL))
+			if (CreateDirectoryA(folderPath, NULL) || GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				Log::Print(LogLevel::LEVEL_INFO, "Done\n");
 				return true;
 			}
 
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create folder: %s    Error: %lu\n", folderPath, GetLastError());
-
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create directory: %s    Error: %lu\n", folderPath, GetLastError());
 #endif
 
 			return false;

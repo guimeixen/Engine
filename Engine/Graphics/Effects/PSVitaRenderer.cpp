@@ -28,7 +28,7 @@ namespace Engine
 
 		p.SetOnSetup([this](const Pass *thisPass)
 		{
-			font.Init(renderer, this->game->GetScriptManager(), "Data/Textures/jorvik.fnt", "Data/Textures/jorvik.png");
+			font.Init(renderer, this->game->GetScriptManager(), "Data/Resources/Textures/jorvik.fnt", "Data/Resources/Textures/jorvik.png");
 		});
 
 		p.SetOnExecute([this]()

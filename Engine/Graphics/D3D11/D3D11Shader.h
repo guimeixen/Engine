@@ -5,6 +5,8 @@
 
 #include <d3d11_1.h>
 
+#include <string>
+
 namespace Engine
 {
 	class D3D11Shader : public Shader

@@ -293,7 +293,7 @@ namespace Engine
 
 	void RenderingPath::SaveRenderingSettings(const std::string &path)
 	{
-		Serializer s;
+		Serializer s(game->GetFileManager());
 		s.OpenForWriting();
 
 		s.Write(frameData.giIntensity);
@@ -346,7 +346,7 @@ namespace Engine
 
 	void RenderingPath::LoadRenderingSettings(const std::string &path)
 	{
-		Serializer s;
+		Serializer s(game->GetFileManager());
 		s.OpenForReading(path);
 
 		if (s.IsOpen())

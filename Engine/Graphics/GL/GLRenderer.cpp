@@ -31,10 +31,11 @@
 
 namespace Engine
 {
-	GLRenderer::GLRenderer(GLuint width, GLuint height)
+	GLRenderer::GLRenderer(FileManager *fileManager, GLuint width, GLuint height)
 	{
 		this->width = width;
 		this->height = height;
+		this->fileManager = fileManager;
 		viewportPos = glm::vec2();
 		currentMaterial = nullptr;
 		materialUBO = nullptr;

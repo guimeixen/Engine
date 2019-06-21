@@ -25,6 +25,7 @@ namespace Engine
 	bool Font::Init(Renderer *renderer, ScriptManager &scriptManager, const std::string &fontPath, const std::string &fontAtlasPath)
 	{
 		this->renderer = renderer;
+		this->fontPath = fontPath;
 
 		Log::Print(LogLevel::LEVEL_INFO, "Init font\n");
 
@@ -141,7 +142,7 @@ namespace Engine
 
 	bool Font::ReadFontFile(const std::string &fontPath)
 	{
-		std::ifstream file = renderer->GetFileManager()->Open(fontPath);
+		std::ifstream file = renderer->GetFileManager()->OpenForReading(fontPath);
 
 		if (!file.is_open())
 		{

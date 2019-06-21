@@ -12,7 +12,6 @@ void main(
 	float4 inUv)					// Has rgba color
 {
 	outUv = inPos.zw;
-	outUv.y = 1.0 - outUv.y;
 	outColor = inUv;
 	outPos = mul(float4(inPos.xy, 0.0f, 1.0f), cam.projView);
 }

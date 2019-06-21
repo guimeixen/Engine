@@ -3,6 +3,8 @@
 #include "Game/Game.h"
 #include "Utils.h"
 #include "Program/Log.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Shader.h"
 
 #include <fstream>
 
@@ -13,7 +15,7 @@ namespace Engine
 		std::string folderPath = curProjectDir + "/PSVita_Build";
 
 		if (!utils::DirectoryExists(folderPath))
-			utils::CreateFolder(folderPath.c_str());
+			utils::CreateDir(folderPath.c_str());
 
 		std::string cmakelists = "cmake_minimum_required(VERSION 2.8)\n";
 		cmakelists += "cmake_policy(SET CMP0015 NEW)\n";
@@ -32,13 +34,18 @@ namespace Engine
 		cmakelists += "link_directories(\n\t${CMAKE_CURRENT_BINARY_DIR}\n\t../../../../\n../../../../vitalibs\n)\n";
 		cmakelists += "add_executable(" + appName + " main.cpp)\n";
 		cmakelists += "target_link_libraries(" + appName + "\n\tVitaEngine\n\tLua5_3_4\n\tassimp\n\tzlib\n\tBulletDynamics\n\tBulletCollision\n\tBulletSoftBody\n\tLinearMath\n\tSceLibKernel_stub\n\tSceGxm_stub\n\tSceDisplay_stub\n\tSceCtrl_stub\n)\n";
-		cmakelists += "vita_create_self(" + appName + ".self " + appName + " UNSAFE)\n";
+		cmakelists += "vita_create_self(" + appName + ".self " + appName + ")\n";
 		cmakelists += "vita_create_vpk(" + appName + ".vpk ${VITA_TITLEID} " + appName + ".self VERSION ${VITA_VERSION} NAME ${VITA_APP_NAME} FILE sce_sys sce_sys\n";
 
 		// Add used files
-		cmakelists += "FILE ../" + curProjectName + ".proj Data/" + curProjectName + ".proj\n";
-		cmakelists += "FILE ../main.bin Data/main.bin\n";
-		cmakelists += "FILE ../main.rendersettings Data/main.rendersettings\n";
+		cmakelists += "FILE Data/" + curProjectName + ".proj Data/Levels/" + curProjectName + '/' + curProjectName + ".proj\n";
+		cmakelists += "FILE ../main.bin Data/Levels/" + curProjectName + "/main.bin\n";
+		cmakelists += "FILE ../main.rendersettings Data/Levels/" + curProjectName + "/main.rendersettings\n";
+
+		// Add font
+		const Font &font = game->GetRenderingPath()->GetFont();
+		cmakelists += "FILE ../../../../" + font.GetFontPath() + ' ' + font.GetFontPath() + '\n';
+		cmakelists += "FILE ../../../../" + font.GetFontAtals()->GetPath() + ' ' + font.GetFontAtals()->GetPath() + '\n';
 
 		const std::map<unsigned int, Model*> &uniqueModels = game->GetModelManager().GetUniqueModels();
 
@@ -47,14 +54,34 @@ namespace Engine
 			Model *m = it->second;
 
 			const std::string &p = m->GetPath();
-			size_t slashIndex = p.find('/', 12) + 1;		// Add offset of 12 to skip  Data/Levels/     +1 to not include the slash
-			size_t nameIndex = p.find_last_of('/', slashIndex) + 1;
-			std::string s = p.substr(slashIndex);
-			std::string n = p.substr(nameIndex);
+			/*size_t slashIndex = p.find('/', 12) + 1;		// Add offset of 12 to skip  Data/Levels/     +1 to not include the slash
+			std::string s = p.substr(slashIndex);*/
 
-			cmakelists += "FILE ../" + s + "Data/Models/" + n + '\n';
+			// Add the model's path
+			cmakelists += "FILE ../../../../" + p + ' ' + p + '\n';
+
+			// Add the materials path
+			const std::vector<MeshMaterial> &meshesAndMaterials = m->GetMeshesAndMaterials();
+			for (size_t i = 0; i < meshesAndMaterials.size(); i++)
+			{
+				const MeshMaterial &mm = meshesAndMaterials[i];
+
+				cmakelists += "FILE ../../../../" + mm.mat->path + ' ' + mm.mat->path + "\n";
+
+				for (size_t j = 0; j < mm.mat->textures.size(); j++)
+				{
+					Texture *t = mm.mat->textures[j];
+					cmakelists += "FILE ../../../../" + t->GetPath() + ' ' + t->GetPath() + "\n";
+				}			
+			}		
 		}
 
+		const std::map<unsigned int, MaterialRefInfo> &uniqueMaterials = ResourcesLoader::GetMaterials();
+
+		// Materials for the Vita are in Data/Materials/Vita for now
+		cmakelists += "FILE ../../../Materials/Vita Data/Materials\n";
+		// We also add the whole Shaders/GXM folder
+		cmakelists += "FILE ../../../Shaders/GXM/compiled Data/Shaders/GXM\n";
 		cmakelists += ")\n";
 
 		std::ofstream file = std::ofstream(folderPath + "/CMakeLists.txt");
@@ -81,6 +108,8 @@ namespace Engine
 			bool Init(){\
 			if (!PSVitaApplication::Init())\
 			return false;\
+			if (!game.LoadProject(\"" + curProjectName + "\"))\
+			return false;\
 			return true;}\
 			void Update(){PSVitaApplication::Update();}\
 			void Render(){PSVitaApplication::Render();}};\
@@ -96,8 +125,10 @@ namespace Engine
 		std::ofstream buildFile(folderPath + "/build.bat");
 		if (buildFile.is_open())
 		{
-			//buildFile << "mkdir Data\n";
-			buildFile << "xcopy /s/h/e/k/f/c \"../../../Vita\" \".\"\n";
+			buildFile << "mkdir Data\n";
+			buildFile << "xcopy /k/c/y \"..\\" + curProjectName + ".proj\" \"Data\"\n";				// Copy the project file, making sure the previous dir is specified as ..\ instead of ../ otherwise xcopy won't copy
+			buildFile << "sed -i 's/\\r$//' Data/" + curProjectName + ".proj\n";					// Change the line endings. Should just save them all with linux line endings... Notepad++ is able to open and edit them anyway
+			buildFile << "xcopy /s/h/e/k/c/y \"../../../Vita\" \".\"\n";
 			buildFile << "cmake -G \"Unix Makefiles\" .\n";
 			buildFile << "make";
 		}

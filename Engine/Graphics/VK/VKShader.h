@@ -4,7 +4,7 @@
 
 #include <vulkan\vulkan.h>
 
-#include <vector>
+#include <string>
 
 namespace Engine
 {
@@ -35,8 +35,9 @@ namespace Engine
 		VkPipelineShaderStageCreateInfo GetComputeStageInfo();
 
 		const std::string &GetVertexName() const { return vertexName; }
-		const std::string &GetGeometryName() const { return geometryName; }
 		const std::string &GetFragmentName() const { return fragmentName; }
+		const std::string &GetGeometryName() const { return geometryName; }
+		const std::string &GetComputeName() const { return computeName; }
 
 		bool HasGeometry() const { return geometryName.length() != 0; }
 
@@ -47,11 +48,6 @@ namespace Engine
 		unsigned int id;
 		std::string idStr;
 		std::string defines;
-
-		std::string vertexName;
-		std::string geometryName;
-		std::string fragmentName;
-		std::string computeName;
 
 		bool compiled;
 
@@ -64,6 +60,11 @@ namespace Engine
 		bool geometryNeedsCompile;
 		bool fragmentNeedsCompile;
 		bool computeNeedsCompile;
+
+		std::string vertexName;
+		std::string fragmentName;
+		std::string geometryName;
+		std::string computeName;
 
 		std::string vertexCode;
 		std::string geometryCode;

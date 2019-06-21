@@ -270,6 +270,7 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Physics\Ray.cpp" />
     <ClCompile Include="..\Engine\Physics\RigidBody.cpp" />
     <ClCompile Include="..\Engine\Physics\Trigger.cpp" />
+    <ClCompile Include="..\Engine\Program\Allocator.cpp" />
     <ClCompile Include="..\Engine\Program\FileManager.cpp" />
     <ClCompile Include="..\Engine\Program\Input.cpp" />
     <ClCompile Include="..\Engine\Program\Log.cpp" />

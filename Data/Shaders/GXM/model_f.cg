@@ -1,8 +1,8 @@
-uniform myubo {
+/*uniform myubo {
 	float r;
 	float g;
 	float b;
-} cols : BUFFER [1];
+} cols : BUFFER [1];*/
 
 uniform sampler2D tex;
 
@@ -11,8 +11,8 @@ float4 main(
 	float3 outNormal : TEXCOORD1) : COLOR
 {
 	float4 col = tex2D(tex, outUv);
-	col.r *= cols.r;
+	/*col.r *= cols.r;
 	col.g *= cols.g;
-	col.b *= cols.b;
+	col.b *= cols.b;*/
 	return col;
 }

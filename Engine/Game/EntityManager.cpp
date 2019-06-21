@@ -1,5 +1,7 @@
 #include "EntityManager.h"
 
+#include "Program/Log.h"
+
 namespace Engine
 {
 	EntityManager::EntityManager()
@@ -72,6 +74,8 @@ namespace Engine
 
 	void EntityManager::Deserialize(Serializer &s)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing entity manager\n");
+
 		s.Read(nextEntity.id);
 		size_t size = 0;
 		s.Read(size);

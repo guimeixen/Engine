@@ -921,7 +921,7 @@ void ObjectWindow::HandleModel()
 					for (size_t i = 0; i < files.size(); i++)
 					{
 						if (ImGui::Selectable(files[i].c_str()))
-							am->SetAnimationController(files[i], &game->GetModelManager());
+							am->SetAnimationController(game->GetFileManager(), files[i], &game->GetModelManager());
 					}
 				}
 				else

@@ -111,7 +111,7 @@ namespace Engine
 		~AnimatedModel();
 
 		void AddAnimation(Animation *anim);
-		void SetAnimationController(const std::string &controllerPath, ModelManager *modelManager);
+		void SetAnimationController(FileManager *fileManager, const std::string &controllerPath, ModelManager *modelManager);
 		void RemoveAnimationController() { if (animController) { delete animController; animController = nullptr; } }
 
 		unsigned short AddBoneAttachment(Game *game, Bone *bone, Entity attachedEntity);

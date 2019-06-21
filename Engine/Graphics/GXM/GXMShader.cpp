@@ -12,13 +12,13 @@ namespace Engine
 		std::string vertexPath = "Data/Shaders/GXM/" + vertexName + "_v_cg.gxp";
 		std::string fragmentPath = "Data/Shaders/GXM/" + fragmentName + "_f_cg.gxp";
 
-		std::ifstream vertexFile = fileManager->Open(vertexPath, std::ios::ate | std::ios::binary);
+		std::ifstream vertexFile = fileManager->OpenForReading(vertexPath, std::ios::ate | std::ios::binary);
 		if (!vertexFile.is_open())
 		{
 			Log::Print(LogLevel::LEVEL_INFO, "Failed to open vertex shader file: %s\n", vertexPath.c_str());
 			return;
 		}
-		std::ifstream fragmentFile = fileManager->Open(fragmentPath, std::ios::ate | std::ios::binary);
+		std::ifstream fragmentFile = fileManager->OpenForReading(fragmentPath, std::ios::ate | std::ios::binary);
 		if (!fragmentFile.is_open())
 		{
 			Log::Print(LogLevel::LEVEL_INFO, "Failed to open fragment shader file: %s\n", fragmentPath.c_str());

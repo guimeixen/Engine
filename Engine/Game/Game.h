@@ -29,6 +29,7 @@ namespace Engine
 	class MainView;
 	class DebugDrawManager;
 	class FileManager;
+	class Allocator;
 
 	struct Scene
 	{
@@ -40,7 +41,7 @@ namespace Engine
 	public:
 		Game();
 
-		void Init(Renderer *renderer, FileManager *fileManager);
+		void Init(Allocator *allocator, Renderer *renderer, FileManager *fileManager);
 		void Update(float dt);
 		void Render(Renderer *renderer);
 		// Used when creating a new or opening a project. It just disposes what is not necessary
@@ -83,6 +84,7 @@ namespace Engine
 		const std::string &GetProjectDir() const { return projectDir; }
 		const std::vector<Scene> &GetScenes() const { return scenes; }
 
+		Allocator*				GetAllocator() const { return allocator; }
 		DebugDrawManager*		GetDebugDrawManager() const { return debugDrawManager; }
 		Renderer*				GetRenderer() const { return renderer; }
 		FileManager*			GetFileManager() const { return fileManager; }
@@ -128,6 +130,7 @@ namespace Engine
 		unsigned int playableWidth;
 		unsigned int playebleHeight;
 
+		Allocator			*allocator;
 		Renderer			*renderer;		
 		FileManager			*fileManager;
 		AISystem			aiSystem;

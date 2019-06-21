@@ -2,8 +2,6 @@
 
 #include "RendererStructs.h"
 
-#include <string>
-
 namespace Engine
 {
 	class Shader

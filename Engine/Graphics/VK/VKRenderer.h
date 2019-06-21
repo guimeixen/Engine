@@ -44,7 +44,7 @@ namespace Engine
 	class VKRenderer : public Renderer
 	{
 	public:
-		VKRenderer(GLFWwindow *window, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight);
+		VKRenderer(FileManager *fileManager, GLFWwindow *window, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight);
 		~VKRenderer();
 
 		bool Init() override;

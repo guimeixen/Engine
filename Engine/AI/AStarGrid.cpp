@@ -428,7 +428,7 @@ namespace Engine
 
 	void AStarGrid::SaveGridToFile()
 	{
-		Serializer s;
+		Serializer s(game->GetFileManager());
 		s.OpenForWriting();
 
 		s.Write(totalGridNodes);
@@ -451,7 +451,7 @@ namespace Engine
 		if (!isInit)
 			return;
 
-		Serializer s;
+		Serializer s(game->GetFileManager());
 		s.OpenForReading(game->GetProjectDir() + "aigrid.data");
 
 		if (s.IsOpen())

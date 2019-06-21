@@ -4,6 +4,7 @@
 #include "Game/Game.h"
 #include "Program/Window.h"
 #include "Program/FileManager.h"
+#include "Program/Allocator.h"
 
 namespace Engine
 {
@@ -25,6 +26,7 @@ namespace Engine
 		Renderer *renderer;
 		InputManager inputManager;
 		FileManager fileManager;
+		Allocator allocator;
 
 		float deltaTime = 0.0f;
 		float lastTime = 0.0f;

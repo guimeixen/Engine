@@ -245,6 +245,8 @@ namespace Engine
 
 	void LightManager::Deserialize(Serializer &s, bool reload)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing light manager\n");
+
 		if (!reload)
 		{
 			s.Read(usedPointLights);

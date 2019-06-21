@@ -15,7 +15,7 @@ OBJS       = Engine/PSVitaApplication.o Engine/Program/Random.o Engine/Program/L
 				Engine/Graphics/Texture.o Engine/Graphics/VertexArray.o Engine/Graphics/Renderer.o Engine/Graphics/GXM/GXMRenderer.o Engine/Graphics/GXM/GXMFramebuffer.o \
 				Engine/Graphics/GXM/GXMUtils.o Engine/stb.o Engine/Graphics/Effects/ForwardPlusRenderer.o Engine/Graphics/Effects/PSVitaRenderer.o Engine/Graphics/GXM/GXMVertexArray.o \
 				Engine/Graphics/GXM/GXMVertexBuffer.o Engine/Graphics/GXM/GXMIndexBuffer.o Engine/Program/FileManager.o Engine/Graphics/GXM/GXMShader.o Engine/Graphics/GXM/GXMTexture2D.o \
-				Engine/Graphics/GXM/GXMUniformBuffer.o
+				Engine/Graphics/GXM/GXMUniformBuffer.o Engine/Program/Allocator.o
 				
 
 INCLUDES		= -I$(CURDIR) -IEngine -Iinclude/bullet

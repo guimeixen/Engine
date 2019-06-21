@@ -1,16 +1,15 @@
 #include "Serializer.h"
 
+#include "Program/FileManager.h"
+
 namespace Engine
 {
-	Serializer::Serializer()
+	Serializer::Serializer(FileManager *fileManager)
 	{
+		this->fileManager = fileManager;
 		dataSize = 0;
 		data = nullptr;
 		pos = 0;
-	}
-
-	Serializer::~Serializer()
-	{
 	}
 
 	void Serializer::OpenForWriting()
@@ -21,7 +20,7 @@ namespace Engine
 
 	void Serializer::OpenForReading(const std::string &filename)
 	{
-		std::ifstream file(filename, std::ios::binary | std::ios::ate);
+		std::ifstream file = fileManager->OpenForReading(filename, std::ios::ate | std::ios::binary);
 		if (file.is_open())
 		{
 			dataSize = (size_t)file.tellg();
@@ -37,7 +36,7 @@ namespace Engine
 		if (pos <= 0)
 			return;
 
-		std::ofstream file(filename, std::ios::binary);
+		std::ofstream file = fileManager->OpenForWriting(filename, std::ios::binary);
 		if (file.is_open())
 		{
 			file.write(data, (std::streamsize)pos);
@@ -68,19 +67,6 @@ namespace Engine
 			delete[] data;
 			data = nullptr;
 		}
-	}
-
-	void Serializer::SetDataForReading(char *data, size_t size)
-	{
-		if (this->data)
-		{
-			delete[] this->data;
-			this->data = nullptr;
-		}
-
-		this->data = data;
-		dataSize = size;
-		pos = 0;
 	}
 
 	void Serializer::Write(bool data)
@@ -155,6 +141,24 @@ namespace Engine
 		unsigned int length = strlen(data);
 		write(length);
 		write(*data, length);
+	}
+
+	void Serializer::Write(const void *data, unsigned int size)
+	{
+		size_t newSize = pos + (size_t)size;
+
+		// Reallocate when newSize exceeds dataSize
+		if (newSize > dataSize)
+		{
+			char *newData = new char[newSize * 2];
+			std::memcpy(newData, this->data, dataSize);
+			dataSize = newSize * 2;
+			delete[] this->data;
+			this->data = newData;
+		}
+
+		std::memcpy(this->data + pos, data, size);
+		pos = newSize;
 	}
 
 	void Serializer::Read(bool &data)
@@ -258,5 +262,11 @@ namespace Engine
 		read(length);
 		memset(data, '\0', (size_t)(sizeof(char) * length));
 		read(*data, length);
+	}
+
+	void Serializer::Read(void *data, unsigned int size)
+	{
+		std::memcpy(data, static_cast<void*>(this->data + pos), (size_t)size);
+		pos += size;
 	}
 }

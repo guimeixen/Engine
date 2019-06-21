@@ -14,7 +14,7 @@ namespace Engine
 	class GLRenderer : public Renderer
 	{
 	public:
-		GLRenderer(GLuint width, GLuint height);
+		GLRenderer(FileManager *fileManager, GLuint width, GLuint height);
 		~GLRenderer();
 
 		bool Init() override;

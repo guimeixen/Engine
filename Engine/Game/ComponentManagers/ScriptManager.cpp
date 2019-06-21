@@ -435,7 +435,7 @@ namespace Engine
 
 	void ScriptManager::ExecuteFile(const std::string &fileName)
 	{
-		std::ifstream f = game->GetFileManager()->Open(fileName, std::ios::in | std::ios::ate);
+		std::ifstream f = game->GetFileManager()->OpenForReading(fileName, std::ios::in | std::ios::ate);
 
 		if (f.fail())
 		{
@@ -510,6 +510,8 @@ namespace Engine
 
 	void ScriptManager::Deserialize(Serializer &s, bool reload)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing script manager\n");
+
 		if (!reload)
 		{
 			s.Read(usedScripts);
@@ -763,7 +765,7 @@ namespace Engine
 		{		
 			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Loading script\n");
 
-			std::ifstream f = game->GetFileManager()->Open(fileName, std::ios::ate);
+			std::ifstream f = game->GetFileManager()->OpenForReading(fileName, std::ios::ate);
 
 			if (!f.is_open())
 			{

@@ -179,7 +179,7 @@ void EditorManager::Update(float dt)
 	{
 		const std::vector<Engine::Scene> &scenes = game->GetScenes();
 
-		Engine::Serializer s;
+		Engine::Serializer s(game->GetFileManager());
 		s.OpenForReading(curLevelDir + "/" + scenes[game->GetCurrentSceneId()].name + ".names");
 		if (s.IsOpen())
 			editorNameManager.Deserialize(s);
@@ -280,7 +280,7 @@ void EditorManager::Render()
 		{
 			game->SetScene(currentScene, std::string(projectName));
 
-			Engine::Serializer s;
+			Engine::Serializer s(game->GetFileManager());
 			s.OpenForReading(curLevelDir + "/" + scenes[currentScene].name + ".names");
 			if (s.IsOpen())
 				editorNameManager.Deserialize(s);
@@ -694,7 +694,7 @@ void EditorManager::ShowMainMenuBar()
 
 		if (ImGui::Button("Compile"))
 		{
-			//SaveProject();
+			SaveProject();
 			psvCompiler.Compile(game, curLevelDir, projectName, vitaAppName, vitaAppTitleID);
 
 			ImGui::CloseCurrentPopup();
@@ -809,11 +809,11 @@ void EditorManager::HandleProjectCreation()
 					curLevelDir = "Data/Levels/";
 					
 					if (!Engine::utils::DirectoryExists(curLevelDir))
-						Engine::utils::CreateFolder(curLevelDir.c_str());
+						Engine::utils::CreateDir(curLevelDir.c_str());
 
 					curLevelDir += projectName;
 
-					Engine::utils::CreateFolder(curLevelDir.c_str());
+					Engine::utils::CreateDir(curLevelDir.c_str());
 
 					game->AddScene("main");		// Add default main scene
 					game->Save(curLevelDir + '/', std::string(projectName));			
@@ -861,7 +861,7 @@ void EditorManager::HandleProjectCreation()
 				{
 					const std::string &name = game->GetScenes()[currentScene].name;
 
-					Engine::Serializer s;
+					Engine::Serializer s(game->GetFileManager());
 					s.OpenForReading(curLevelDir + "/" + name + ".names");
 					if (s.IsOpen())
 						editorNameManager.Deserialize(s);
@@ -903,7 +903,7 @@ void EditorManager::DisplayLoadPopup()
 
 				const std::string &name = game->GetScenes()[currentScene].name;
 
-				Engine::Serializer s;
+				Engine::Serializer s(game->GetFileManager());
 				s.OpenForReading(curLevelDir + "/" + name + ".names");
 				if (s.IsOpen())
 					editorNameManager.Deserialize(s);
@@ -943,7 +943,7 @@ void EditorManager::SaveAs()
 
 			const std::string &name = game->GetScenes()[currentScene].name;
 
-			Engine::Serializer s;
+			Engine::Serializer s(game->GetFileManager());
 			s.OpenForWriting();
 			editorNameManager.Serialize(s);
 			s.Save(curLevelDir + "/" + name + ".names");
@@ -1046,7 +1046,7 @@ void EditorManager::SaveProject()
 
 		const std::string &name = game->GetScenes()[currentScene].name;
 
-		Engine::Serializer s;
+		Engine::Serializer s(game->GetFileManager());
 		s.OpenForWriting();
 		editorNameManager.Serialize(s);
 		s.Save(curLevelDir + "/" + name + ".names");

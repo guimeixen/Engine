@@ -1256,6 +1256,8 @@ namespace Engine
 
 	void PhysicsManager::Deserialize(Serializer &s, bool reload)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing physics manager\n");
+
 		if (!reload)
 		{
 			s.Read(usedRigidBodies);

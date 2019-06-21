@@ -104,7 +104,6 @@ namespace Engine
 	private:
 		std::string name;
 		std::string path;
-		std::string shaderName;
 		bool showInEditor;
 
 		//unsigned int meshParamsSize;

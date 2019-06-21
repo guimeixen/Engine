@@ -65,8 +65,9 @@ namespace Engine
 		unsigned int GetRefCount() const { return refCount; }
 
 	protected:
-		void LoadModelFile(Renderer *renderer, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors);
-		Mesh ProcessMesh(Renderer *renderer, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors);
+		void LoadAssimpModelFile(Renderer *renderer, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors);
+		void LoadModel(Renderer *renderer, ScriptManager &scriptManager, const std::vector<std::string> &matNames);
+		Mesh ProcessMesh(Renderer *renderer, Serializer &s, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors);
 		MaterialInstance *LoadMaterialFromAssimpMat(Renderer *renderer, ScriptManager &scriptManager, const Mesh &mesh, const aiMaterial *aiMat);
 
 	protected:

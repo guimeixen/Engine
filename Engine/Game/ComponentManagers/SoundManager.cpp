@@ -329,6 +329,8 @@ namespace Engine
 
 	void SoundManager::Deserialize(Serializer &s, bool reload)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing sound manager\n");
+
 		if (!reload)
 		{
 			s.Read(usedSoundSources);

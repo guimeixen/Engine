@@ -1,5 +1,0 @@
-TODO:
-	- Check if delta time is working 		- Done
-	- Add text rendering						- Done
-	- Test camera movement
-	- 

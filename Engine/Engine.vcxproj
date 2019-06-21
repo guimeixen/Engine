@@ -23,6 +23,7 @@
     <ClCompile Include="AI\AISystem.cpp" />
     <ClCompile Include="AI\AStarGrid.cpp" />
     <ClCompile Include="AI\AStarNodeHeap.cpp" />
+    <ClCompile Include="Program\Allocator.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Graphics\GXM\GXMShader.cpp" />
     <ClCompile Include="Graphics\GXM\GXMTexture2D.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="AI\AStarGrid.h" />
     <ClInclude Include="AI\AStarNode.h" />
     <ClInclude Include="AI\AStarNodeHeap.h" />
+    <ClInclude Include="Program\Allocator.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="Graphics\GXM\GXMShader.h" />
     <ClInclude Include="Graphics\GXM\GXMTexture2D.h" />

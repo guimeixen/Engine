@@ -4,6 +4,7 @@
 #include "Program/StringID.h"
 #include "Program/Input.h"
 #include "Program/Log.h"
+#include "Program/FileManager.h"
 
 #include "Physics/RigidBody.h"
 #include "Physics/Collider.h"
@@ -31,7 +32,6 @@
 #include <Windows.h>
 #endif
 
-#include <iostream>
 #include <cstdio>
 
 namespace Engine
@@ -55,14 +55,15 @@ namespace Engine
 		gameState = GameState::STOPPED;
 	}
 
-	void Game::Init(Renderer *renderer, FileManager *fileManager)
+	void Game::Init(Allocator *allocator, Renderer *renderer, FileManager *fileManager)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Starting Game\n");
 
+		this->allocator = allocator;
 		this->renderer = renderer;
 		this->fileManager = fileManager;
 
-		transformManager.Init(50);
+		transformManager.Init(allocator, 50);
 		scriptManager.Init(this);
 		aiSystem.Init(this);
 		physicsManager.Init(&transformManager);
@@ -283,26 +284,13 @@ namespace Engine
 
 	bool Game::Save(const std::string &projectFolder, const std::string &projectName)
 	{
-		bool canSave = false;
-
 #ifndef VITA
-		if (CreateDirectory((LPCWSTR)"Data/Levels", NULL))
-			canSave = true;
-		else if (ERROR_ALREADY_EXISTS == GetLastError())
-			canSave = true;
-		else
-		{
-			std::cout << "Failed to create levels directory. Error: " << GetLastError() << '\n';
-			return false;
-		}
-#endif
-
-		if (canSave)
+		if (utils::CreateDir("Data/Levels"))
 		{
 			if (!SaveProjectFile(projectFolder, projectName))
 				return false;
 
-			Serializer s;
+			Serializer s(fileManager);
 			s.OpenForWriting();
 
 			entityManager.Serialize(s);
@@ -321,7 +309,7 @@ namespace Engine
 			if (terrain)
 				terrain->Save(projectFolder, scenes[currentScene].name);
 		}
-
+#endif
 		return true;
 	}
 
@@ -357,7 +345,7 @@ namespace Engine
 		// Not working. Even though we set the layer on OBSTACLE objects it still doesn't work. But clicking on rebuild immediate in the aiwindow works and does the exact same thing as we do here
 		//aiSystem.GetAStarGrid().RebuildImmediate(this, aiSystem.GetAStarGrid().GetGridCenter());
 
-		aiSystem.GetAStarGrid().LoadGridFromFile();		// Should be done per scene eventually
+		//aiSystem.GetAStarGrid().LoadGridFromFile();		// Should be done per scene eventually
 
 		return true;
 	}
@@ -375,6 +363,8 @@ namespace Engine
 		soundManager.Play();
 		scriptManager.Play();
 		physicsManager.Play();
+
+		Log::Print(LogLevel::LEVEL_INFO, "Done loading project: %s\n", projectName.c_str());
 
 		return true;
 	}
@@ -418,19 +408,21 @@ namespace Engine
 	bool Game::LoadProjectFile(const std::string &projectName)
 	{
 		this->projectName = projectName;
-		projectDir = "Data/Levels/" + projectName + "/";
+		projectDir = "Data/Levels/" + projectName + '/';
 
-		// Load the proj file first
-		std::ifstream projFile(projectDir + projectName + ".proj");
-
-		std::string line;
-		glm::vec3 position;
+		std::ifstream projFile = fileManager->OpenForReading(projectDir + projectName + ".proj");
 
 		if (!projFile.is_open())
 		{
-			std::cout << "Error! Failed to load project file: " << projectName << '\n';
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to load project file: %s\n", projectName.c_str());
 			return false;
 		}
+
+		// Load the proj file first
+		//std::ifstream projFile(projectDir + projectName + ".proj");
+
+		std::string line;
+		glm::vec3 position;	
 
 		glm::vec2 gridCenter;
 		bool showGrid = false;
@@ -450,7 +442,7 @@ namespace Engine
 				s.name = line.substr(6);
 				scenes.push_back(s);
 			}
-			else if (line.substr(0, 4) == "pos=")		// id = 0 reserved for root node
+			else if (line.substr(0, 4) == "pos=")
 			{
 				std::istringstream ss(line.substr(4));
 				ss >> position.x >> position.y >> position.z;
@@ -491,8 +483,6 @@ namespace Engine
 			}
 		}
 
-		projFile.close();
-
 		if (currentScene < 0 || currentScene >= (int)scenes.size())
 			return false;
 
@@ -506,8 +496,7 @@ namespace Engine
 
 	void Game::LoadTerrainFromFile(const std::string &projectName, const std::string &sceneName)
 	{
-		// Try and open the terrain cfg file
-		std::ifstream terrainFile("Data/Levels/" + projectName + "/terrain_" + sceneName + ".dat");
+		std::ifstream terrainFile = fileManager->OpenForReading("Data/Levels/" + projectName + "/terrain_" + sceneName + ".dat");
 
 		if (terrainFile.is_open())
 		{
@@ -517,24 +506,18 @@ namespace Engine
 			while (std::getline(terrainFile, line))
 			{
 				if (line.substr(0, 4) == "mat=")
-				{
 					info.matPath = line.substr(4);
-				}
 				else if (line.substr(0, 4) == "veg=")
-				{
 					info.vegPath = line.substr(4);
-				}
 			}
 
 			AddTerrain(info);
-
-			terrainFile.close();
 		}
 	}
 
 	void Game::LoadObjectsFromFile(const std::string &projectName, const std::string &sceneName)
 	{
-		Serializer s;
+		Serializer s(fileManager);
 		s.OpenForReading("Data/Levels/" + projectName + "/" + sceneName + ".bin");
 		if (s.IsOpen())
 		{
@@ -548,12 +531,16 @@ namespace Engine
 			physicsManager.Deserialize(s);
 			uiManager.Deserialize(s);
 		}
+		else
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to open scene file: %s.bin\n", sceneName.c_str());
+		}
 		s.Close();
 	}
 
 	void Game::SaveBeforePlayMode()
 	{
-		Serializer s;
+		Serializer s(fileManager);
 		s.OpenForWriting();
 
 		entityManager.Serialize(s);
@@ -572,7 +559,7 @@ namespace Engine
 
 	void Game::RevertPlayMode()
 	{
-		Serializer s;
+		Serializer s(fileManager);
 		s.OpenForReading("Data/temp.bin");
 		if (s.IsOpen())
 		{
@@ -705,7 +692,7 @@ namespace Engine
 			}
 		}
 		else
-			std::cout << "Failed to create terrain\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to create terrain\n");
 	}
 
 	bool Game::PerformRayIntersection(const glm::vec2 &point, Entity &outEntity)

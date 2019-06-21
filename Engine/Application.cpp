@@ -21,7 +21,7 @@ namespace Engine
 
 		renderer = Renderer::Create(window.GetHandle(), api, &fileManager, width, height, window.GetMonitorWidth(), window.GetMonitorHeight());
 
-		game.Init(renderer, &fileManager);
+		game.Init(&allocator, renderer, &fileManager);
 
 #ifdef EDITOR
 		editorManager.Init(window.GetHandle(), &game);
@@ -35,6 +35,8 @@ namespace Engine
 		game.GetRenderingPath()->GetFrameGraph().Setup();
 
 		renderer->PostLoad();
+
+		allocator.PrintStats();
 
 		return true;
 	}

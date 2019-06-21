@@ -34,7 +34,9 @@ namespace Engine
 		isInit = true;
 	}
 
-	std::ifstream FileManager::Open(const std::string &path, std::ios_base::openmode mode)
+	
+
+	std::ifstream FileManager::OpenForReading(const std::string &path, std::ios_base::openmode mode)
 	{
 #ifdef VITA
 		std::string completePath = vitaAppPath + path;
@@ -50,10 +52,21 @@ namespace Engine
 		return f;
 	}
 
-	/*void FileManager::Close(FILE *f)
+	std::ofstream FileManager::OpenForWriting(const std::string &path, std::ios_base::openmode mode)
 	{
-		fclose(f);
-	}*/
+#ifdef VITA
+		std::string completePath = vitaAppPath + path;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Opening file: %s\n", completePath.c_str());
+
+		//FILE *f = fopen(completePath.c_str(), mode);
+		std::ofstream f(completePath.c_str(), mode);
+#else
+		//FILE *f = fopen(path.c_str(), mode);
+		std::ofstream f(path.c_str(), mode);
+#endif
+		return f;
+	}
 
 	char *FileManager::ReadEntireFile(std::ifstream &file, bool isBinary)
 	{

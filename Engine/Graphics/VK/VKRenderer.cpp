@@ -29,8 +29,9 @@
 
 namespace Engine
 {
-	VKRenderer::VKRenderer(GLFWwindow *window, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight)
+	VKRenderer::VKRenderer(FileManager *fileManager, GLFWwindow *window, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight)
 	{
+		this->fileManager = fileManager;
 		this->window = window;
 		this->width = width;
 		this->height = height;

@@ -3,15 +3,16 @@
 #include "include/glm/glm.hpp"
 #include "include/glm/gtc/quaternion.hpp"
 
-#include <fstream>
+#include <string>
 
 namespace Engine
 {
+	class FileManager;
+
 	class Serializer
 	{
 	public:
-		Serializer();
-		~Serializer();
+		Serializer(FileManager *fileManager);
 
 		void OpenForWriting();
 		void OpenForReading(const std::string &filename);
@@ -20,7 +21,6 @@ namespace Engine
 		bool EndReached();
 		void Close();
 
-		void SetDataForReading(char *data, size_t size);
 		char *GetData() const { return data; }
 		size_t GetDataSize() const { return pos; }
 
@@ -38,6 +38,7 @@ namespace Engine
 		void Write(const glm::mat3 &data);
 		void Write(const std::string &data);
 		void Write(const char *data);
+		void Write(const void *data, unsigned int size);
 
 		void Read(bool &data);
 		void Read(short &data);
@@ -53,6 +54,7 @@ namespace Engine
 		void Read(glm::mat3 &data);
 		void Read(std::string &data);
 		void Read(char *data);					// Assumes data as enough size to hold the serialized string
+		void Read(void *data, unsigned int size);
 
 	private:
 		template<typename T>
@@ -83,6 +85,7 @@ namespace Engine
 		}
 
 	private:
+		FileManager *fileManager;
 		size_t dataSize;
 		char *data;
 		size_t pos;

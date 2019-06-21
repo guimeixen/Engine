@@ -502,7 +502,7 @@ namespace Engine
 		anim->AddReference();
 	}
 
-	void AnimatedModel::SetAnimationController(const std::string &controllerPath, ModelManager *modelManager)
+	void AnimatedModel::SetAnimationController(FileManager *fileManager, const std::string &controllerPath, ModelManager *modelManager)
 	{
 		if (animController)
 		{
@@ -512,7 +512,7 @@ namespace Engine
 
 		animController = new AnimationController(controllerPath);
 
-		Serializer s;
+		Serializer s(fileManager);
 		s.OpenForReading(controllerPath);
 		animController->Deserialize(s, modelManager);
 		s.Close();
@@ -919,7 +919,7 @@ namespace Engine
 			std::string path;
 			s.Read(path);
 			if (!reload)
-				SetAnimationController(path, &game->GetModelManager());
+				SetAnimationController(game->GetFileManager(), path, &game->GetModelManager());
 		}
 
 		s.Read(curBoneAttachments);

@@ -87,7 +87,7 @@ void AnimationWindow::OpenAnimationController(const std::string &path)
 
 	curAnimController = new Engine::AnimationController(path);
 
-	Engine::Serializer s;
+	Engine::Serializer s(game->GetFileManager());
 	s.OpenForReading(path);
 	curAnimController->Deserialize(s, &game->GetModelManager());
 	s.Close();
@@ -181,7 +181,7 @@ void AnimationWindow::HandleNodeCreation()
 		// Save the current controller if we create a new one or load another one
 		if (saveCurrent && curAnimController)
 		{
-			Engine::Serializer s;
+			Engine::Serializer s(game->GetFileManager());
 			s.OpenForWriting();
 			curAnimController->Serialize(s);
 			s.Save(curAnimContPath);
@@ -208,7 +208,7 @@ void AnimationWindow::HandleNodeCreation()
 
 				curAnimController = new Engine::AnimationController(curAnimContPath);
 
-				Engine::Serializer s;
+				Engine::Serializer s(game->GetFileManager());
 				s.OpenForWriting();
 				curAnimController->Serialize(s);
 				s.Save(curAnimContPath);
@@ -259,7 +259,7 @@ void AnimationWindow::HandleNodeCreation()
 
 			if (ImGui::InputText("Name", name, 128, ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				Engine::Serializer s;
+				Engine::Serializer s(game->GetFileManager());
 				s.OpenForWriting();
 				curAnimController->Serialize(s);
 
@@ -276,7 +276,7 @@ void AnimationWindow::HandleNodeCreation()
 				{
 					Engine::AnimatedModel *am = game->GetModelManager().GetAnimatedModel(curEntity);
 					if (am)
-						am->SetAnimationController(path + ".animcontroller", &game->GetModelManager());
+						am->SetAnimationController(game->GetFileManager(), path + ".animcontroller", &game->GetModelManager());
 				}
 
 				closeOuterPopup = true;
@@ -584,7 +584,7 @@ void AnimationWindow::ResetName()
 
 void AnimationWindow::SaveEditorAnimationController(const std::string &path)
 {
-	Engine::Serializer s;
+	Engine::Serializer s(game->GetFileManager());
 	s.OpenForWriting();
 
 	s.Write(editorNodes.size());
@@ -600,7 +600,7 @@ void AnimationWindow::SaveEditorAnimationController(const std::string &path)
 
 void AnimationWindow::LoadEditorAnimationController(const std::string &path)
 {
-	Engine::Serializer s;
+	Engine::Serializer s(game->GetFileManager());
 	s.OpenForReading(path);
 
 	unsigned int numNodes = 0;

@@ -62,6 +62,7 @@ namespace Engine
 		unsigned int GetCurrentCharCount() const { return curQuadCount; }
 		const Mesh &GetMesh() const { return mesh; }
 		MaterialInstance *GetMaterialInstance() const { return matInstance; }
+		const std::string &GetFontPath() const { return fontPath; }
 
 	private:
 		bool ReadFontFile(const std::string &fontPath);
@@ -76,6 +77,7 @@ namespace Engine
 		Buffer *vertexBuffer;
 
 		bool enabled;
+		std::string fontPath;
 
 		std::vector<Text> textBuffer;
 		std::map<int, Character> characters;

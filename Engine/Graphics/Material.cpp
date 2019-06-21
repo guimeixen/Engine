@@ -417,7 +417,7 @@ namespace Engine
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Loading material instance for %s\n", path.c_str());
 
-		std::ifstream file = renderer->GetFileManager()->Open(path);
+		std::ifstream file = renderer->GetFileManager()->OpenForReading(path);
 
 		if (!file.is_open())
 		{

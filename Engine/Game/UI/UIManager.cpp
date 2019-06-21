@@ -481,6 +481,8 @@ namespace Engine
 
 	void UIManager::Deserialize(Serializer &s, bool reload)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing ui manager\n");
+
 		Renderer *renderer = game->GetRenderer();
 
 		if (!reload)

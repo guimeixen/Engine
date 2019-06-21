@@ -15,6 +15,10 @@
 #include "include/assimp/Importer.hpp"
 #include "include/assimp/postprocess.h"
 
+#ifdef VITA
+#include "psp2/kernel/sysmem.h"
+#endif
+
 namespace Engine
 {
 	Model::Model()
@@ -33,21 +37,14 @@ namespace Engine
 		AddReference();
 		type = ModelType::BASIC;	
 
-#ifdef VITA
-		this->path = renderer->GetFileManager()->GetAppPath();
-		this->path += path;
-#else
 		this->path = path;
-#endif
+		this->isInstanced = isInstanced;
+		castShadows = true;
+		lodDistance = 10000.0f;
 
 		Log::Print(LogLevel::LEVEL_INFO, "Loading model at %s\n", this->path.c_str());
 
-		this->isInstanced = isInstanced;
-		castShadows = true;
-
-		lodDistance = 10000.0f;
-
-		LoadModelFile(renderer, {}, scriptManager, loadVertexColors);
+		LoadAssimpModelFile(renderer, {}, scriptManager, loadVertexColors);
 	}
 
 	Model::Model(Renderer *renderer, const std::string &path, bool isInstanced, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors)
@@ -55,13 +52,12 @@ namespace Engine
 		AddReference();
 		type = ModelType::BASIC;
 
-		this->isInstanced = isInstanced;
 		this->path = path;
+		this->isInstanced = isInstanced;
 		castShadows = true;
-
 		lodDistance = 10000.0f;
-
-		LoadModelFile(renderer, matNames, scriptManager, loadVertexColors);
+		
+		LoadAssimpModelFile(renderer, matNames, scriptManager, loadVertexColors);
 	}
 
 	Model::Model(Renderer *renderer, const Mesh &mesh, MaterialInstance *mat, const AABB &aabb)
@@ -94,13 +90,24 @@ namespace Engine
 		}
 	}
 
-	void Model::LoadModelFile(Renderer *renderer, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors)
+	void Model::LoadAssimpModelFile(Renderer *renderer, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors)
 	{
 		originalAABB.min = glm::vec3(100000.0f);
 		originalAABB.max = glm::vec3(-100000.0f);
 
 		Assimp::Importer importer;
+
+/*#ifdef VITA
+		const aiScene* scene = importer.ReadFile(renderer->GetFileManager()->GetAppPath() + path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs); //| aiProcess_GenSmoothNormals); //| aiProcess_CalcTangentSpace);
+		SceKernelFreeMemorySizeInfo info = {};
+		info.size = sizeof(SceKernelFreeMemorySizeInfo);
+		sceKernelGetFreeMemorySize(&info);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_CDRAM_RW memory available size: %d\n", info.size_cdram);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_MAIN_PHYCONT_*_RW available size: %d\n", info.size_phycont);
+		Log::Print(LogLevel::LEVEL_INFO, "USER_RW available size: %d\n", info.size_user);
+#else*/
 		const aiScene* scene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs); //| aiProcess_GenSmoothNormals); //| aiProcess_CalcTangentSpace);
+//#endif
 
 		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
@@ -110,6 +117,13 @@ namespace Engine
 
 		Log::Print(LogLevel::LEVEL_INFO, "Model imported\n");
 		Log::Print(LogLevel::LEVEL_INFO, "Num Meshes: %d\n", scene->mNumMeshes);
+
+		Serializer s(renderer->GetFileManager());
+		s.OpenForWriting();
+
+		s.Write(313);
+		s.Write(scene->mNumMeshes);
+		s.Write(2);						// Vertex type
 
 		// Load all the model meshes
 		for (unsigned int i = 0; i < scene->mNumMeshes; i++)
@@ -124,7 +138,7 @@ namespace Engine
 			if (matNames.size() > 0)
 			{
 				MeshMaterial mm;
-				mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);
+				mm.mesh = ProcessMesh(renderer, s, aiMesh, scene, loadVertexColors);
 
 				const std::string &matName = matNames[meshesAndMaterials.size()];
 
@@ -148,7 +162,7 @@ namespace Engine
 				if (isInstanced == false)
 				{
 					MeshMaterial mm;
-					mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);				
+					mm.mesh = ProcessMesh(renderer, s, aiMesh, scene, loadVertexColors);
 					mm.mat = LoadMaterialFromAssimpMat(renderer, scriptManager, mm.mesh, aiMat);
 
 					if (aiMat)
@@ -163,7 +177,7 @@ namespace Engine
 				else
 				{
 					MeshMaterial mm;
-					mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);
+					mm.mesh = ProcessMesh(renderer, s, aiMesh, scene, loadVertexColors);
 					mm.mat = renderer->CreateMaterialInstance(scriptManager, "Data/Materials/modelDefaultInstanced.mat", mm.mesh.vao->GetVertexInputDescs());
 
 					if (aiMat)
@@ -177,12 +191,115 @@ namespace Engine
 				}
 			}
 		}
+
+		// Remove the model file extension and add our own so when we load the project again, the model will be loaded from our own custom format
+		size_t dotIndex = path.find('.', 0) + 1;		// +1 to exclude the dot
+		size_t extensionSize = path.length() - dotIndex;
+		for (size_t i = 0; i < extensionSize; i++)
+		{
+			path.pop_back();
+		}
+
+		path += "model";
+
+		s.Save(path);
+		s.Close();
 	}
 
-	Mesh Model::ProcessMesh(Renderer *renderer, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors)
+	void Model::LoadModel(Renderer *renderer, ScriptManager &scriptManager, const std::vector<std::string> &matNames)
 	{
-		Log::Print(LogLevel::LEVEL_INFO, "Processing mesh\n");
+		Serializer s(renderer->GetFileManager());
+		s.OpenForReading(path);
 
+		if (!s.IsOpen())
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to open model file: %s\n", path.c_str());
+			return;
+		}
+
+		int magic = 0;
+		s.Read(magic);
+
+		if (magic != 313)
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Unknown model file: %s\n", path.c_str());
+			return;
+		}
+
+		unsigned int numMeshes = 0;
+		int vertexType = 0;
+		s.Read(numMeshes);
+		s.Read(vertexType);
+
+		Log::Print(LogLevel::LEVEL_INFO, "num meshes: %u\n", numMeshes);
+		Log::Print(LogLevel::LEVEL_INFO, "vertex type: %d\n", vertexType);
+
+		assert((size_t)numMeshes == matNames.size());
+
+		meshesAndMaterials.resize((size_t)numMeshes);
+
+		for (size_t i = 0; i < meshesAndMaterials.size(); i++)
+		{
+			unsigned int numVertices = 0;
+			unsigned int numIndices = 0;
+			s.Read(numVertices);
+			s.Read(numIndices);
+
+			std::vector<VertexPOS3D_UV_NORMAL> vertices(numVertices);
+			std::vector<unsigned short> indices(numIndices);
+			s.Read(vertices.data(), (unsigned int)vertices.size() * sizeof(VertexPOS3D_UV_NORMAL));
+			s.Read(indices.data(), (unsigned int)indices.size() * sizeof(unsigned short));
+
+			Log::Print(LogLevel::LEVEL_INFO, "Creating buffers\n");
+
+			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL), BufferUsage::STATIC);
+			Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
+
+			Mesh m = {};
+			m.vertexOffset = 0;
+			m.indexCount = indices.size();
+			m.indexOffset = 0;
+			m.instanceCount = 0;
+			m.instanceOffset = 0;
+
+			VertexAttribute attribs[3] = {};
+			attribs[0].count = 3;						// Position
+			attribs[1].count = 2;						// UV
+			attribs[2].count = 3;						// Normal
+
+			attribs[0].offset = 0;
+			attribs[1].offset = 3 * sizeof(float);
+			attribs[2].offset = 5 * sizeof(float);
+
+			VertexInputDesc desc = {};
+			desc.stride = sizeof(VertexPOS3D_UV_NORMAL);
+			desc.attribs = { attribs[0], attribs[1], attribs[2] };
+
+			m.vao = renderer->CreateVertexArray(&desc, 1, { vb }, ib);
+
+			MeshMaterial mm = {};
+			mm.mat = renderer->CreateMaterialInstance(scriptManager, matNames[i], {desc});
+			mm.mesh = m;
+
+			std::string name = matNames[i].substr(matNames[i].find_last_of('/') + 1);;
+			// Remove the extension
+			name.pop_back();
+			name.pop_back();
+			name.pop_back();
+			name.pop_back();
+
+			strncpy(mm.mat->name, name.c_str(), 64);
+
+			meshesAndMaterials[i] = mm;
+
+			Log::Print(LogLevel::LEVEL_INFO, "Mesh loaded\n");
+		}
+
+		s.Close();
+	}
+
+	Mesh Model::ProcessMesh(Renderer *renderer, Serializer &s, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors)
+	{
 		std::vector<unsigned short> indices;
 
 		for (unsigned int i = 0; i < aimesh->mNumFaces; i++)
@@ -194,6 +311,11 @@ namespace Engine
 				indices.push_back(face.mIndices[j]);
 			}
 		}
+
+
+		s.Write(aimesh->mNumVertices);
+		s.Write((unsigned int)indices.size());
+
 
 		if (loadVertexColors)
 		{
@@ -314,8 +436,6 @@ namespace Engine
 				}
 			}
 
-			Log::Print(LogLevel::LEVEL_INFO, "Creating buffers\n");
-		
 			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL), BufferUsage::STATIC);
 			Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
 
@@ -373,10 +493,12 @@ namespace Engine
 			if (originalAABB.max.y < 0.001f && originalAABB.max.y > -0.001f)
 				originalAABB.max.y = 0.01f;
 
+
+			s.Write(vertices.data(), (unsigned int)vertices.size() * sizeof(VertexPOS3D_UV_NORMAL));
+			s.Write(indices.data(), (unsigned int)indices.size() * sizeof(unsigned short));
+
 			return m;
 		}
-
-		Log::Print(LogLevel::LEVEL_INFO, "Mesh processed\n");
 	}
 
 	MaterialInstance *Model::LoadMaterialFromAssimpMat(Renderer *renderer, ScriptManager &scriptManager, const Mesh &mesh, const aiMaterial *aiMat)
@@ -478,8 +600,11 @@ namespace Engine
 		s.Write(isInstanced);
 		s.Write(castShadows);
 		s.Write(lodDistance);
+		s.Write(originalAABB.min);
+		s.Write(originalAABB.max);
 
 		s.Write((unsigned int)meshesAndMaterials.size());
+
 		for (size_t i = 0; i < meshesAndMaterials.size(); i++)
 			s.Write(meshesAndMaterials[i].mat->path);
 	}
@@ -490,6 +615,8 @@ namespace Engine
 		s.Read(isInstanced);
 		s.Read(castShadows);
 		s.Read(lodDistance);
+		s.Read(originalAABB.min);
+		s.Read(originalAABB.max);
 
 		unsigned int matCount;
 		s.Read(matCount);
@@ -498,7 +625,8 @@ namespace Engine
 		for (size_t i = 0; i < matCount; i++)
 			s.Read(matNames[i]);
 
-		if(!reload)
-			LoadModelFile(game->GetRenderer(), matNames, game->GetScriptManager(), false);
+		if (!reload)
+			//LoadAssimpModelFile(game->GetRenderer(), matNames, game->GetScriptManager(), false);
+			LoadModel(game->GetRenderer(), game->GetScriptManager(), matNames);
 	}
 }

@@ -232,6 +232,8 @@ namespace Engine
 
 	void ParticleManager::Deserialize(Serializer &s, bool reload)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing particle manager\n");
+
 		if (!reload)
 		{
 			s.Read(usedParticleSystems);

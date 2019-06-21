@@ -178,17 +178,6 @@ namespace Engine
 
 		clearVB = new GXMVertexBuffer(clearVertices, sizeof(clearVertices), BufferUsage::STATIC);
 		clearIB = new GXMIndexBuffer(indices, sizeof(indices), BufferUsage::STATIC);
-
-		/*TextureParams params = {};
-		params.format = TextureFormat::RGBA;
-		texture2d = new GXMTexture2D();
-		if (!texture2d->Load(fileManager, "Data/Textures/sand.png", params))
-			return false;*/
-
-		//sceGxmReserveFragmentDefaultUniformBuffer();
-		//sceGxmSetFragmentUniformBuffer();
-		
-		//sceGxmSetUniformDataF();
 		
 		float myubo[] = { 0.0f, 0.0f, 1.0f };
 		ubo[0] = new GXMUniformBuffer(myubo, 12, BufferUsage::STATIC);
@@ -378,7 +367,7 @@ namespace Engine
 
 	void GXMRenderer::SetDefaultRenderTarget()
 	{
-		time += 1.0f / 60.0f;
+		/*time += 1.0f / 60.0f;
 		b = sin(time) * 0.5f + 0.5f;
 		float myubo[] = { 0.0f, 0.0f, b };
 
@@ -386,7 +375,7 @@ namespace Engine
 		fragmentIndex = (fragmentIndex + 1) % 2;
 		sceGxmNotificationWait(&fragmentNotif[fragmentIndex]);
 
-		ubo[fragmentIndex]->Update(myubo, sizeof(myubo), 0);
+		ubo[fragmentIndex]->Update(myubo, sizeof(myubo), 0);*/
 
 		const ColorSurface &cs = defaultFB->GetColorSurface(backBufferIndex);
 		sceGxmBeginScene(context, 0, defaultFB->GetRTHandle(), nullptr, nullptr, cs.syncObj, &cs.surface, &defaultFB->GetDepthStencilSurface().surface);
@@ -421,8 +410,9 @@ namespace Engine
 
 	void GXMRenderer::EndDefaultRenderTarget()
 	{
-		fragmentNotif[fragmentIndex].value++;
-		sceGxmEndScene(context, nullptr, &fragmentNotif[fragmentIndex]);
+		//fragmentNotif[fragmentIndex].value++;
+		//sceGxmEndScene(context, nullptr, &fragmentNotif[fragmentIndex]);
+		sceGxmEndScene(context, nullptr, nullptr);
 	}
 
 	void GXMRenderer::ClearRenderTarget(Framebuffer *rt)
@@ -469,20 +459,17 @@ namespace Engine
 				Texture *t = renderItem.matInstance->textures[i];
 				if (t)
 				{
-					GXMTexture2D *gt = static_cast<GXMTexture2D*>(renderItem.matInstance->textures[i]);
+					GXMTexture2D *gt = static_cast<GXMTexture2D*>(t);
 					sceGxmSetFragmentTexture(context, (unsigned int)i, &gt->GetGxmTexture());
 				}				
 			}
 		}
 
-		sceGxmSetFragmentUniformBuffer(context, 1, ubo[fragmentIndex]->GetUBO());
+		//sceGxmSetFragmentUniformBuffer(context, 1, ubo[fragmentIndex]->GetUBO());
 		
 		const SceGxmProgramParameter *modelMatrixParam = shader->GetModelMatrixParam();
 		if (modelMatrixParam && renderItem.transform)
 		{
-			//glm::mat4 m = glm::mat4(1.0f);
-			//m = glm::rotate(m, glm::radians(time), glm::vec3(0.0f, 1.0f, 0.0f));
-
 			const glm::mat4 &m = *renderItem.transform;
 
 			void *buf;
@@ -619,18 +606,12 @@ namespace Engine
 		Log::Print(LogLevel::LEVEL_INFO, "Display queue finished\n");
 
 		clearShader->Dispose(shaderPatcher);
-		Log::Print(LogLevel::LEVEL_INFO, "dispose shader\n");
 		delete clearShader;
 		delete clearVB;
-		Log::Print(LogLevel::LEVEL_INFO, "delete vb\n");
 		delete clearIB;
-		Log::Print(LogLevel::LEVEL_INFO, "delete ib\n");
 		delete defaultFB;
-		Log::Print(LogLevel::LEVEL_INFO, "delete fb\n");
 		delete ubo[0];
-		Log::Print(LogLevel::LEVEL_INFO, "delete ubo 0\n");
 		delete ubo[1];
-		Log::Print(LogLevel::LEVEL_INFO, "delete ubo 1\n");
 
 		sceGxmShaderPatcherDestroy(shaderPatcher);
 		gxmutils::gpuFragmentUsseUnmapFree(shaderPatcherBufferFragmentUsseUID);

@@ -2,8 +2,6 @@
 
 #include "VertexTypes.h"
 
-#include <vector>
-
 namespace Engine
 {
 	struct Mesh;

@@ -6,6 +6,7 @@
 #include "Graphics/Material.h"
 #include "Program/StringID.h"
 #include "Program/Log.h"
+#include "Program/Allocator.h"
 #include "Graphics/VertexArray.h"
 
 #include "include/assimp/Importer.hpp"
@@ -21,7 +22,8 @@ namespace Engine
 		shadowPassID = SID("shadow");
 
 		data = {};
-		data.buffer = new unsigned char[initialCapacity * (sizeof(Entity) + sizeof(ModelS) + sizeof(unsigned int) + sizeof(bool) + sizeof(float) + sizeof(AABB) + sizeof(AABB))];
+		//data.buffer = new unsigned char[initialCapacity * (sizeof(Entity) + sizeof(ModelS) + sizeof(unsigned int) + sizeof(bool) + sizeof(float) + sizeof(AABB) + sizeof(AABB))];
+		data.buffer = (unsigned char*)game->GetAllocator()->Allocate(initialCapacity * (sizeof(Entity) + sizeof(ModelS) + sizeof(unsigned int) + sizeof(bool) + sizeof(float) + sizeof(AABB) + sizeof(AABB)));
 		data.capacity = initialCapacity;
 		data.size = 0;
 
@@ -93,7 +95,7 @@ namespace Engine
 		PartialDispose();
 
 		if (data.buffer)
-			delete[] data.buffer;
+			game->GetAllocator()->Free(data.buffer);
 
 		Log::Print(LogLevel::LEVEL_INFO, "Disposing Model manager\n");
 	}
@@ -132,23 +134,30 @@ namespace Engine
 	{
 		if (models.size() > 0)
 		{
-			const ModelInstance &mi = models[0];
-			Model *model = mi.model;
+			for (size_t i = 0; i < models.size(); i++)
+			{
+				const ModelInstance &mi = models[i];
+				Model *model = mi.model;
 
-			const std::vector<MeshMaterial> &meshesAndMaterials = model->GetMeshesAndMaterials();
-			const MeshMaterial &mm = meshesAndMaterials[0];
+				const glm::mat4 &localToWorld = transformManager->GetLocalToWorld(mi.e);
+				const std::vector<MeshMaterial> &meshesAndMaterials = model->GetMeshesAndMaterials();
+				
+				for (size_t j = 0; j < meshesAndMaterials.size(); j++)
+				{
+					const MeshMaterial &mm = meshesAndMaterials[j];				
 
-			const glm::mat4 &localToWorld = transformManager->GetLocalToWorld(mi.e);
+					RenderItem ri = {};
+					ri.mesh = &mm.mesh;
+					ri.matInstance = mm.mat;
+					ri.transform = &localToWorld;
+					//ri.shaderPass = l;
+					//ri.transform = &localToWorld;
+					//ri.meshParams = &transforms[0][0].x;
+					//ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
+					outQueues.push_back(ri);
+				}
 
-			RenderItem ri = {};
-			ri.mesh = &mm.mesh;
-			ri.matInstance = mm.mat;
-			ri.transform = &localToWorld;
-			//ri.shaderPass = l;
-			//ri.transform = &localToWorld;
-			//ri.meshParams = &transforms[0][0].x;
-			//ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
-			outQueues.push_back(ri);
+			}
 		}	
 
 		/*for (auto m : uniqueModels)
@@ -764,17 +773,24 @@ namespace Engine
 
 	void ModelManager::Deserialize(Serializer &s, bool reload)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Deserializing model manager\n");
+
 		if (!reload)
 		{
 			unsigned int uniqueModelsCount = 0;
 			s.Read(uniqueModelsCount);
+
+			Log::Print(LogLevel::LEVEL_INFO, "Num unique models: %u\n", uniqueModelsCount);
+
 			for (unsigned int i = 0; i < uniqueModelsCount; i++)
 			{
 				Model *m = new Model();
 				m->Deserialize(s, game);
 
+				Log::Print(LogLevel::LEVEL_INFO, "Loaded model: %s\n", m->GetPath().c_str());
+
 				uniqueModels[SID(m->GetPath())] = m;
-			}
+			}		
 
 			unsigned int animatedModelsCount = 0;
 			s.Read(animatedModelsCount);

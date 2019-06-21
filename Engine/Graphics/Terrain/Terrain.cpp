@@ -1279,7 +1279,7 @@ namespace Engine
 
 		file.close();
 
-		Serializer s;
+		Serializer s(game->GetFileManager());
 		s.OpenForReading(vegPath + "a");		// Veg cfg file is stored as vegetation_scenename.dat	and the vegetation data file (pos, rot...) is stored as vegetation_scenename.data, that's why the +"a"
 
 		if (s.IsOpen())
@@ -1430,7 +1430,7 @@ namespace Engine
 
 		//vegFile.close();
 
-		Serializer s;
+		Serializer s(game->GetFileManager());
 		s.OpenForWriting();
 		s.Write(vegetation.size());
 		for (size_t i = 0; i < vegetation.size(); i++)

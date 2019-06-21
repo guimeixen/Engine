@@ -10,6 +10,7 @@
 namespace Engine
 {
 	class Transform;
+	class Allocator;
 
 	struct TransformInstanceData
 	{
@@ -37,7 +38,7 @@ namespace Engine
 	class TransformManager
 	{
 	public:
-		void Init(unsigned int initialCapacity);
+		void Init(Allocator *allocator, unsigned int initialCapacity);
 		void Dispose();
 		void ClearModifiedTransforms();
 
@@ -81,6 +82,7 @@ namespace Engine
 		void CalcTransform(Entity e, const glm::mat4 &parent);
 
 	private:
+		Allocator *allocator;
 		bool isInit = false;
 		TransformInstanceData instanceData;
 		static const unsigned int MAX_MODIFIED_TRANSFORMS = 4096;
