@@ -4,7 +4,6 @@
 #include "Program/Log.h"
 #include "Graphics/Renderer.h"
 #include "Program/Utils.h"
-#include "Graphics/Animation/AnimatedModel.h"
 
 namespace Engine
 {

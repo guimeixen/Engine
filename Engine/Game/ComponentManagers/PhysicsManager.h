@@ -4,7 +4,7 @@
 #include "Game/EntityManager.h"
 
 #include "include/bullet/btBulletDynamicsCommon.h"
-#include "include/bullet/btBulletCollisionCommon.h"			// Added include btGhostObject in the file
+#include "include/bullet/btBulletCollisionCommon.h"
 #include "include/bullet/BulletCollision/CollisionDispatch/btGhostObject.h"
 
 #include <vector>

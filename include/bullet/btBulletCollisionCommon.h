@@ -21,7 +21,6 @@ subject to the following restrictions:
 ///Bullet's btCollisionWorld and btCollisionObject definitions
 #include "BulletCollision/CollisionDispatch/btCollisionWorld.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
-#include "BulletCollision/CollisionDispatch/btGhostObject.h"
 
 ///Collision Shapes
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
@@ -42,7 +41,6 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btEmptyShape.h"
 #include "BulletCollision/CollisionShapes/btMultiSphereShape.h"
 #include "BulletCollision/CollisionShapes/btUniformScalingShape.h"
-#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 
 ///Narrowphase Collision Detector
 #include "BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.h"

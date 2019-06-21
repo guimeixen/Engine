@@ -91,12 +91,7 @@ subject to the following restrictions:
 #define DBVT_CHECKTYPE
 #endif
 
-#if DBVT_USE_MEMMOVE
-#if !defined( __CELLOS_LV2__) && !defined(__MWERKS__)
-#include <memory.h>
-#endif
 #include <string.h>
-#endif
 
 #ifndef DBVT_USE_TEMPLATE
 #error "DBVT_USE_TEMPLATE undefined"
@@ -942,7 +937,13 @@ inline void		btDbvt::collideTV(	const btDbvtNode* root,
 		ATTRIBUTE_ALIGNED16(btDbvtVolume)		volume(vol);
 		btAlignedObjectArray<const btDbvtNode*>	stack;
 		stack.resize(0);
+#ifndef BT_DISABLE_STACK_TEMP_MEMORY
+		char tempmemory[SIMPLE_STACKSIZE*sizeof(const btDbvtNode*)];
+		stack.initializeFromBuffer(tempmemory, 0, SIMPLE_STACKSIZE);
+#else
 		stack.reserve(SIMPLE_STACKSIZE);
+#endif //BT_DISABLE_STACK_TEMP_MEMORY
+
 		stack.push_back(root);
 		do	{
 			const btDbvtNode*	n=stack[stack.size()-1];
@@ -1078,7 +1079,12 @@ inline void		btDbvt::rayTest(	const btDbvtNode* root,
 			int								depth=1;
 			int								treshold=DOUBLE_STACKSIZE-2;
 
+			char tempmemory[DOUBLE_STACKSIZE * sizeof(const btDbvtNode*)];
+#ifndef BT_DISABLE_STACK_TEMP_MEMORY
+			stack.initializeFromBuffer(tempmemory, DOUBLE_STACKSIZE, DOUBLE_STACKSIZE);
+#else//BT_DISABLE_STACK_TEMP_MEMORY
 			stack.resize(DOUBLE_STACKSIZE);
+#endif //BT_DISABLE_STACK_TEMP_MEMORY
 			stack[0]=root;
 			btVector3 bounds[2];
 			do	{

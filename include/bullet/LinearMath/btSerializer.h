@@ -19,14 +19,11 @@ subject to the following restrictions:
 #include "btScalar.h" // has definitions like SIMD_FORCE_INLINE
 #include "btHashMap.h"
 
-#if !defined( __CELLOS_LV2__) && !defined(__MWERKS__)
-#include <memory.h>
-#endif
 #include <string.h>
 
 
 
-///only the 32bit versions for now
+
 extern char sBulletDNAstr[];
 extern int sBulletDNAlen;
 extern char sBulletDNAstr64[];
@@ -505,7 +502,7 @@ public:
 
 			buffer[9] = '2';
 			buffer[10] = '8';
-			buffer[11] = '6';
+			buffer[11] = '7';
 
 		}
 
