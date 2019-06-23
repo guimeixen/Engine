@@ -248,6 +248,8 @@ void ImGui_ImplOpenGL3_DestroyFontsTexture()
         //glDeleteTextures(1, &g_FontTexture);
         io.Fonts->TexID = 0;
 		//g_FontTexture = 0;
+		if (g_FontTexture)
+			g_FontTexture->RemoveReference();
     }
 }
 

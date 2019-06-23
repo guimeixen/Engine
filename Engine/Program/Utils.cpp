@@ -261,5 +261,22 @@ namespace Engine
 			return false;
 #endif
 		}
+
+		std::string RemoveExtensionFromFilePath(const std::string &path)
+		{
+			std::string p = path;
+			size_t dotIndex = p.find('.', 0) + 1;		// +1 to exclude the dot
+
+			if (dotIndex == std::string::npos)
+				return p;
+
+			size_t extensionSize = p.length() - dotIndex;
+			for (size_t i = 0; i < extensionSize; i++)
+			{
+				p.pop_back();
+			}
+
+			return p;
+		}
 	}
 }

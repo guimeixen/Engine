@@ -285,6 +285,7 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="AnimationProperties.cpp" />
     <ClCompile Include="AnimationWindow.cpp" />
     <ClCompile Include="AssetsBrowserWindow.cpp" />
+    <ClCompile Include="AssimpLoader.cpp" />
     <ClCompile Include="ConsoleWindow.cpp" />
     <ClCompile Include="EditorManager.cpp" />
     <ClCompile Include="EditorNameManager.cpp" />
@@ -312,6 +313,7 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClInclude Include="AnimationProperties.h" />
     <ClInclude Include="AnimationWindow.h" />
     <ClInclude Include="AssetsBrowserWindow.h" />
+    <ClInclude Include="AssimpLoader.h" />
     <ClInclude Include="Commands.h" />
     <ClInclude Include="ConsoleWindow.h" />
     <ClInclude Include="EditorManager.h" />

@@ -584,7 +584,7 @@ namespace Engine
 		v.lod1Dist = 1500.0f;
 		v.lod2Dist = 3000.0f;
 		v.maxSlope = 0.0f;
-		v.model = game->GetModelManager().LoadModel(modelPath, false, true, false);
+		//v.model = game->GetModelManager().LoadModel(modelPath, false, true, false);		// Add model from custom format
 		v.modelLOD1 = nullptr;
 		v.modelLOD2 = nullptr;
 		v.minScale = 1.0f;
@@ -616,7 +616,7 @@ namespace Engine
 			/*if (v.modelLOD1)
 				Engine::ResourcesLoader::RemoveModel(v.modelLOD1);*/
 
-			v.modelLOD1 = game->GetModelManager().LoadModel(newModelPath, false, true, false);
+			//v.modelLOD1 = game->GetModelManager().LoadModel(newModelPath, false, true, false);		// Add model from custom format
 			
 
 			if (v.modelLOD1)
@@ -636,7 +636,7 @@ namespace Engine
 			/*if (v.modelLOD2)
 				Engine::ResourcesLoader::RemoveModel(v.modelLOD2);*/
 
-			v.modelLOD2 = game->GetModelManager().LoadModel(newModelPath, false, true, false);
+			//v.modelLOD2 = game->GetModelManager().LoadModel(newModelPath, false, true, false);					// Add model from custom format
 
 			if (v.modelLOD2)
 			{
@@ -1259,16 +1259,18 @@ namespace Engine
 				v.generateObstacles = (bool)std::stoi(line.substr(7));
 			else if (line.substr(0, 10) == "modelLOD1=")
 			{
-				v.modelLOD1 = game->GetModelManager().LoadModel(line.substr(10), false, true, v.matnames);
+				//v.modelLOD1 = game->GetModelManager().LoadModel(line.substr(10), false, true, v.matnames);					// Add model from custom format
 			}
 			else if (line.substr(0, 10) == "modelLOD2=")
 			{
-				v.modelLOD2 = game->GetModelManager().LoadModel(line.substr(10), false, true, v.matnames);
+				//v.modelLOD2 = game->GetModelManager().LoadModel(line.substr(10), false, true, v.matnames);					// Add model from custom format
 			}
 			else if (line.substr(0, 6) == "model=")
 			{
 				//v.model = ResourcesLoader::LoadModel(line.substr(6), false, true, v.matnames, game->GetScriptManager());
-				v.model = game->GetModelManager().LoadModel(line.substr(6), false, true, v.matnames);		// Don't use true for instancing, we use a separate buffer
+
+				// Add model from custom format
+				//v.model = game->GetModelManager().LoadModel(line.substr(6), false, true, v.matnames);		// Don't use true for instancing, we use a separate buffer
 				vegetation.push_back(v);
 				v.matnames.clear();
 				v.modelLOD1 = nullptr;

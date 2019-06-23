@@ -2,15 +2,12 @@
 
 #include "Game/Game.h"
 #include "Game/ComponentManagers/TransformManager.h"
-#include "Graphics/ResourcesLoader.h"
-#include "Graphics/Material.h"
 #include "Program/StringID.h"
 #include "Program/Log.h"
 #include "Program/Allocator.h"
 #include "Graphics/VertexArray.h"
-
-#include "include/assimp/Importer.hpp"
-#include "include/assimp/postprocess.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
 
 namespace Engine
 {
@@ -132,6 +129,8 @@ namespace Engine
 
 	void ModelManager::GetRenderItems(unsigned int passCount, unsigned int *passIds, const VisibilityIndices &visibility, RenderQueue &outQueues)
 	{
+		float dt = game->GetDeltaTime();
+
 		if (models.size() > 0)
 		{
 			for (size_t i = 0; i < models.size(); i++)
@@ -142,21 +141,55 @@ namespace Engine
 				const glm::mat4 &localToWorld = transformManager->GetLocalToWorld(mi.e);
 				const std::vector<MeshMaterial> &meshesAndMaterials = model->GetMeshesAndMaterials();
 				
-				for (size_t j = 0; j < meshesAndMaterials.size(); j++)
+				if (model->GetType() == ModelType::ANIMATED)
 				{
-					const MeshMaterial &mm = meshesAndMaterials[j];				
+					AnimatedModel *am = static_cast<AnimatedModel*>(model);
+					if (am->IsDirty())
+						am->UpdateBones(*transformManager, mi.e, dt);
 
-					RenderItem ri = {};
-					ri.mesh = &mm.mesh;
-					ri.matInstance = mm.mat;
-					ri.transform = &localToWorld;
-					//ri.shaderPass = l;
-					//ri.transform = &localToWorld;
-					//ri.meshParams = &transforms[0][0].x;
-					//ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
-					outQueues.push_back(ri);
+					const std::vector<glm::mat4> &transforms = am->GetBoneTransforms();
+
+					for (size_t j = 0; j < meshesAndMaterials.size(); j++)
+					{
+						const MeshMaterial &mm = meshesAndMaterials[j];
+						const std::vector<ShaderPass> &passes = mm.mat->baseMaterial->GetShaderPasses();
+
+						for (size_t k = 0; k < passCount; k++)
+						{
+							for (size_t l = 0; l < passes.size(); l++)
+							{
+								if (passIds[k] == passes[l].queueID)
+								{
+									RenderItem ri = {};
+									ri.mesh = &mm.mesh;
+									ri.matInstance = mm.mat;
+									ri.shaderPass = l;
+									ri.transform = &localToWorld;
+									ri.meshParams = &transforms[0][0].x;
+									ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
+									outQueues.push_back(ri);
+								}
+							}
+						}
+					}
 				}
+				else
+				{
+					for (size_t j = 0; j < meshesAndMaterials.size(); j++)
+					{
+						const MeshMaterial &mm = meshesAndMaterials[j];
 
+						RenderItem ri = {};
+						ri.mesh = &mm.mesh;
+						ri.matInstance = mm.mat;
+						ri.transform = &localToWorld;
+						//ri.shaderPass = l;
+						//ri.transform = &localToWorld;
+						//ri.meshParams = &transforms[0][0].x;
+						//ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
+						outQueues.push_back(ri);
+					}
+				}
 			}
 		}	
 
@@ -370,7 +403,7 @@ namespace Engine
 
 		Log::Print(LogLevel::LEVEL_INFO, "Adding model\n");
 
-		Engine::Model *model = LoadModel(path, animated, false);
+		Engine::Model *model = LoadModel(path, {}, animated);
 
 		ModelInstance mi = {};
 		mi.e = e;
@@ -448,20 +481,28 @@ namespace Engine
 
 		if (m->GetType() == ModelType::ANIMATED)		// Animated models are unique
 		{
-			newM = LoadModel(m->GetPath(), true, false);
+			const std::vector<MeshMaterial> &meshesAndMaterials = m->GetMeshesAndMaterials();
+			size_t size = meshesAndMaterials.size();
+
+			std::vector<std::string> matNames(size);
+			
+			for (size_t i = 0; i < size; i++)
+			{
+				matNames[i] = meshesAndMaterials[i].mat->path;
+			}
+
+			newM = LoadModel(m->GetPath(), matNames, true);
 			newM->SetCastShadows(m->GetCastShadows());
 			newM->SetLODDistance(m->GetLODDistance());
-			const std::vector<MeshMaterial> &meshesAndMaterials = m->GetMeshesAndMaterials();
-			for (size_t i = 0; i < meshesAndMaterials.size(); i++)
-			{
-				newM->SetMeshMaterial((unsigned short)i, game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), meshesAndMaterials[i].mat->path, meshesAndMaterials[i].mesh.vao->GetVertexInputDescs()));
-			}
+			
 			AnimatedModel *am = static_cast<AnimatedModel*>(newM);
 
-			const std::vector<Animation*> &animations = static_cast<AnimatedModel*>(m)->GetAnimations();
-			for (size_t i = 0; i < animations.size(); i++)
+			const std::vector<Animation*> &modelAnimations = static_cast<AnimatedModel*>(m)->GetAnimations();
+			for (size_t i = 0; i < modelAnimations.size(); i++)
 			{
-				am->AddAnimation(LoadAnimation(animations[i]->path));
+				//am->AddAnimation(LoadAnimationFile(animations[i]->path));
+				unsigned int index = SID(modelAnimations[i]->path);
+				am->AddAnimation(animations[index]);
 			}
 		}
 
@@ -603,7 +644,7 @@ namespace Engine
 			return false;
 	}
 
-	Model *ModelManager::LoadModel(const std::string &path, bool isAnimated, bool isInstanced, bool loadVertexColors)
+	Model *ModelManager::LoadModel(const std::string &path, const std::vector<std::string> &matNames, bool isAnimated, bool isInstanced, bool loadVertexColors)
 	{
 		unsigned int id = SID(path);
 
@@ -617,14 +658,16 @@ namespace Engine
 
 		if (isAnimated)
 		{
-			AnimatedModel *model = new AnimatedModel(game, path);
+			AnimatedModel *model = new AnimatedModel(game->GetRenderer(), game->GetScriptManager(), path, matNames);
+
 			animatedModels.push_back(model);
 
 			return model;
 		}
 		else
 		{
-			Model *model = new Model(game->GetRenderer(), path, isInstanced, game->GetScriptManager(), loadVertexColors);
+			Model *model = new Model(game->GetRenderer(), game->GetScriptManager(), path, matNames);
+
 			uniqueModels[id] = model;
 
 			return model;
@@ -633,43 +676,6 @@ namespace Engine
 		Log::Print(LogLevel::LEVEL_INFO, "Done loading model\n");
 
 		return nullptr;
-	}
-
-	Model *ModelManager::LoadModel(const std::string &path, bool isAnimated, bool isInstanced, const std::vector<std::string> &matNames, bool loadVertexColors)
-	{
-		unsigned int id = SID(path);
-
-		if (!isAnimated && uniqueModels.find(id) != uniqueModels.end())
-		{
-			Model *m = uniqueModels[id];
-			m->AddReference();
-			return m;
-		}
-
-		if (isAnimated)
-		{
-			AnimatedModel *model = new AnimatedModel(game, path, matNames);
-			animatedModels.push_back(model);
-
-			return model;
-		}
-		else
-		{
-			Model *model = new Model(game->GetRenderer(), path, isInstanced, matNames, game->GetScriptManager(), loadVertexColors);
-			uniqueModels[id] = model;
-
-			return model;
-		}
-
-		return nullptr;
-	}
-
-	Model *ModelManager::LoadModel(const Mesh &mesh, MaterialInstance *mat, const AABB &aabb)
-	{
-		Model *model = new Model(game->GetRenderer(), mesh, mat, aabb);
-		uniqueModels[modelID] = model;
-		modelID++;						// Won't work when serialiazing and then deserializing because we use the path as ID and for this model the path is empty
-		return model;
 	}
 
 	Animation *ModelManager::LoadAnimation(const std::string &path)
@@ -682,30 +688,60 @@ namespace Engine
 			return animations[id];
 		}
 
-		// To add an animation from a separate file to this model we will just load the file and grab all the animation bone info
-		Assimp::Importer importer;
-		const aiScene* tempScene = importer.ReadFile(path, 0);
+		Serializer s(game->GetFileManager());
+		s.OpenForReading(path);
 
-		if (!tempScene || !tempScene->mRootNode)
+		if (!s.IsOpen())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load animation file\n");
-			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to open animation file: %s\n", path.c_str());
 			return nullptr;
 		}
 
-		Animation *ac = new Animation();
-		ac->AddReference();
+		int magic = 0;
+		s.Read(magic);
 
-		if (tempScene->mNumAnimations > 0)
+		if (magic != 315)
 		{
-			ac->Store(tempScene->mAnimations[0]);
-			ac->loadedSeparately = true;
-			ac->path = path;
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Unknown animation file: %s\n", path.c_str());
+			return nullptr;
 		}
 
-		animations[id] = ac;
+		Animation *a = new Animation;
+		a->refCount = 0;
+		a->AddReference();
+		a->path = path;	
+		s.Read(a->name);
+		s.Read(a->duration);
+		s.Read(a->ticksPerSecond);
 
-		return ac;
+		unsigned int size = 0;
+		s.Read(size);
+
+		std::string boneName;
+		unsigned int numKeyframes = 0;
+
+		for (size_t i = 0; i < size; i++)
+		{
+			s.Read(boneName);
+			s.Read(numKeyframes);
+			KeyFrameList keyframes(numKeyframes);
+			s.Read(keyframes.data(), numKeyframes * sizeof(Keyframe));
+
+			a->bonesKeyframesList[boneName] = keyframes;
+		}
+		s.Close();
+
+		animations[id] = a;
+
+		return a;
+	}
+
+	Model *ModelManager::LoadModel(const Mesh &mesh, MaterialInstance *mat, const AABB &aabb)
+	{
+		Model *model = new Model(game->GetRenderer(), mesh, mat, aabb);
+		uniqueModels[modelID] = model;
+		modelID++;						// Won't work when serialiazing and then deserializing because we use the path as ID and for this model the path is empty
+		return model;
 	}
 
 	void ModelManager::AddAnimation(Animation *anim, const std::string &path)
@@ -796,10 +832,15 @@ namespace Engine
 			s.Read(animatedModelsCount);
 			animatedModels.resize(animatedModelsCount);
 
+			Log::Print(LogLevel::LEVEL_INFO, "Num animated models: %u\n", animatedModelsCount);
+
 			for (unsigned int i = 0; i < animatedModelsCount; i++)
 			{
 				AnimatedModel *am = new AnimatedModel();
 				am->Deserialize(s, game);
+
+				Log::Print(LogLevel::LEVEL_INFO, "Loaded animated model: %s\n", am->GetPath().c_str());
+
 				animatedModels[i] = am;
 			}
 
@@ -871,7 +912,7 @@ namespace Engine
 		}
 	}
 
-	void ModelManager::LoadModelNew(unsigned int index, const std::string &path, const std::vector<std::string> &matNames, bool isInstanced, bool loadVertexColors)
+	/*void ModelManager::LoadModelNew(unsigned int index, const std::string &path, const std::vector<std::string> &matNames, bool isInstanced, bool loadVertexColors)
 	{
 		data.originalAABB[index].min = glm::vec3(100000.0f);
 		data.originalAABB[index].max = glm::vec3(-100000.0f);
@@ -1107,5 +1148,5 @@ namespace Engine
 
 			return m;
 		}
-	}
+	}*/
 }

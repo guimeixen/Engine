@@ -27,6 +27,7 @@
 #include "AI\AIObject.h"
 
 #include "EditorManager.h"
+#include "AssimpLoader.h"
 
 #include <include\glm\gtc\matrix_transform.hpp>
 #include <include\glm\gtc\type_ptr.hpp>
@@ -897,6 +898,7 @@ void ObjectWindow::HandleModel()
 				std::string dir = editorManager->GetCurrentProjectDir() + "/*";
 				files.clear();
 				Engine::utils::FindFilesInDirectory(files, dir, ".fbx");
+				Engine::utils::FindFilesInDirectory(files, dir, ".anim");
 			}
 			if (ImGui::BeginPopup("Choose file"))
 			{
@@ -905,7 +907,14 @@ void ObjectWindow::HandleModel()
 					for (size_t j = 0; j < files.size(); j++)
 					{
 						if (ImGui::Selectable(files[j].c_str()))
-							am->AddAnimation(game->GetModelManager().LoadAnimation(files[j]));
+						{
+							std::string newAnimPath = Engine::utils::RemoveExtensionFromFilePath(files[j]) + "anim";
+
+							if (Engine::utils::DirectoryExists(newAnimPath) == false)
+								Engine::AssimpLoader::LoadSeparateAnimation(game->GetFileManager(), files[j], newAnimPath);
+							
+							am->AddAnimation(game->GetModelManager().LoadAnimation(newAnimPath));
+						}
 					}
 				}
 				else
@@ -1826,7 +1835,21 @@ bool ObjectWindow::AddModel(bool animated)
 		{
 			if (ImGui::Selectable(files[i].c_str()))
 			{
-				modelManager->AddModel(selectedEntity, files[i], animated);
+				// Load the model with assimp and save it in our custom format
+				// Then call AddModel with the path to the custom model to load it and add it to the entity
+
+				std::string newPath = Engine::utils::RemoveExtensionFromFilePath(files[i]) + "model";
+
+				// Check if the model in the custom format exists, if not loaded the obj, fbx, etc with Assimp and save it in the custom format
+				if (Engine::utils::DirectoryExists(newPath) == false)
+				{
+					if (animated)
+						Engine::AssimpLoader::LoadAnimatedModel(game, files[i], {});
+					else
+						Engine::AssimpLoader::LoadModel(game, files[i], {});
+				}
+
+				modelManager->AddModel(selectedEntity, newPath, animated);
 				modelOpen = true;
 				isSelectingAsset = false;
 

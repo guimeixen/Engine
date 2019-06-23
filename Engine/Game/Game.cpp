@@ -237,6 +237,7 @@ namespace Engine
 		Log::Print(LogLevel::LEVEL_INFO, "Disposing game\n");
 
 		renderingPath->Dispose();
+		delete renderingPath;
 
 		Log::Print(LogLevel::LEVEL_INFO, "Rendering path disposed\n");
 

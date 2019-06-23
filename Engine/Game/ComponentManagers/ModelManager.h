@@ -47,11 +47,9 @@ namespace Engine
 		bool HasAnimatedModel(Entity e) const;
 
 		bool PerformRaycast(Camera *camera, const glm::vec2 &point, Entity &outEntity);
-
-		Model *LoadModel(const std::string &path, bool isAnimated, bool isInstanced, bool loadVertexColors = false);
-		Model *LoadModel(const std::string &path, bool isAnimated, bool isInstanced, const std::vector<std::string> &matNames, bool loadVertexColors = false);
-		Model *LoadModel(const Mesh &mesh, MaterialInstance *mat, const AABB &aabb);
+		
 		Animation *LoadAnimation(const std::string &path);
+
 		void AddAnimation(Animation *anim, const std::string &path);
 		void RemoveModelNoEntity(Model *model);
 
@@ -62,8 +60,10 @@ namespace Engine
 		void Deserialize(Serializer &s, bool reload = false);
 
 	private:
-		void LoadModelNew(unsigned int index, const std::string &path, const std::vector<std::string> &matNames, bool isInstanced = false, bool loadVertexColors = false);
-		Mesh ProcessMesh(unsigned int index, const aiMesh *aimesh, const aiScene *aiscene, bool isInstanced, bool loadVertexColors);
+		Model *LoadModel(const std::string &path, const std::vector<std::string> &matNames, bool isAnimated, bool isInstanced = false, bool loadVertexColors = false);
+		Model *LoadModel(const Mesh &mesh, MaterialInstance *mat, const AABB &aabb);
+		//void LoadModelNew(unsigned int index, const std::string &path, const std::vector<std::string> &matNames, bool isInstanced = false, bool loadVertexColors = false);
+		//Mesh ProcessMesh(unsigned int index, const aiMesh *aimesh, const aiScene *aiscene, bool isInstanced, bool loadVertexColors);
 
 	private:
 		struct ModelS

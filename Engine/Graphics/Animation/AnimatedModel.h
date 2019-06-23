@@ -3,16 +3,19 @@
 #include "Game/ComponentManagers/TransformManager.h"
 #include "Graphics/Model.h"
 #include "AnimationController.h"
+#include "AnimationController.h"
 
 #include "Program/Utils.h"
 
 #include "include/glm/gtx/quaternion.hpp"
-#include "include/assimp/Importer.hpp"
 
 #include <map>
 
 #define MAX_BONES_PER_VERTEX 4
 #define MAX_BONES_CONNECTIONS 4
+
+struct aiAnimation;
+struct aiNode;
 
 namespace Engine
 {
@@ -56,47 +59,11 @@ namespace Engine
 		std::string path;
 		float duration;
 		float ticksPerSecond;
-		bool loadedSeparately;
-		bool useRootMotion;
+		//bool loadedSeparately;
+		//bool useRootMotion;
 		std::map<std::string, KeyFrameList> bonesKeyframesList;	// Maps a bone name to a list of all those bone's keyframes for this animation
 
 		unsigned int refCount;
-
-		void Store(aiAnimation *anim)
-		{
-			name = std::string(anim->mName.data);
-			if (name.empty())
-				name = "Animation";
-
-			duration = static_cast<float>(anim->mDuration);
-			ticksPerSecond = (float)(anim->mTicksPerSecond != 0.0 ? anim->mTicksPerSecond : 25.0f);
-
-			for (unsigned int i = 0; i < anim->mNumChannels; i++)		// Num channels are the number of bones in this animation
-			{
-				aiNodeAnim *bone = anim->mChannels[i];
-				if (bone->mNumPositionKeys <= 0)
-					continue;
-
-				KeyFrameList list = {};
-				list.resize(bone->mNumPositionKeys);
-
-				for (unsigned int j = 0; j < bone->mNumPositionKeys; j++)
-				{
-					const aiVector3D &posValue = bone->mPositionKeys[j].mValue;
-					const aiQuaternion &rotValue = bone->mRotationKeys[j].mValue;
-					//const aiVector3D &scaleValue = bone->mScalingKeys[j].mValue;
-
-					list[j].position = glm::vec3(posValue.x, posValue.y, posValue.z);
-					list[j].rotation = glm::quat(rotValue.w, rotValue.x, rotValue.y, rotValue.z);
-					list[j].scale = glm::vec3(1.0f);
-					list[j].time = static_cast<float>(bone->mPositionKeys[j].mTime);
-				}
-
-				bonesKeyframesList.insert({ std::string(bone->mNodeName.data), list });
-			}
-
-			//animations.push_back(a);
-		}
 
 		void AddReference() { refCount++; }
 		void RemoveReference() { if (refCount > 1) { --refCount; } else { delete this; } }
@@ -106,13 +73,19 @@ namespace Engine
 	{
 	public:
 		AnimatedModel();
-		AnimatedModel(Game *game, const std::string &path);
-		AnimatedModel(Game *game, const std::string &path, const std::vector<std::string> &matNames);
+		AnimatedModel(Renderer *renderer, ScriptManager &scriptManager, const std::string &path, const std::vector<std::string> &matNames);
 		~AnimatedModel();
 
 		void AddAnimation(Animation *anim);
 		void SetAnimationController(FileManager *fileManager, const std::string &controllerPath, ModelManager *modelManager);
 		void RemoveAnimationController() { if (animController) { delete animController; animController = nullptr; } }
+
+		void AddBoneOffsetMatrix(const glm::mat4 &mat) { boneOffsetMatrices.push_back(mat); }
+		void AddBoneTransform(const glm::mat4 &mat) { boneTransforms.push_back(mat); }
+		void SetGlobalInvTransform(const glm::mat4 &mat) { globalInvTransform = mat; }
+		std::map<std::string, unsigned int> &GetBoneMap() { return boneMap; }
+		std::vector<glm::mat4> &GetBoneTransforms() { return boneTransforms; }
+		std::vector<glm::mat4> &GetBoneOffsetMatrices() { return boneOffsetMatrices; }
 
 		unsigned short AddBoneAttachment(Game *game, Bone *bone, Entity attachedEntity);
 		unsigned short AddBoneAttachment(Game *game, const std::string &boneName, Entity attachedEntity);
@@ -155,11 +128,11 @@ namespace Engine
 		void ReplaceBoneAttachmentEntity(unsigned int boneAttachID, Entity newAttachedEntity);
 
 	private:
-		void LoadModelFile(Game *game, Renderer *renderer, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors);
-		Mesh ProcessMesh(Renderer *renderer, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors);
+		//bool FindBone(aiAnimation *anim, const std::string &nodeName);
 
-		bool FindBone(aiAnimation *anim, const std::string &nodeName);
-		void BuildBoneTree(aiNode *node, Bone *parent);
+		void LoadModel(Renderer *renderer, ScriptManager &scriptManager, const std::vector<std::string> &matNames);
+		void ReadBoneTree(Serializer &s, Bone *bone);
+
 		unsigned int FindKeyFrame(float animTime, const KeyFrameList &keyFrameList);
 		void Interpolate(float animTime, glm::vec3 &position, glm::quat &rot, glm::vec3 &scale, const KeyFrameList &keyFrameList);
 		void UpdateBoneTree(float curAnimTime, float nextAnimTime, const Bone *bone, const glm::mat4 &parentTransform);
@@ -200,11 +173,9 @@ namespace Engine
 		bool isPaused = false;
 
 		std::map<std::string, unsigned int> boneMap;
-		unsigned int numBones = 0;
 
 		unsigned short curKeyFrame = 0;
 
-		Assimp::Importer importer;
 		glm::mat4 globalInvTransform;
 	};
 }

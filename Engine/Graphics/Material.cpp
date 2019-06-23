@@ -3,8 +3,6 @@
 #include "Shader.h"
 #include "ResourcesLoader.h"
 #include "Renderer.h"
-#include "Texture.h"
-#include "Buffers.h"
 
 #include "Program/FileManager.h"
 #include "Program/StringID.h"
@@ -430,6 +428,7 @@ namespace Engine
 		mi->lastParamOffset = 0;
 		mi->computeSetID = std::numeric_limits<unsigned int>::max();
 		mi->graphicsSetID = std::numeric_limits<unsigned int>::max();
+		memset(mi->name, 0, 64);
 
 		std::string line;
 		unsigned int options = 0;

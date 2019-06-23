@@ -395,6 +395,9 @@
     <ClCompile Include="..\Engine\Program\Allocator.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
+    <ClCompile Include="AssimpLoader.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui\imconfig.h">
@@ -479,6 +482,9 @@
       <Filter>Header Files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="AssetsBrowserWindow.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpLoader.h">
       <Filter>Header Files\Editor</Filter>
     </ClInclude>
   </ItemGroup>

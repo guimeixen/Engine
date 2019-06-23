@@ -104,6 +104,11 @@ namespace Engine
 		if (quadMesh.vao)
 			delete quadMesh.vao;
 
+		if (mainLightUBO)
+			delete mainLightUBO;
+		if (frameUBO)
+			delete frameUBO;
+
 		frameGraph.Dispose();
 		font.Dispose();
 		tod.Dispose();

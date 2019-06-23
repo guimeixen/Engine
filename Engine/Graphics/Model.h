@@ -5,10 +5,12 @@
 #include "Program/Serializer.h"
 #include "Game/ComponentManagers/ScriptManager.h"
 
-#include "include/assimp/scene.h"
-
 #include <string>
 #include <vector>
+
+struct aiMesh;
+struct aiScene;
+struct aiMaterial;
 
 namespace Engine
 {
@@ -32,30 +34,30 @@ namespace Engine
 	{
 	public:
 		Model();
-		Model(Renderer *renderer, const std::string &path, bool isInstanced, ScriptManager &scriptManager, bool loadVertexColors = false);
-		Model(Renderer *renderer, const std::string &path, bool isInstanced, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors = false);
+		Model(Renderer *renderer, ScriptManager &scriptManager, const std::string &path, const std::vector<std::string> &matNames);
 		Model(Renderer *renderer, const Mesh &mesh, MaterialInstance *mat, const AABB &aabb);
 		virtual ~Model();
 
+		void AddMeshMaterial(const MeshMaterial &mm);
+		void AddInstanceData(const glm::mat4 &m) { instanceData.push_back(m); }
+		void UpdateInstanceInfo(unsigned int instanceCount, unsigned int instanceOffset);
+		void ClearInstanceData() { instanceData.clear(); }
+
+		void SetPath(const std::string &path) { this->path = path; }
+		void SetOriginalAABB(const AABB &aabb) { originalAABB = aabb; }
+		void SetMeshMaterial(unsigned short meshID, MaterialInstance *matInstance);
+		void SetCastShadows(bool cast) { castShadows = cast; }
+		void SetLODDistance(float distance) { lodDistance = distance; }
+	
 		const std::vector<MeshMaterial> &GetMeshesAndMaterials() const { return meshesAndMaterials; }
 		const AABB &GetOriginalAABB() const { return originalAABB; }
 		const std::string &GetPath() const { return path; }
-		ModelType GetType() const { return type; }
-
-		void UpdateInstanceInfo(unsigned int instanceCount, unsigned int instanceOffset);
-		void SetMeshMaterial(unsigned short meshID, MaterialInstance *matInstance);
-		MaterialInstance *GetMaterialInstanceOfMesh(unsigned short meshID) const;
-
-		void SetCastShadows(bool cast) { castShadows = cast; }
 		bool GetCastShadows() const { return castShadows; }
-
-		void AddInstanceData(const glm::mat4 &m) { instanceData.push_back(m); }
-		void ClearInstanceData() { instanceData.clear(); }
+		float GetLODDistance() const { return lodDistance; }
 		const glm::mat4 *GetInstanceData() const { return instanceData.data(); }
 		unsigned int GetInstanceDataSize() const { return static_cast<unsigned int>(instanceData.size()); }
-
-		void SetLODDistance(float distance) { lodDistance = distance; }
-		float GetLODDistance() const { return lodDistance; }
+		MaterialInstance *GetMaterialInstanceOfMesh(unsigned short meshID) const;
+		ModelType GetType() const { return type; }
 
 		void Serialize(Serializer &s) const;
 		void Deserialize(Serializer &s, Game *game, bool reload = false);
@@ -65,16 +67,12 @@ namespace Engine
 		unsigned int GetRefCount() const { return refCount; }
 
 	protected:
-		void LoadAssimpModelFile(Renderer *renderer, const std::vector<std::string> &matNames, ScriptManager &scriptManager, bool loadVertexColors);
 		void LoadModel(Renderer *renderer, ScriptManager &scriptManager, const std::vector<std::string> &matNames);
-		Mesh ProcessMesh(Renderer *renderer, Serializer &s, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors);
-		MaterialInstance *LoadMaterialFromAssimpMat(Renderer *renderer, ScriptManager &scriptManager, const Mesh &mesh, const aiMaterial *aiMat);
 
 	protected:
 		ModelType type;
 		std::vector<MeshMaterial> meshesAndMaterials;
 		std::string path;
-		bool isInstanced;
 		bool castShadows;
 		float lodDistance;
 		AABB originalAABB;

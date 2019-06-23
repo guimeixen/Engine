@@ -9,6 +9,8 @@
 #include "include/glm/gtc/matrix_transform.hpp"
 #include "include/glm/gtx/norm.hpp"
 
+#include <algorithm>
+
 namespace Engine
 {
 	LightManager::LightManager()

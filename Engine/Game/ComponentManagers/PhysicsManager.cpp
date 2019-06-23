@@ -32,20 +32,14 @@ namespace Engine
 		this->transformManager = transformManager;
 
 		broadphase = new btDbvtBroadphase();
-		Log::Print(LogLevel::LEVEL_INFO, "Init dbvt\n");
 		collisionConfiguration = new btDefaultCollisionConfiguration();
-		Log::Print(LogLevel::LEVEL_INFO, "Init config\n");
 		dispatcher = new btCollisionDispatcher(collisionConfiguration);
-		Log::Print(LogLevel::LEVEL_INFO, "Init dispatcher\n");
 		solver = new btSequentialImpulseConstraintSolver;
-		Log::Print(LogLevel::LEVEL_INFO, "Init solver\n");
 		//ghostCallback = new btGhostPairCallback();
 
 		// The world
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-		Log::Print(LogLevel::LEVEL_INFO, "Init world\n");
 		dynamicsWorld->setGravity(btVector3(0.0f, -9.81f, 0.0f));
-		Log::Print(LogLevel::LEVEL_INFO, "Init gravity\n");
 		//dynamicsWorld->getPairCache()->setInternalGhostPairCallback(ghostCallback);			// For the ghost to work correctly
 
 		isInit = true;

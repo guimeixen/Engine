@@ -23,5 +23,7 @@ namespace Engine
 		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension, bool includeSubDirectories = true, bool addPathToFileName = true);
 		bool CreateDir(const char *folderPath);
 		bool DirectoryExists(const std::string &path);
+		// Removes the extension from a file path but leaves the dot
+		std::string RemoveExtensionFromFilePath(const std::string &path);
 	}
 }

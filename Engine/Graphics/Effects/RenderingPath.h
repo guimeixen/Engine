@@ -13,6 +13,7 @@ namespace Engine
 {
 	class Game;
 	class Renderer;
+	class Buffer;
 
 	enum class DebugType
 	{

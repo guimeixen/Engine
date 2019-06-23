@@ -84,18 +84,24 @@ namespace Engine
 			// resize
 		}
 
-		const glm::mat4 &localToWorld = instanceData.localToWorld[e.id];
+		glm::mat4 localToWorld = instanceData.localToWorld[e.id];
 		glm::vec3 worldPos = localToWorld[3];
-		glm::quat r = glm::quat_cast(localToWorld);
-		r = glm::normalize(r);
 		glm::vec3 worldScale = glm::vec3(glm::length(localToWorld[0]), glm::length(localToWorld[1]), glm::length(localToWorld[2]));
+
+		// Normalize the scale otherwise when extracing the rotation, it will be wrong
+		localToWorld[0] = glm::normalize(localToWorld[0]);
+		localToWorld[1] = glm::normalize(localToWorld[1]);
+		localToWorld[2] = glm::normalize(localToWorld[2]);
+		glm::quat worldRot = glm::quat_cast(localToWorld);
+		worldRot = glm::normalize(worldRot);
+		
 
 		instanceData.localToWorld[instanceData.size] = instanceData.localToWorld[e.id];
 		/*instanceData.localPosition[instanceData.size] = instanceData.localPosition[e.id];
 		instanceData.localRotation[instanceData.size] = instanceData.localRotation[e.id];
 		instanceData.localScale[instanceData.size] = instanceData.localScale[e.id];*/
 		instanceData.localPosition[instanceData.size] = worldPos;
-		instanceData.localRotation[instanceData.size] = r;
+		instanceData.localRotation[instanceData.size] = worldRot;
 		instanceData.localScale[instanceData.size] = worldScale;
 
 		instanceData.parent[instanceData.size] = { std::numeric_limits<unsigned int>::max() };

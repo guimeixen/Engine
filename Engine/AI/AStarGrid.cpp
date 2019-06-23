@@ -10,6 +10,7 @@
 #include "include/glm/gtx/norm.hpp"
 
 #include <iostream>
+#include <algorithm>
 //#include <chrono>
 
 namespace Engine

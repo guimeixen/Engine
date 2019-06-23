@@ -2,6 +2,7 @@
 
 #include "Program/StringID.h"
 #include "Material.h"
+#include "Renderer.h"
 
 #include <iostream>
 

@@ -33,7 +33,7 @@ namespace Engine
 		cmakelists += "include_directories(\n\t../../../../\n\t../../../../Engine\n\t../../../../include/bullet\n)\n";
 		cmakelists += "link_directories(\n\t${CMAKE_CURRENT_BINARY_DIR}\n\t../../../../\n../../../../vitalibs\n)\n";
 		cmakelists += "add_executable(" + appName + " main.cpp)\n";
-		cmakelists += "target_link_libraries(" + appName + "\n\tVitaEngine\n\tLua5_3_4\n\tassimp\n\tzlib\n\tBulletDynamics\n\tBulletCollision\n\tBulletSoftBody\n\tLinearMath\n\tSceLibKernel_stub\n\tSceGxm_stub\n\tSceDisplay_stub\n\tSceCtrl_stub\n)\n";
+		cmakelists += "target_link_libraries(" + appName + "\n\tVitaEngine\n\tLua5_3_4\n\tBulletDynamics\n\tBulletCollision\n\tBulletSoftBody\n\tLinearMath\n\tSceLibKernel_stub\n\tSceGxm_stub\n\tSceDisplay_stub\n\tSceCtrl_stub\n)\n";
 		cmakelists += "vita_create_self(" + appName + ".self " + appName + ")\n";
 		cmakelists += "vita_create_vpk(" + appName + ".vpk ${VITA_TITLEID} " + appName + ".self VERSION ${VITA_VERSION} NAME ${VITA_APP_NAME} FILE sce_sys sce_sys\n";
 

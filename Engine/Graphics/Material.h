@@ -1,10 +1,10 @@
 #pragma once
 
 #include "MaterialInfo.h"
-#include "Renderer.h"
 #include "Game/ComponentManagers/ScriptManager.h"
 #include "RendererStructs.h"
 #include "Buffers.h"
+#include "Texture.h"
 
 #include <string>
 #include <map>
@@ -13,8 +13,8 @@
 namespace Engine
 {
 	class Shader;
-	class Texture;
 	class Material;
+	class Renderer;
 
 	enum class MaterialParameterType
 	{

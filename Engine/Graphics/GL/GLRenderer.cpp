@@ -89,7 +89,7 @@ namespace Engine
 			return false;
 		}
 
-		unsigned int initialSize = 128000;		// bytes
+		unsigned int initialSize = 256000;		// bytes
 
 		meshParamsUBO = new GLUniformBuffer(nullptr, initialSize);
 		meshParamsUBO->BindTo(OBJECT_UBO_BINDING);	
@@ -439,6 +439,7 @@ namespace Engine
 			}
 		}
 
+		// TODO: Check if the data won't fit in the buffer and resize it
 		if (meshParamsOffset > 0)
 			meshParamsUBO->Update(buffer, meshParamsOffset * 4, 0);			// Size must be in bytes
 
@@ -851,6 +852,11 @@ namespace Engine
 			delete frameUBO;
 			frameUBO = nullptr;
 		}*/
+		if (materialUBO)
+		{
+			delete materialUBO;
+		}
+
 		if (meshParamsUBO)
 		{
 			delete meshParamsUBO;

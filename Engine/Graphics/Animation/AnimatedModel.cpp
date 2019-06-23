@@ -13,8 +13,6 @@
 #include "include/glm/glm.hpp"
 #include "include/glm/gtc/type_ptr.hpp"
 
-#include "include/assimp/postprocess.h"
-
 #include <iostream>
 #include <cmath>
 
@@ -22,9 +20,14 @@ namespace Engine
 {
 	AnimatedModel::AnimatedModel()
 	{
+		//AddReference();
 		type = ModelType::ANIMATED;
 		animController = nullptr;
-		isInstanced = false;
+		castShadows = true;
+		originalAABB.min = glm::vec3();
+		originalAABB.max = glm::vec3();
+		lodDistance = 10000.0f;
+		rootBone = new Bone;
 
 		for (unsigned short i = 0; i < MAX_BONES_CONNECTIONS; i++)
 		{
@@ -34,12 +37,17 @@ namespace Engine
 		}
 	}
 
-	AnimatedModel::AnimatedModel(Game *game, const std::string &path)
+	AnimatedModel::AnimatedModel(Renderer *renderer, ScriptManager &scriptManager, const std::string &path, const std::vector<std::string> &matNames)
 	{
+		//AddReference();
 		type = ModelType::ANIMATED;
-		animController = nullptr;
-		isInstanced = false;
 		this->path = path;
+		animController = nullptr;
+		castShadows = true;
+		originalAABB.min = glm::vec3();
+		originalAABB.max = glm::vec3();
+		lodDistance = 10000.0f;
+		rootBone = new Bone;
 
 		for (unsigned short i = 0; i < MAX_BONES_CONNECTIONS; i++)
 		{
@@ -48,25 +56,7 @@ namespace Engine
 			boneAttachments[i].boneTransformEntity = { std::numeric_limits<unsigned int>::max() };
 		}
 
-		const std::vector<std::string> matNames = {};
-		LoadModelFile(game, game->GetRenderer(), matNames, game->GetScriptManager(), false);
-	}
-
-	AnimatedModel::AnimatedModel(Game *game, const std::string &path, const std::vector<std::string> &matNames)
-	{
-		type = ModelType::ANIMATED;
-		animController = nullptr;
-		isInstanced = false;
-		this->path = path;
-
-		for (unsigned short i = 0; i < MAX_BONES_CONNECTIONS; i++)
-		{
-			boneAttachments[i] = {};
-			boneAttachments[i].attachedEntity = { std::numeric_limits<unsigned int>::max() };
-			boneAttachments[i].boneTransformEntity = { std::numeric_limits<unsigned int>::max() };
-		}
-
-		LoadModelFile(game, game->GetRenderer(), matNames, game->GetScriptManager(), false);
+		LoadModel(renderer, scriptManager, matNames);
 	}
 
 	AnimatedModel::~AnimatedModel()
@@ -89,267 +79,143 @@ namespace Engine
 			game->GetEntityManager().Destroy(boneAttachments[i].boneTransformEntity);
 	}
 
-	void AnimatedModel::LoadModelFile(Game *game, Renderer *renderer, const std::vector<std::string>& matNames, ScriptManager &scriptManager, bool loadVertexColors)
+	void AnimatedModel::LoadModel(Renderer *renderer, ScriptManager &scriptManager, const std::vector<std::string> &matNames)
 	{
-		type = ModelType::ANIMATED;
+		Serializer s(renderer->GetFileManager());
+		s.OpenForReading(path);
 
-		originalAABB.min = glm::vec3(100000.0f);
-		originalAABB.max = glm::vec3(-100000.0f);
-
-		//const aiScene* scene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs | aiProcess_GenSmoothNormals); //| aiProcess_CalcTangentSpace);
-		const aiScene *scene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights); //| aiProcess_CalcTangentSpace);
-
-		if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+		if (!s.IsOpen())
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to open model file: %s\n", path.c_str());
+			return;
 		}
 
-		const aiMatrix4x4 &aim = scene->mRootNode->mTransformation;
-		globalInvTransform[0] = glm::vec4(aim.a1, aim.b1, aim.c1, aim.d1);
-		globalInvTransform[1] = glm::vec4(aim.a2, aim.b2, aim.c2, aim.d2);
-		globalInvTransform[2] = glm::vec4(aim.a3, aim.b3, aim.c3, aim.d3);
-		globalInvTransform[3] = glm::vec4(aim.a4, aim.b4, aim.c4, aim.d4);
-		globalInvTransform = glm::inverse(globalInvTransform);
+		int magic = 0;
+		s.Read(magic);
 
-		// Load all the model meshes
-		for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+		if (magic != 314)
 		{
-			const aiMesh* aiMesh = scene->mMeshes[i];
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Unknown animated model file: %s\n", path.c_str());
+			return;
+		}
 
-			aiMaterial *aiMat = nullptr;
+		unsigned int numMeshes = 0;
+		s.Read(numMeshes);
+		s.Read(globalInvTransform);
 
-			if (aiMesh->mMaterialIndex >= 0)
-				aiMat = scene->mMaterials[aiMesh->mMaterialIndex];
+		Log::Print(LogLevel::LEVEL_INFO, "num meshes: %u\n", numMeshes);
 
-			if (matNames.size() > 0)
+		meshesAndMaterials.resize((size_t)numMeshes);
+
+		for (size_t i = 0; i < meshesAndMaterials.size(); i++)
+		{
+			unsigned int numVertices, numIndices = 0;
+			s.Read(numVertices);
+			s.Read(numIndices);
+
+			std::vector<VertexPOS3D_UV_NORMAL_BONES> vertices(numVertices);
+			std::vector<unsigned short> indices(numIndices);
+			s.Read(vertices.data(), (unsigned int)vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_BONES));
+			s.Read(indices.data(), (unsigned int)indices.size() * sizeof(unsigned short));
+
+			VertexAttribute attribs[5] = {};
+			attribs[0].count = 3;								// Position
+			attribs[1].count = 2;								// UV
+			attribs[2].count = 3;								// Normal
+			attribs[3].count = 4;								// Bone Id's
+			attribs[3].vertexAttribFormat = VertexAttributeFormat::INT;
+			attribs[4].count = 4;								// Weights
+
+			attribs[0].offset = 0;
+			attribs[1].offset = 3 * sizeof(float);
+			attribs[2].offset = 5 * sizeof(float);
+			attribs[3].offset = 8 * sizeof(float);
+			attribs[4].offset = 12 * sizeof(float);
+
+			VertexInputDesc desc = {};
+			desc.stride = sizeof(VertexPOS3D_UV_NORMAL_BONES);
+			desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3], attribs[4] };
+
+			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_BONES), BufferUsage::STATIC);
+			Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
+
+			Mesh m = {};
+			m.vao = renderer->CreateVertexArray(desc, vb, ib);
+			m.vertexOffset = 0;
+			m.indexCount = indices.size();
+			m.indexOffset = 0;
+			m.instanceCount = 0;
+			m.instanceOffset = 0;
+
+			MeshMaterial mm = {};
+			mm.mesh = m;
+
+			std::string matName;
+
+			if (matNames.size() == 0)
 			{
-				MeshMaterial mm;
-				mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);
-
-				const std::string &matName = matNames[meshesAndMaterials.size()];
-
-				if (matName.size() > 0)
-					mm.mat = renderer->CreateMaterialInstance(scriptManager, matName, mm.mesh.vao->GetVertexInputDescs());
-				else
-					mm.mat = LoadMaterialFromAssimpMat(renderer, scriptManager, mm.mesh, aiMat);
-
-				if (aiMat)
-				{
-					aiString name;
-					aiMat->Get(AI_MATKEY_NAME, name);
-					strncpy(mm.mat->name, name.C_Str(), 64);
-				}
-
-				meshesAndMaterials.push_back(mm);
+				mm.mat = renderer->CreateMaterialInstance(scriptManager, "Data/Materials/modelDefaultAnimated.mat", { desc });
+				matName = "modelDefault";
 			}
 			else
 			{
-				MeshMaterial mm;
-				mm.mesh = ProcessMesh(renderer, aiMesh, scene, loadVertexColors);
-				mm.mat = LoadMaterialFromAssimpMat(renderer, scriptManager, mm.mesh, aiMat);
-
-				if (aiMat)
-				{
-					aiString name;
-					aiMat->Get(AI_MATKEY_NAME, name);
-					strncpy(mm.mat->name, name.C_Str(), 64);
-				}
-
-				meshesAndMaterials.push_back(mm);
+				mm.mat = renderer->CreateMaterialInstance(scriptManager, matNames[i], { desc });
+				matName = matNames[i].substr(matNames[i].find_last_of('/') + 1);
+				// Remove the extension
+				matName.pop_back();
+				matName.pop_back();
+				matName.pop_back();
+				matName.pop_back();
 			}
+
+			strncpy(mm.mat->name, matName.c_str(), 64);
+
+			meshesAndMaterials[i] = mm;
+
+			Log::Print(LogLevel::LEVEL_INFO, "Mesh loaded\n");
 		}
 
-		for (size_t i = 0; i < scene->mNumAnimations; i++)
+		unsigned int numBones = 0;
+
+		s.Read(numBones);
+		
+		boneOffsetMatrices.resize((size_t)numBones);
+		s.Read(boneOffsetMatrices.data(), boneOffsetMatrices.size() * sizeof(glm::mat4));
+
+		boneTransforms.resize((size_t)numBones);
+
+		std::string boneName;
+		unsigned int boneIndex;
+		for (unsigned int i = 0; i < numBones; i++)
 		{
-			Animation *a = new Animation();
-			a->AddReference();
-			a->Store(scene->mAnimations[i]);
-			a->loadedSeparately = false;
-
-			animations.push_back(a);
-			
-			game->GetModelManager().AddAnimation(a, a->path + std::to_string(i));		// Add a number to the path so the id is unique otherwise the animations would be replaced	
+			s.Read(boneName);
+			s.Read(boneIndex);
+			boneMap[boneName] = boneIndex;
+			boneTransforms[i] = glm::mat4(1.0f);
 		}
 
-		rootBone = new Bone;
-		rootBone->parent = nullptr;
-		rootBone->name = std::string(scene->mRootNode->mName.data);
+		ReadBoneTree(s, rootBone);
 
-		glm::mat4 nodeTransformation;
-		nodeTransformation[0] = glm::vec4(aim.a1, aim.b1, aim.c1, aim.d1);
-		nodeTransformation[1] = glm::vec4(aim.a2, aim.b2, aim.c2, aim.d2);
-		nodeTransformation[2] = glm::vec4(aim.a3, aim.b3, aim.c3, aim.d3);
-		nodeTransformation[3] = glm::vec4(aim.a3, aim.b4, aim.c4, aim.d4);
-
-		rootBone->transformation = nodeTransformation;
-
-		for (size_t i = 0; i < scene->mRootNode->mNumChildren; i++)
-		{
-			BuildBoneTree(scene->mRootNode->mChildren[i], rootBone);
-		}
+		s.Close();
 	}
 
-	Mesh AnimatedModel::ProcessMesh(Renderer *renderer, const aiMesh *aimesh, const aiScene *aiscene, bool loadVertexColors)
+	void AnimatedModel::ReadBoneTree(Serializer &s, Bone *bone)
 	{
-		std::vector<VertexPOS3D_UV_NORMAL_BONES> vertices(aimesh->mNumVertices);
-		std::vector<unsigned short> indices;
+		s.Read(bone->name);
+		s.Read(bone->transformation);
+		unsigned int numChildren = 0;
+		s.Read(numChildren);
 
-		for (unsigned int i = 0; i < aimesh->mNumVertices; i++)
+		if (numChildren > 0)
 		{
-			VertexPOS3D_UV_NORMAL_BONES vertex = {};
+			bone->children.resize(numChildren);
 
-			vertex.pos = glm::vec3(aimesh->mVertices[i].x, aimesh->mVertices[i].y, aimesh->mVertices[i].z);
-			vertex.normal = glm::vec3(aimesh->mNormals[i].x, aimesh->mNormals[i].y, aimesh->mNormals[i].z);
-
-			originalAABB.min = glm::min(originalAABB.min, vertex.pos);
-			originalAABB.max = glm::max(originalAABB.max, vertex.pos);
-
-			if (aimesh->mTextureCoords[0])
+			for (size_t i = 0; i < bone->children.size(); i++)
 			{
-				// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't
-				// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
-				vertex.uv = glm::vec2(aimesh->mTextureCoords[0][i].x, aimesh->mTextureCoords[0][i].y);
+				bone->children[i] = new Bone;
+				bone->children[i]->parent = bone;
+				ReadBoneTree(s, bone->children[i]);
 			}
-			else
-			{
-				vertex.uv = glm::vec2(0.0f, 0.0f);
-			}
-
-			vertex.weights = glm::vec4(0.0f);
-
-			vertices[i] = vertex;
-		}
-
-		for (unsigned int i = 0; i < aimesh->mNumFaces; i++)
-		{
-			aiFace face = aimesh->mFaces[i];
-
-			for (unsigned int j = 0; j < face.mNumIndices; ++j)
-			{
-				indices.push_back(face.mIndices[j]);
-			}
-		}
-
-		for (unsigned int i = 0; i < aimesh->mNumBones; i++)
-		{
-			unsigned int boneIndex = 0;
-
-			std::string boneName(aimesh->mBones[i]->mName.data);
-
-			// Check if we've already loaded this bone's info, if not, then load it
-			if (boneMap.find(boneName) == boneMap.end())
-			{
-				boneIndex = numBones;
-				numBones++;
-
-				aiMatrix4x4 &aim = aimesh->mBones[i]->mOffsetMatrix;
-				glm::mat4 boneOffset = glm::mat4(1.0f);
-				boneOffset[0] = glm::vec4(aim.a1, aim.b1, aim.c1, aim.d1);
-				boneOffset[1] = glm::vec4(aim.a2, aim.b2, aim.c2, aim.d2);
-				boneOffset[2] = glm::vec4(aim.a3, aim.b3, aim.c3, aim.d3);
-				boneOffset[3] = glm::vec4(aim.a4, aim.b4, aim.c4, aim.d4);
-
-				boneOffsetMatrices.push_back(boneOffset);
-				boneTransforms.push_back(glm::mat4(1.0f));
-				boneMap[boneName] = boneIndex;
-			}
-			else
-			{
-				boneIndex = boneMap[boneName];
-			}
-
-			for (unsigned int j = 0; j < aimesh->mBones[i]->mNumWeights; j++)
-			{
-				unsigned int vertexID = aimesh->mBones[i]->mWeights[j].mVertexId;
-
-				VertexPOS3D_UV_NORMAL_BONES &v = vertices[vertexID];
-
-				// Find a free slot and store the bone ID and weight
-				for (unsigned int k = 0; k < MAX_BONES_PER_VERTEX; k++)
-				{
-					if (v.weights[k] == 0.0f)
-					{
-						v.boneIDs[k] = boneIndex;
-						v.weights[k] = aimesh->mBones[i]->mWeights[j].mWeight;
-						break;
-					}
-				}
-			}
-		}
-
-		// Prevent the min and max from being both 0 (when loading a plane for example)
-		if (originalAABB.min.y < 0.001f && originalAABB.min.y > -0.001f)
-			originalAABB.min.y = -0.01f;
-		if (originalAABB.max.y < 0.001f && originalAABB.max.y > -0.001f)
-			originalAABB.max.y = 0.01f;
-
-		VertexAttribute attribs[5] = {};
-		attribs[0].count = 3;								// Position
-		attribs[1].count = 2;								// UV
-		attribs[2].count = 3;								// Normal
-		attribs[3].count = 4;								// Bone Id's
-		attribs[3].vertexAttribFormat = VertexAttributeFormat::INT;
-		attribs[4].count = 4;								// Weights
-
-		attribs[0].offset = 0;
-		attribs[1].offset = 3 * sizeof(float);
-		attribs[2].offset = 5 * sizeof(float);
-		attribs[3].offset = 8 * sizeof(float);
-		attribs[4].offset = 12 * sizeof(float);
-
-		VertexInputDesc desc = {};
-		desc.stride = sizeof(VertexPOS3D_UV_NORMAL_BONES);
-		desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3], attribs[4] };
-
-		Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_BONES), BufferUsage::STATIC);
-		Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
-
-		Mesh m = {};
-		m.vao = renderer->CreateVertexArray(desc, vb, ib);
-		m.vertexOffset = 0;
-		m.indexCount = indices.size();
-		m.indexOffset = 0;
-		m.instanceCount = 0;
-		m.instanceOffset = 0;
-
-		return m;
-	}
-
-	bool AnimatedModel::FindBone(aiAnimation *anim, const std::string &nodeName)
-	{
-		for (unsigned int i = 0; i < anim->mNumChannels; i++)
-		{
-			const aiNodeAnim* nodeAnim = anim->mChannels[i];
-
-			if (std::string(nodeAnim->mNodeName.data) == nodeName)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	void AnimatedModel::BuildBoneTree(aiNode *node, Bone *parent)
-	{
-		Bone *bone = new Bone;
-		bone->parent = parent;
-		bone->name = std::string(node->mName.data);
-
-		const aiMatrix4x4 &aim = node->mTransformation;
-
-		glm::mat4 nodeTransformation;
-		nodeTransformation[0] = glm::vec4(aim.a1, aim.b1, aim.c1, aim.d1);
-		nodeTransformation[1] = glm::vec4(aim.a2, aim.b2, aim.c2, aim.d2);
-		nodeTransformation[2] = glm::vec4(aim.a3, aim.b3, aim.c3, aim.d3);
-		nodeTransformation[3] = glm::vec4(aim.a3, aim.b4, aim.c4, aim.d4);
-
-		bone->transformation = nodeTransformation;
-
-		parent->children.push_back(bone);
-
-		for (unsigned int i = 0; i < node->mNumChildren; i++)
-		{
-			BuildBoneTree(node->mChildren[i], bone);
 		}
 	}
 
@@ -824,11 +690,13 @@ namespace Engine
 	void AnimatedModel::Serialize(Serializer &s)
 	{
 		s.Write(path);
-		s.Write(isInstanced);
 		s.Write(castShadows);
 		s.Write(lodDistance);
+		s.Write(originalAABB.min);
+		s.Write(originalAABB.max);
 
 		s.Write((unsigned int)meshesAndMaterials.size());
+
 		for (size_t i = 0; i < meshesAndMaterials.size(); i++)
 			s.Write(meshesAndMaterials[i].mat->path);
 
@@ -836,9 +704,7 @@ namespace Engine
 
 		for (size_t i = 0; i < animations.size(); i++)
 		{
-			s.Write(animations[i]->loadedSeparately);
-			if (animations[i]->loadedSeparately)
-				s.Write(animations[i]->path);
+			s.Write(animations[i]->path);
 		}
 
 		if (animController)
@@ -860,9 +726,10 @@ namespace Engine
 	void AnimatedModel::Deserialize(Serializer &s, Game *game, bool reload)
 	{
 		s.Read(path);
-		s.Read(isInstanced);
 		s.Read(castShadows);
 		s.Read(lodDistance);
+		s.Read(originalAABB.min);
+		s.Read(originalAABB.max);
 
 		unsigned int matCount;
 		s.Read(matCount);
@@ -872,41 +739,35 @@ namespace Engine
 			s.Read(matNames[i]);
 
 		if (!reload)
-			LoadModelFile(game, game->GetRenderer(), matNames, game->GetScriptManager(), false);
+			LoadModel(game->GetRenderer(), game->GetScriptManager(), matNames);
 
-		unsigned int size = 0;
-		s.Read(size);
+		unsigned int numAnimations = 0;
+		s.Read(numAnimations);
 
-		for (unsigned int i = 0; i < size; i++)
+		for (unsigned int i = 0; i < numAnimations; i++)
 		{
-			bool loadedSeparately = false;
-			s.Read(loadedSeparately);
+			std::string path;
+			s.Read(path);
 
-			if (loadedSeparately)
+			bool alreadyLoaded = false;
+
+			// Check if we already have the animation stored (needed for when the game is stopped in the editor so we don't keep (re)loading the same animations over and over
+			for (size_t j = 0; j < animations.size(); j++)
 			{
-				std::string path;
-				s.Read(path);
-
-				bool alreadyLoaded = false;
-
-				// Check if we already have the animation stored (needed for when the game is stopped in the editor so we don't keep (re)loading the same animations over and over
-				for (size_t j = 0; j < animations.size(); j++)
+				if (animations[j]->path == path)
 				{
-					if (animations[j]->path == path)
-					{
-						alreadyLoaded = true;
-						break;
-					}
+					alreadyLoaded = true;
+					break;
 				}
-				if (alreadyLoaded)
-					continue;
+			}
+			if (alreadyLoaded)
+				continue;
 
-				if (!reload)
-				{
-					Animation *a = game->GetModelManager().LoadAnimation(path);
-					a->AddReference();
-					animations.push_back(a);
-				}
+			if (!reload)
+			{
+				Animation *a = game->GetModelManager().LoadAnimation(path);
+				a->AddReference();
+				animations.push_back(a);
 			}
 		}
 
