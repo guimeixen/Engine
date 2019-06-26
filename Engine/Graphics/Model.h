@@ -21,7 +21,9 @@ namespace Engine
 	enum class ModelType
 	{
 		BASIC,
-		ANIMATED
+		ANIMATED,
+		PRIMITIVE_CUBE,
+		PRIMITIVE_SPHERE
 	};
 
 	struct MeshMaterial
@@ -35,7 +37,7 @@ namespace Engine
 	public:
 		Model();
 		Model(Renderer *renderer, ScriptManager &scriptManager, const std::string &path, const std::vector<std::string> &matNames);
-		Model(Renderer *renderer, const Mesh &mesh, MaterialInstance *mat, const AABB &aabb);
+		Model(Renderer *renderer, const Mesh &mesh, MaterialInstance *mat, const AABB &aabb, ModelType type);
 		virtual ~Model();
 
 		void AddMeshMaterial(const MeshMaterial &mm);

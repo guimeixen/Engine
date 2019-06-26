@@ -17,8 +17,7 @@ namespace Engine
 		AddReference();
 		type = ModelType::BASIC;
 		castShadows = true;
-		originalAABB.min = glm::vec3();
-		originalAABB.max = glm::vec3();
+		originalAABB = { glm::vec3(100000.0f), glm::vec3(-100000.0f) };
 		lodDistance = 10000.0f;
 	}
 
@@ -28,17 +27,16 @@ namespace Engine
 		type = ModelType::BASIC;
 		this->path = path;
 		castShadows = true;
-		originalAABB.min = glm::vec3();
-		originalAABB.max = glm::vec3();
+		originalAABB = { glm::vec3(100000.0f), glm::vec3(-100000.0f) };
 		lodDistance = 10000.0f;
 
 		LoadModel(renderer, scriptManager, matNames);
 	}
 
-	Model::Model(Renderer *renderer, const Mesh &mesh, MaterialInstance *mat, const AABB &aabb)
+	Model::Model(Renderer *renderer, const Mesh &mesh, MaterialInstance *mat, const AABB &aabb, ModelType type)
 	{
 		AddReference();
-		type = ModelType::BASIC;
+		this->type = type;
 
 		castShadows = true;
 		originalAABB = aabb;

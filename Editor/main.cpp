@@ -1,4 +1,4 @@
-#include <vld.h>
+//#include <vld.h>
 
 #include "Application.h"
 #include "Graphics/MeshDefaults.h"

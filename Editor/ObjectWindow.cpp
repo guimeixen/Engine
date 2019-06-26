@@ -746,6 +746,17 @@ void ObjectWindow::HandleTransform()
 		bool isDragging = false;
 
 		ImGui::Indent();
+		if (ImGui::Button("Reset"))
+		{
+			position = glm::vec3(0.0f);
+			rotation = glm::vec3(0.0f);
+			scale = glm::vec3(1.0f);
+
+			transformManager->SetLocalPosition(selectedEntity, position);
+			transformManager->SetLocalRotation(selectedEntity, glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
+			transformManager->SetLocalScale(selectedEntity, scale);
+			transformChanged = true;
+		}
 		if (ImGui::DragFloat3("Position", glm::value_ptr(position), 0.1f))
 		{
 			transformManager->SetLocalPosition(selectedEntity, position);
@@ -1982,6 +1993,8 @@ void ObjectWindow::AddCollider(Engine::ShapeType type)
 	glm::vec3 worldPos = localToWorld[3];
 	btVector3 center = btVector3(worldPos.x, worldPos.y, worldPos.z);
 
+	glm::vec3 worldScale = glm::vec3(glm::length(localToWorld[0]), glm::length(localToWorld[1]), glm::length(localToWorld[2]));
+
 	//glm::vec3 size = aabb.max - aabb.min;
 	glm::vec3 size = glm::vec3(1.0f);
 
@@ -1995,13 +2008,13 @@ void ObjectWindow::AddCollider(Engine::ShapeType type)
 	if (type == Engine::ShapeType::BOX)
 	{
 		selectedCollider = physicsManager->AddBoxCollider(selectedEntity, center, btVector3(0.5f, 0.5f, 0.5f));		// Use half extents 0.5 so it is a unit cube so later we just use local scaling to get and set box size
-		selectedCollider->SetBoxSize(size);
+		selectedCollider->SetBoxSize(worldScale);
 	}
 	else if (type == Engine::ShapeType::SPHERE)
 	{
 		selectedCollider = physicsManager->AddSphereCollider(selectedEntity, center, 1.0f);			// Same thing here use radius of 1
 
-		float radius = glm::max(size.x, glm::max(size.y, size.z));
+		float radius = glm::max(worldScale.x, glm::max(worldScale.y, worldScale.z));
 
 		selectedCollider->SetRadius(radius);
 	}
@@ -2009,10 +2022,10 @@ void ObjectWindow::AddCollider(Engine::ShapeType type)
 	{
 		selectedCollider = physicsManager->AddCapsuleCollider(selectedEntity, center, 0.5f, 1.0f);			// Same thing as the other 2 above
 
-		float radius = glm::max(size.x, glm::max(size.y, size.z));
+		float radius = glm::max(worldScale.x, glm::max(worldScale.y, worldScale.z));
 
 		selectedCollider->SetRadius(radius);
-		selectedCollider->SetCapsuleHeight(size.y);
+		selectedCollider->SetCapsuleHeight(worldScale.y);
 	}
 
 	SetEntity(selectedEntity);

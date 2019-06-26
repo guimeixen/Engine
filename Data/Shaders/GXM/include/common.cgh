@@ -1,0 +1,3 @@
+#define CAMERA_UBO_SLOT			0
+#define FRAME_UBO_SLOT				1
+#define MAIN_LIGHT_UBO_SLOT		2

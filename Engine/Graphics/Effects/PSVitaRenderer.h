@@ -12,5 +12,9 @@ namespace Engine
 		void Init(Game *game);
 		void Dispose();
 		void Render();
+
+	private:
+		Buffer *mainLightUBO;
+		DirLight mainDirectionalLight;
 	};
 }

@@ -1,7 +1,4 @@
-uniform CameraUBO
-{
-	float4x4 projView;
-} cam : BUFFER[0];
+#include "include/ubos.cgh"
 
 uniform float4x4 modelMatrix;
 

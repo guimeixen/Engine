@@ -1,5 +1,7 @@
 #include "Input.h"
 
+#include "Program/FileManager.h"
+
 namespace Engine
 {
 	InputManager *Input::inputManager = nullptr;
@@ -25,6 +27,78 @@ namespace Engine
 		charUpdated = false;
 
 		scrollWheelY = 0.0f;
+
+		buttons = 0;
+
+		keysToString[Keys::KEY_0] = "0";
+		keysToString[Keys::KEY_1] = "1";
+		keysToString[Keys::KEY_2] = "2";
+		keysToString[Keys::KEY_3] = "3";
+		keysToString[Keys::KEY_4] = "4";
+		keysToString[Keys::KEY_5] = "5";
+		keysToString[Keys::KEY_6] = "6";
+		keysToString[Keys::KEY_7] = "7";
+		keysToString[Keys::KEY_8] = "8";
+		keysToString[Keys::KEY_9] = "9";
+		keysToString[Keys::KEY_A] = "A";
+		keysToString[Keys::KEY_B] = "B";
+		keysToString[Keys::KEY_C] = "C";
+		keysToString[Keys::KEY_D] = "D";
+		keysToString[Keys::KEY_E] = "E";
+		keysToString[Keys::KEY_F] = "F";
+		keysToString[Keys::KEY_G] = "G";
+		keysToString[Keys::KEY_H] = "H";
+		keysToString[Keys::KEY_I] = "I";
+		keysToString[Keys::KEY_J] = "J";
+		keysToString[Keys::KEY_K] = "K";
+		keysToString[Keys::KEY_L] = "L";
+		keysToString[Keys::KEY_M] = "M";
+		keysToString[Keys::KEY_N] = "N";
+		keysToString[Keys::KEY_O] = "O";
+		keysToString[Keys::KEY_P] = "P";
+		keysToString[Keys::KEY_Q] = "Q";
+		keysToString[Keys::KEY_R] = "R";
+		keysToString[Keys::KEY_S] = "S";
+		keysToString[Keys::KEY_T] = "T";
+		keysToString[Keys::KEY_U] = "U";
+		keysToString[Keys::KEY_V] = "V";
+		keysToString[Keys::KEY_W] = "W";
+		keysToString[Keys::KEY_X] = "X";
+		keysToString[Keys::KEY_Y] = "Y";
+		keysToString[Keys::KEY_Z] = "Z";
+		keysToString[Keys::KEY_ESCAPE] = "Escape";
+		keysToString[Keys::KEY_ENTER] = "Enter";
+		keysToString[Keys::KEY_TAB] = "Tab";
+		keysToString[Keys::KEY_BACKSPACE] = "Backspace";
+		keysToString[Keys::KEY_DEL] = "Delete";
+		keysToString[Keys::KEY_F1] = "F1";
+		keysToString[Keys::KEY_F2] = "F2";
+		keysToString[Keys::KEY_F3] = "F3";
+		keysToString[Keys::KEY_F4] = "F4";
+		keysToString[Keys::KEY_F5] = "F5";
+		keysToString[Keys::KEY_F6] = "F6";
+		keysToString[Keys::KEY_F7] = "F7";
+		keysToString[Keys::KEY_F8] = "F8";
+		keysToString[Keys::KEY_F9] = "F9";
+		keysToString[Keys::KEY_F10] = "F10";
+		keysToString[Keys::KEY_F11] = "F11";
+		keysToString[Keys::KEY_F12] = "F12";
+		keysToString[Keys::KEY_LEFT_SHIFT] = "Left shift";
+		keysToString[Keys::KEY_LEFT_CONTROL] = "Left control";
+
+		vitaButtonsToString[VitaButtons::VITA_SELECT] = "Select";
+		vitaButtonsToString[VitaButtons::VITA_START] = "Start";
+		vitaButtonsToString[VitaButtons::VITA_UP] = "Up";
+		vitaButtonsToString[VitaButtons::VITA_RIGHT] = "Right";
+		vitaButtonsToString[VitaButtons::VITA_DOWN] = "Down";
+		vitaButtonsToString[VitaButtons::VITA_LEFT] = "Left";
+		vitaButtonsToString[VitaButtons::VITA_LTRIGGER] = "Left trigger";
+		vitaButtonsToString[VitaButtons::VITA_RTRIGGER] = "Right trigger";
+		vitaButtonsToString[VitaButtons::VITA_TRIANGLE] = "Triangle";
+		vitaButtonsToString[VitaButtons::VITA_CIRCLE] = "Circle";
+		vitaButtonsToString[VitaButtons::VITA_CROSS] = "Cross";
+		vitaButtonsToString[VitaButtons::VITA_SQUARE] = "Square";
+		vitaButtonsToString[VitaButtons::VITA_PSBUTTON] = "PS button";
 	}
 
 	void InputManager::Update()
@@ -49,14 +123,46 @@ namespace Engine
 		mouseButtonsState[1].justReleased = false;
 	}
 
+	void InputManager::LoadInputMappings(FileManager *fileManager, const std::string &path)
+	{
+		// Not finished
+		std::ifstream file = fileManager->OpenForReading(path);
+
+		if (file.is_open())
+		{
+
+		}
+		else
+		{
+			inputMappings.resize(3);
+			
+			InputMapping horizontal = {};
+			horizontal.positiveKey = Keys::KEY_D;
+			horizontal.negativeKey = Keys::KEY_A;
+			strncpy(horizontal.name, "Horizontal", 64);
+
+			InputMapping vertical = {};
+			vertical.positiveKey = Keys::KEY_W;
+			vertical.negativeKey = Keys::KEY_S;
+			strncpy(vertical.name, "Vertical", 64);
+
+			InputMapping fire = {};
+			strncpy(fire.name, "Fire", 64);
+
+			inputMappings[0] = horizontal;
+			inputMappings[1] = vertical;
+			inputMappings[2] = fire;
+		}
+	}
+
 	int InputManager::AnyKeyPressed() const
 	{
 		for (int i = 0; i < 512; i++)
 		{
-			if (keys[i].state)
+			if (keys[i].justPressed)
 				return i;
 		}
-		return -1;
+		return 0;
 	}
 
 	bool InputManager::GetLastChar(unsigned char &c)
@@ -70,6 +176,11 @@ namespace Engine
 		}
 
 		return false;
+	}
+
+	Keys InputManager::GetLastKeyPressed()
+	{
+		return lastKeyPressed;
 	}
 
 	bool InputManager::IsKeyPressed(int keycode) const
@@ -122,6 +233,7 @@ namespace Engine
 				keys[key].state = true;
 				keys[key].justReleased = false;
 				keys[key].justPressed = true;
+				lastKeyPressed = (Keys)key;
 			}
 			else if (action == KEY_RELEASED)
 			{
@@ -197,5 +309,10 @@ namespace Engine
 
 		this->rightStickY = (float)rightStickY;
 		this->rightStickY = (this->rightStickY - 128.0f) / 128.0f;
+	}
+
+	bool InputManager::IsVitaButtonDown(int button)
+	{
+		return buttons & button;
 	}
 }

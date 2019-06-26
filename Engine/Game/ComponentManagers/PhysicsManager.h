@@ -66,6 +66,7 @@ namespace Engine
 
 		void Init(TransformManager *transformManager);
 		void Play();
+		void Stop();
 		void Simulate(float dt);
 		void Update();	
 		void PrepareDebugDraw(DebugDrawManager *debugDrawMngr);

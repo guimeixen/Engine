@@ -1,7 +1,4 @@
-uniform CameraUBO
-{
-	float4x4 projView;
-} cam : BUFFER[0];
+#include "include/ubos.cgh"
 
 out float4 outPos : POSITION;
 out float2 outUv : TEXCOORD0;

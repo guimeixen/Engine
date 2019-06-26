@@ -3,10 +3,8 @@
 #include "Camera/Camera.h"
 #include "Font.h"
 #include "Framebuffer.h"
-#include "Lights.h"
 #include "RendererStructs.h"
 #include "Physics/BoundingVolumes.h"
-#include "Mesh.h"
 #include "MaterialInfo.h"
 #include "UniformBufferTypes.h"
 

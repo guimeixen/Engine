@@ -25,5 +25,6 @@ namespace Engine
 		bool DirectoryExists(const std::string &path);
 		// Removes the extension from a file path but leaves the dot
 		std::string RemoveExtensionFromFilePath(const std::string &path);
+		void OpenFileWithDefaultProgram(const std::string &path);
 	}
 }

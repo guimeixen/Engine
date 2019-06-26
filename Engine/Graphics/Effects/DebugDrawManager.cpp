@@ -5,6 +5,7 @@
 #include "Graphics/Material.h"
 #include "Graphics/Buffers.h"
 #include "Graphics/VertexArray.h"
+#include "Graphics/Renderer.h"
 
 #include "Program/Utils.h"
 #include "Program/StringID.h"
@@ -24,7 +25,7 @@ namespace Engine
 		gizmoGreen = glm::vec3(0.0f, 1.0f,0.0f);
 		gizmoBlue = glm::vec3(0.0f, 0.0f, 1.0f);
 
-		/*cubeMesh = MeshDefaults::CreateCube(renderer, 0.5f, true, true);
+		cubeMesh = MeshDefaults::CreateCube(renderer, 0.5f, true, true);
 		sphereMesh = MeshDefaults::CreateSphere(renderer, 0.5f, true);
 		translationGizmoMesh = MeshDefaults::CreateCube(renderer);
 
@@ -42,7 +43,7 @@ namespace Engine
 			matInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/debugDraw_mat.lua", cubeDesc);
 		}
 		if (translationGizmoMesh.vao)
-			gizmoMatInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/gizmo_mat.lua", translationGizmoMesh.vao->GetVertexInputDescs());*/
+			gizmoMatInstance = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/gizmo_mat.lua", translationGizmoMesh.vao->GetVertexInputDescs());
 
 		Log::Print(LogLevel::LEVEL_INFO, "Init Debug draw manager\n");
 	}
@@ -73,7 +74,7 @@ namespace Engine
 
 	void DebugDrawManager::GetRenderItems(unsigned int passCount, unsigned int *passIds, const VisibilityIndices &visibility, RenderQueue &outQueues)
 	{
-		/*for (unsigned int i = 0; i < passCount; i++)
+		for (unsigned int i = 0; i < passCount; i++)
 		{
 			if (passIds[i] == opaqueQueueID)
 			{
@@ -124,12 +125,12 @@ namespace Engine
 
 				break;
 			}
-		}*/
+		}
 	}
 
 	void DebugDrawManager::Update()
 	{
-		/*cubeMesh.instanceCount = 0;
+		cubeMesh.instanceCount = 0;
 
 		if (cubeData.size() > 0)
 		{
@@ -147,7 +148,7 @@ namespace Engine
 			sphereInstanceBuffer->Update(sphereData.data(), sphereData.size() * sizeof(DebugInstanceData), 0);
 		}
 
-		sphereData.clear();*/
+		sphereData.clear();
 	}
 
 	void DebugDrawManager::Clear()

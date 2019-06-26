@@ -133,6 +133,10 @@ namespace Engine
 	{
 		unsigned int length = (unsigned int)(data.length() + 1);
 		write(length);
+
+		if (length == 0)
+			return;
+
 		write(*data.c_str(), length);
 	}
 
@@ -249,6 +253,10 @@ namespace Engine
 	{
 		unsigned int length;
 		read(length);
+
+		if (length == 0)
+			return;
+
 		char *str = new char[length];
 		memset(str, '\0', (size_t)(sizeof(char) * length));
 		read(*str, length);

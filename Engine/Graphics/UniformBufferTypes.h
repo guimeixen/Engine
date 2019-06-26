@@ -11,7 +11,7 @@ namespace Engine
 		DYNAMIC
 	};
 
-	struct alignas(16) viewProjUBO
+	struct alignas(16) CameraUBO
 	{
 		glm::mat4 proj;
 		glm::mat4 view;
@@ -23,6 +23,13 @@ namespace Engine
 		glm::vec2 nearFarPlane;	
 	};
 
+	// Used on the Vita
+	struct alignas(16) CameraUBOSimple
+	{
+		glm::mat4 projView;
+		glm::vec4 camPos;
+	};
+
 	struct alignas(16) DirLightUBO
 	{
 		glm::mat4 lightSpaceMatrix[4];
@@ -30,6 +37,12 @@ namespace Engine
 		glm::vec4 dirLightColor;		// xyz - color, a - ambient
 		glm::vec4 cascadeEnd;
 		glm::vec3 skyColor;
+	};
+
+	struct alignas(16) DirLightUBOSimple
+	{
+		glm::vec4 dirAndIntensity;
+		glm::vec4 dirLightColor;
 	};
 
 	struct alignas(16) FrameUBO

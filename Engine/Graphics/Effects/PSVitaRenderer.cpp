@@ -4,10 +4,17 @@
 #include "Program/Log.h"
 #include "Program/Input.h"
 
+#include "Data/Shaders/GXM/include/common.cgh"
+
 namespace Engine
 {
 	PSVitaRenderer::PSVitaRenderer()
 	{
+		mainDirectionalLight = {};
+		mainDirectionalLight.intensity = 1.0f;
+		mainDirectionalLight.direction = glm::normalize(glm::vec3(1.0f, 1.0f, 1.0f));
+		mainDirectionalLight.color = glm::vec3(1.0f);
+		mainDirectionalLight.ambient = 0.17f;
 	}
 
 	void PSVitaRenderer::Init(Game *game)
@@ -23,6 +30,10 @@ namespace Engine
 		uiCamera.SetFrontAndUp(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		uiCamera.SetPosition(glm::vec3(0.0f));
 		uiCamera.SetProjectionMatrix(0.0f, (float)renderer->GetWidth(), 0.0f, (float)renderer->GetHeight(), 0.0f, 10.0f);
+
+		mainLightUBO = renderer->CreateUniformBuffer(nullptr, sizeof(DirLightUBOSimple));
+
+		renderer->AddResourceToSlot(MAIN_LIGHT_UBO_SLOT, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
 
 		Pass &p = frameGraph.AddPass("default");
 
@@ -71,6 +82,19 @@ namespace Engine
 
 	void PSVitaRenderer::Render()
 	{
+		// Update the lighting ubo
+		DirLightUBOSimple ubo = {};
+		ubo.dirAndIntensity = glm::vec4(mainDirectionalLight.direction, mainDirectionalLight.intensity);
+		ubo.dirLightColor = glm::vec4(mainDirectionalLight.color, mainDirectionalLight.ambient);
+		/*ubo.skyColor = glm::vec4(1.0f);
+		ubo.lightSpaceMatrix[0] = glm::mat4(1.0f);
+		ubo.lightSpaceMatrix[1] = glm::mat4(1.0f);
+		ubo.lightSpaceMatrix[2] = glm::mat4(1.0f);
+		ubo.lightSpaceMatrix[3] = glm::mat4(1.0f);
+		ubo.cascadeEnd = glm::vec4(csmInfo.cascadeSplitEnd[0], csmInfo.cascadeSplitEnd[1], csmInfo.cascadeSplitEnd[2], 0.0f);*/
+
+		mainLightUBO->Update(&ubo, sizeof(DirLightUBOSimple), 0);
+
 		std::vector<VisibilityIndices> visibility = renderer->Cull(1, &opaqueQueueID, &mainCamera->GetFrustum());
 		renderer->CreateRenderQueues(1, &opaqueQueueID, visibility, renderQueues);
 		frameGraph.Execute(renderer);

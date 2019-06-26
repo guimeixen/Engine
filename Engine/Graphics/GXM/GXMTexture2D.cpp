@@ -37,7 +37,7 @@ namespace Engine
 		int texWidth = 0;
 		int textHeight = 0;
 		int channelsInFile = 0;
-		int channelsInData = 0;
+		//int channelsInData = 0;
 		unsigned int size = 0;
 
 		//stbi_set_flip_vertically_on_load(1);
@@ -54,13 +54,13 @@ namespace Engine
 		{
 			image = stbi_load(this->path.c_str(), &texWidth, &textHeight, &channelsInFile, STBI_rgb_alpha);
 			//Log::Print(LogLevel::LEVEL_INFO, "%s\n", stbi_failure_reason());
-			channelsInData = 4;
+			//channelsInData = 4;
 			size = (unsigned int)texWidth * (unsigned int)textHeight * 4 * sizeof(unsigned char);		
 		}
 		else if (params.format == TextureFormat::RED)
 		{
 			image = stbi_load(this->path.c_str(), &texWidth, &textHeight, &channelsInFile, STBI_grey);
-			channelsInData = 1;
+			//channelsInData = 1;
 			size = (unsigned int)texWidth * (unsigned int)textHeight * 1 * sizeof(unsigned char);
 		}
 

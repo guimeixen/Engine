@@ -137,7 +137,7 @@ namespace Engine
 
 		// Dynamic ubo for cameras
 		minUBOAlignment = (uint32_t)base.GetDeviceLimits().minUniformBufferOffsetAlignment;
-		dynamicAlignment = sizeof(viewProjUBO);
+		dynamicAlignment = sizeof(CameraUBO);
 
 		if (minUBOAlignment > 0)
 			dynamicAlignment = (dynamicAlignment + minUBOAlignment - 1) & ~(minUBOAlignment - 1);
@@ -722,7 +722,7 @@ namespace Engine
 			return;
 		}
 	
-		viewProjUBO *ubo = (viewProjUBO *)(((uint64_t)camDynamicUBOData.camerasData + (static_cast<uint32_t>(curDynamicCameraOffset) * dynamicAlignment)));
+		CameraUBO *ubo = (CameraUBO*)(((uint64_t)camDynamicUBOData.camerasData + (static_cast<uint32_t>(curDynamicCameraOffset) * dynamicAlignment)));
 		ubo->proj = camera->GetProjectionMatrix();
 		ubo->proj[1][1] *= -1;
 		ubo->proj[3][1] *= -1;		// For orthographic cameras

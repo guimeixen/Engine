@@ -169,7 +169,7 @@ namespace Engine
 
 		CreateBackBufferRTVAndDSV();
 
-		cameraUBO = new D3D11UniformBuffer(device, immediateContext, nullptr, sizeof(viewProjUBO), BufferUsage::DYNAMIC);
+		cameraUBO = new D3D11UniformBuffer(device, immediateContext, nullptr, sizeof(CameraUBO), BufferUsage::DYNAMIC);
 		materialDataUBO = new D3D11UniformBuffer(device, immediateContext, nullptr, 128, BufferUsage::DYNAMIC);
 		dispatchParamsUBO = new D3D11UniformBuffer(device, immediateContext, nullptr, sizeof(DispatchParams), BufferUsage::DYNAMIC);		// uvec3 for numWorkGroups.xyz and another for padding
 
@@ -223,7 +223,7 @@ namespace Engine
 		glm::mat4 proj = camera->GetProjectionMatrix();
 		glm::mat4 view = camera->GetViewMatrix();
 		
-		viewProjUBO ubo = {};
+		CameraUBO ubo = {};
 		ubo.proj = glm::transpose(proj);
 		ubo.view = glm::transpose(view);
 		ubo.projView = glm::transpose(proj * view);
@@ -233,7 +233,7 @@ namespace Engine
 		ubo.camPos = glm::vec4(camera->GetPosition(), 0.0f);
 		ubo.nearFarPlane = glm::vec2(camera->GetNearPlane(), camera->GetFarPlane());
 
-		cameraUBO->Update(&ubo, sizeof(viewProjUBO), 0);
+		cameraUBO->Update(&ubo, sizeof(CameraUBO), 0);
 	}
 
 	void D3D11Renderer::BeginFrame()

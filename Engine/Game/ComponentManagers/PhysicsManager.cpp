@@ -49,9 +49,24 @@ namespace Engine
 
 	void PhysicsManager::Play()
 	{
-		for (size_t i = 0; i < usedRigidBodies; i++)
+		for (unsigned int i = 0; i < usedRigidBodies; i++)
 		{
 			rigidBodies[i].rb->GetHandle()->activate();
+		}
+	}
+
+	void PhysicsManager::Stop()
+	{
+		for (unsigned int i = 0; i < usedRigidBodies; i++)
+		{
+			RigidBody *rb = rigidBodies[i].rb;
+
+			btRigidBody *brb = rb->GetHandle();
+
+			brb->clearForces();
+			btVector3 zero(0.0f, 0.0f, 0.0f);
+			brb->setLinearVelocity(zero);
+			brb->setAngularVelocity(zero);
 		}
 	}
 
@@ -59,7 +74,7 @@ namespace Engine
 	{
 		dynamicsWorld->stepSimulation(dt, 5);
 
-		for (size_t i = 0; i < usedRigidBodies; i++)
+		for (unsigned int i = 0; i < usedRigidBodies; i++)
 		{
 			const RigidBodyInstance &rbi = rigidBodies[i];
 			RigidBody *rb = rbi.rb;

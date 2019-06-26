@@ -24,7 +24,7 @@ namespace Engine
 		game.Init(&allocator, renderer, &fileManager);
 
 #ifdef EDITOR
-		editorManager.Init(window.GetHandle(), &game);
+		editorManager.Init(window.GetHandle(), &game, &inputManager);
 		window.SetEditorManager(&editorManager);
 		game.GetRenderingPath()->GetFrameGraph().Bake(renderer);
 #endif

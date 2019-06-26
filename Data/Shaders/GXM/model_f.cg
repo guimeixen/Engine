@@ -1,18 +1,24 @@
+#include "include/ubos.cgh"
+
 /*uniform myubo {
 	float r;
 	float g;
 	float b;
 } cols : BUFFER [1];*/
 
-uniform sampler2D tex;
+uniform sampler2D diffuseTex;
 
 float4 main(
-	float2 outUv : TEXCOORD0,
-	float3 outNormal : TEXCOORD1) : COLOR
-{
-	float4 col = tex2D(tex, outUv);
+	float2 inUv : TEXCOORD0,
+	float3 inNormal : TEXCOORD1) : COLOR
+{ 
+	float4 tex = tex2D(diffuseTex, inUv);
+	
+	float3 lighting = max(dot(inNormal, mainLight.dirAndIntensity.xyz), 0.0) * mainLight.dirLightColor.xyz;
+	tex.rgb *= lighting;
+	
 	/*col.r *= cols.r;
 	col.g *= cols.g;
 	col.b *= cols.b;*/
-	return col;
+	return tex;
 }

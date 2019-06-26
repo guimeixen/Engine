@@ -14,7 +14,7 @@ namespace Engine
 		void BindTo(unsigned int bindingIndex) override;
 		void Update(const void *data, unsigned int size, int offset) override;
 
-		void *GetUBO() const { return ubo; }
+		void *GetData() const { return ubo; }
 
 	private:
 		SceUID uboUID;

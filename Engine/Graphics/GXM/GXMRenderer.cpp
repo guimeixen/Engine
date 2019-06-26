@@ -13,6 +13,8 @@
 #include "Program/StringID.h"
 #include "Graphics/Material.h"
 
+#include "Data/Shaders/GXM/include/common.cgh"
+
 #include "include/glm/gtc/matrix_transform.hpp"
 
 #define DISPLAY_WIDTH 960
@@ -195,15 +197,12 @@ namespace Engine
 		fragmentNotif[1].address = notificationMem + 3;
 		fragmentNotif[1].value = 0;
 
-
-		glm::mat4 projView = glm::perspective(75.0f, 960.0f / 544.0f, 0.1f, 10.0f) * glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
 		for (size_t i = 0; i < MAX_CAMERAS; i++)
 		{
-			cameraUBOs[i] = new GXMUniformBuffer(&projView[0].x, sizeof(projView), BufferUsage::STATIC);
+			cameraUBOs[i] = new GXMUniformBuffer(nullptr, sizeof(CameraUBOSimple), BufferUsage::STATIC);
 		}
 
-		sceGxmSetVertexUniformBuffer(context, 0, cameraUBOs[currentCameraIndex]->GetUBO());
+		sceGxmSetVertexUniformBuffer(context, CAMERA_UBO_SLOT, cameraUBOs[currentCameraIndex]->GetData());
 
 		sceGxmSetCullMode(context, SCE_GXM_CULL_CW);
 
@@ -234,7 +233,7 @@ namespace Engine
 		glm::mat4 proj = camera->GetProjectionMatrix();
 		glm::mat4 view = camera->GetViewMatrix();
 
-		viewProjUBO ubo = {};
+		/*CameraUBO ubo = {};
 		ubo.proj = proj;
 		ubo.view = view;
 		ubo.projView = proj * view;	
@@ -242,7 +241,11 @@ namespace Engine
 		ubo.invProj = glm::inverse(ubo.proj);
 		ubo.clipPlane = clipPlane;
 		ubo.camPos = glm::vec4(camera->GetPosition(), 0.0f);
-		ubo.nearFarPlane = glm::vec2(camera->GetNearPlane(), camera->GetFarPlane());
+		ubo.nearFarPlane = glm::vec2(camera->GetNearPlane(), camera->GetFarPlane());*/
+
+		CameraUBOSimple ubo = {};
+		ubo.projView = proj * view;
+		ubo.camPos = glm::vec4(camera->GetPosition(), 0.0f);
 
 		// If we don't have more cameras available, we need to wait.
 		/*if (availableCameras < 1)
@@ -250,13 +253,13 @@ namespace Engine
 
 		}*/
 
-		cameraUBOs[currentCameraIndex]->Update(&ubo.projView[0].x, sizeof(ubo.projView), 0);
+		cameraUBOs[currentCameraIndex]->Update(&ubo, sizeof(ubo), 0);
 
-		sceGxmSetVertexUniformBuffer(context, 0, cameraUBOs[currentCameraIndex]->GetUBO());
-		sceGxmSetFragmentUniformBuffer(context, 0, cameraUBOs[currentCameraIndex]->GetUBO());
+		sceGxmSetVertexUniformBuffer(context, CAMERA_UBO_SLOT, cameraUBOs[currentCameraIndex]->GetData());
+		sceGxmSetFragmentUniformBuffer(context, CAMERA_UBO_SLOT, cameraUBOs[currentCameraIndex]->GetData());
 
 		currentCameraIndex++;
-		availableCameras--;
+		//availableCameras--;
 
 		if (currentCameraIndex >= MAX_CAMERAS)
 			currentCameraIndex = 0;
@@ -284,7 +287,7 @@ namespace Engine
 
 	Buffer *GXMRenderer::CreateUniformBuffer(const void *data, unsigned int size)
 	{
-		return new GXMUniformBuffer(data, size, BufferUsage::STATIC);
+		return new GXMUniformBuffer(data, size, BufferUsage::DYNAMIC);
 	}
 
 	Framebuffer *GXMRenderer::CreateFramebuffer(const FramebufferDesc &desc)
@@ -465,7 +468,7 @@ namespace Engine
 			}
 		}
 
-		//sceGxmSetFragmentUniformBuffer(context, 1, ubo[fragmentIndex]->GetUBO());
+		//sceGxmSetFragmentUniformBuffer(context, 1, ubo[fragmentIndex]->GetData());
 		
 		const SceGxmProgramParameter *modelMatrixParam = shader->GetModelMatrixParam();
 		if (modelMatrixParam && renderItem.transform)
@@ -518,6 +521,23 @@ namespace Engine
 
 	void GXMRenderer::AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
 	{
+		if (!buffer)
+			return;
+
+		if (buffer->GetType() == BufferType::UniformBuffer)
+		{
+			GXMUniformBuffer *ubo = static_cast<GXMUniformBuffer*>(buffer);
+			if (stages & VERTEX)
+			{
+				sceGxmSetVertexUniformBuffer(context, binding, ubo->GetData());
+				Log::Print(LogLevel::LEVEL_INFO, "Added to vertex\n");
+			}
+			if (stages & FRAGMENT)
+			{
+				sceGxmSetFragmentUniformBuffer(context, binding, ubo->GetData());
+				Log::Print(LogLevel::LEVEL_INFO, "Added to fragment\n");
+			}
+		}
 	}
 
 	void GXMRenderer::SetupResources()

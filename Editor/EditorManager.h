@@ -3,8 +3,9 @@
 #include "Physics/BoundingVolumes.h"
 #include "Physics/Ray.h"
 #include "Program/PSVCompiler.h"
+#include "Program/Input.h"
 
-#include "imgui\imgui.h"
+#include "imgui/imgui.h"
 
 #include "ObjectWindow.h"
 #include "Commands.h"
@@ -29,9 +30,8 @@ class EditorManager
 {
 public:
 	EditorManager();
-	~EditorManager();
 
-	void Init(GLFWwindow *window, Engine::Game *game);
+	void Init(GLFWwindow *window, Engine::Game *game, Engine::InputManager *inputManager);
 	void Update(float dt);
 	void Render();
 	void Dispose();
@@ -90,6 +90,7 @@ private:
 
 private:
 	Engine::Game *game;
+	Engine::InputManager *inputManager;
 	GLFWwindow *window;
 
 	ObjectWindow objectWindow;
@@ -147,5 +148,13 @@ private:
 	// Vita
 	char vitaAppName[128];
 	char vitaAppTitleID[10];
+
+	// Changing input mapping
+	int changingInputMappingIndex;
+	bool changingPositiveKey;
+	bool changingNegativeKey;
+	bool changingPositiveVitaButton;
+	bool changingNegativeVitaButton;
+	int currentPositiveKeyIndex = 0;
 };
 

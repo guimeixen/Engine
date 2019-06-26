@@ -2,6 +2,9 @@
 
 #include "include/glm/glm.hpp"
 
+#include <vector>
+#include <unordered_map>
+
 #define KEY_PRESSED			1
 #define KEY_RELEASED		0
 #define MOUSE_BUTTON_LEFT	0
@@ -9,7 +12,7 @@
 
 namespace Engine
 {
-	enum Keys
+	enum Keys : unsigned short
 	{
 		KEY_SPACE		= 32,
 		KEY_0           = 48,
@@ -53,6 +56,18 @@ namespace Engine
 		KEY_TAB			= 258,
 		KEY_BACKSPACE	= 259,
 		KEY_DEL			= 261,
+		KEY_F1          = 290,
+		KEY_F2          = 291,
+		KEY_F3          = 292,
+		KEY_F4          = 293,
+		KEY_F5          = 294,
+		KEY_F6          = 295,
+		KEY_F7          = 296,
+		KEY_F8          = 297,
+		KEY_F9          = 298,
+		KEY_F10         = 299,
+		KEY_F11         = 300,
+		KEY_F12         = 301,
 		KEY_LEFT_SHIFT	= 340,
 		KEY_LEFT_CONTROL = 341,
 	};
@@ -105,6 +120,17 @@ namespace Engine
 		Right
 	};
 
+	struct InputMapping
+	{
+		char name[64];
+		Keys positiveKey;
+		Keys negativeKey;
+		VitaButtons positiveVitaButton;
+		VitaButtons negativeVitaButton;
+	};
+
+	class FileManager;
+
 	class InputManager
 	{
 	public:
@@ -114,8 +140,12 @@ namespace Engine
 								// the correct state because in the first call it would then reset the state.
 		void Reset();
 
+		// Tries to load the input mappings from file, if there is no file, it loads some default ones
+		void LoadInputMappings(FileManager *fileManager, const std::string &path);
+
 		int AnyKeyPressed() const;
 		bool GetLastChar(unsigned char &c);
+		Keys GetLastKeyPressed();
 		bool IsKeyPressed(int keycode) const;
 		bool WasKeyPressed(int keycode) const;
 		bool WasKeyReleased(int keycode) const;
@@ -128,6 +158,11 @@ namespace Engine
 		float GetLeftAnalogueStickY() const { return leftStickY; }
 		float GetRightAnalogueStickX() const { return rightStickX; }
 		float GetRightAnalogueStickY() const { return rightStickY; }
+		bool IsVitaButtonDown(int button);
+
+		std::vector<InputMapping> &GetInputMappings() { return inputMappings; }
+		const std::string &GetStringOfKey(Keys key) { return keysToString[key]; }
+		const std::string &GetStringOfVitaButton(VitaButtons button) { return vitaButtonsToString[button]; }
 
 		void SetMousePosition(const glm::vec2 &pos);
 		const glm::vec2 &GetMousePosition() const { return mousePosition; }
@@ -143,8 +178,9 @@ namespace Engine
 		Key keys[512];
 		glm::vec2 mousePosition;
 		bool mouseMoved;
-		MouseButton mouseButtonsState[2];		// 0 if left mouse button, 1 is right mouse button
+		MouseButton mouseButtonsState[2];		// 0 is left mouse button, 1 is right mouse button
 		unsigned char lastChar;
+		Keys lastKeyPressed;
 		bool charUpdated;
 		float scrollWheelY;
 
@@ -154,6 +190,10 @@ namespace Engine
 		float leftStickY;
 		float rightStickX;
 		float rightStickY;
+
+		std::vector<InputMapping> inputMappings;
+		std::unordered_map<unsigned short, std::string> keysToString;
+		std::unordered_map<unsigned int, std::string> vitaButtonsToString;
 	};
 
 	class Input
@@ -176,6 +216,7 @@ namespace Engine
 		static float GetLeftAnalogueStickY() { return inputManager->GetLeftAnalogueStickY(); }
 		static float GetRightAnalogueStickX() { return inputManager->GetRightAnalogueStickX(); }
 		static float GetRightAnalogueStickY() { return inputManager->GetRightAnalogueStickY(); }
+		static bool IsVitaButtonDown(int button) { return inputManager->IsVitaButtonDown(button); }
 
 		static InputManager *GetInputManager() { return inputManager; }
 

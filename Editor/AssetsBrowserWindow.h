@@ -16,5 +16,10 @@ private:
 	std::vector<std::string> filesInCurrentDir;
 	int directoriesDepth = 0;
 	char folderName[64];
+	bool openContext;
+	char fileName[64];
+	bool openAddScript;
+	bool isFileHovered;
+	size_t contextFileIndex;
 };
 

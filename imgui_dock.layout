@@ -167,7 +167,7 @@ y        506
 size_x   1280
 size_y   189
 status   0
-active   1
+active   0
 opened   1
 location 3
 child0   -1
@@ -231,7 +231,7 @@ y        506
 size_x   1280
 size_y   189
 status   0
-active   0
+active   1
 opened   1
 location 3
 child0   -1

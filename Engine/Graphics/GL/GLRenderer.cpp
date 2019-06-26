@@ -116,7 +116,7 @@ namespace Engine
 
 		instanceData.resize(2048 * 4);
 
-		viewUniformBuffer = new GLUniformBuffer(nullptr, sizeof(viewProjUBO));
+		viewUniformBuffer = new GLUniformBuffer(nullptr, sizeof(CameraUBO));
 		viewUniformBuffer->BindTo(0);
 
 		currentBinding = 4;
@@ -143,7 +143,7 @@ namespace Engine
 	{
 		this->camera = camera;
 
-		viewProjUBO ubo = {};
+		CameraUBO ubo = {};
 		ubo.proj = camera->GetProjectionMatrix();
 		ubo.view = camera->GetViewMatrix();
 		ubo.projView = ubo.proj * ubo.view;

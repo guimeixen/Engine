@@ -113,12 +113,15 @@ namespace Engine
 
 		editorCam.SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
 		
+#ifndef VITA
 		debugDrawManager = new DebugDrawManager(renderer, scriptManager);
-
+#endif
 		renderer->AddRenderQueueGenerator(&uiManager);
 		renderer->AddRenderQueueGenerator(&modelManager);
 		renderer->AddRenderQueueGenerator(&particleManager);
+#ifndef VITA
 		renderer->AddRenderQueueGenerator(debugDrawManager);
+#endif
 
 #ifdef EDITOR
 		renderingPath->SetMainCamera(&editorCam);
@@ -188,9 +191,11 @@ namespace Engine
 
 	void Game::Render(Renderer *renderer)
 	{
+#ifndef VITA
 		//aiSystem.PrepareDebugDraw();
 		physicsManager.PrepareDebugDraw(debugDrawManager);		
 		debugDrawManager->Update();
+#endif
 		lightManager.Update(mainCamera);
 
 		if (terrain)
@@ -203,7 +208,9 @@ namespace Engine
 		}
 
 		renderingPath->Render();
+#ifndef VITA
 		debugDrawManager->Clear();
+#endif
 	}
 
 	void Game::PartialDispose()
@@ -627,6 +634,9 @@ namespace Engine
 			SetScene(previousSceneId, projectName);
 			sceneChangedScript = false;
 		}
+
+		// Make sure to clear forces and velocities on the rigid bodies, otherwise when playing again they will start with the velocity they had when stopped
+		physicsManager.Stop();
 
 		// Load the scene first (above and only if it was changed) and only then revert the changes made while in play mode
 		RevertPlayMode();

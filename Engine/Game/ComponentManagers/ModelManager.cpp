@@ -8,11 +8,15 @@
 #include "Graphics/VertexArray.h"
 #include "Graphics/ResourcesLoader.h"
 #include "Graphics/Material.h"
+#include "Graphics/MeshDefaults.h"
 
 namespace Engine
 {
 	void ModelManager::Init(Game *game, unsigned int initialCapacity)
 	{
+		cubePrimitive = {};
+		spherePrimitive = {};
+
 		this->game = game;
 		transformManager = &game->GetTransformManager();
 
@@ -470,11 +474,49 @@ namespace Engine
 		return model;
 	}
 
+	Model *ModelManager::AddPrimitiveModel(Entity e, ModelType type)
+	{
+		// Return the model and don't add a new entry if this entity already has a model
+		if (map.find(e.id) != map.end())
+		{
+			return GetModel(e);
+		}
+
+		Mesh mesh = LoadPrimitive(type); 
+
+		MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Materials/modelDefault.mat", mesh.vao->GetVertexInputDescs());
+		AABB aabb = { glm::vec3(-0.5f, -0.5f, -0.5f), glm::vec3(0.5f, 0.5f, 0.5f) };
+
+		Model *model = new Model(game->GetRenderer(), mesh, mat, aabb, type);
+
+		ModelInstance mi = {};
+		mi.e = e;
+		mi.model = model;
+		mi.aabb = { glm::vec3(-0.5f), glm::vec3(0.5f) };
+		mi.aabb = utils::RecomputeAABB(model->GetOriginalAABB(), transformManager->GetLocalToWorld(mi.e));
+
+		if (usedModels < models.size())
+		{
+			models[usedModels] = mi;
+			map[e.id] = usedModels;
+		}
+		else
+		{
+			models.push_back(mi);
+			map[e.id] = models.size() - 1;
+		}
+
+		usedModels++;
+
+		return model;
+	}
+
 	void ModelManager::DuplicateModel(Entity e, Entity newE)
 	{
 		if (HasModel(e) == false)
 			return;
 
+		// Primitive models are created unique, but here we are sharing them, it works but won't work if modifiyng the material instance, which will modify all
 		Model *m = GetModel(e);
 
 		Model *newM = m;
@@ -738,10 +780,33 @@ namespace Engine
 
 	Model *ModelManager::LoadModel(const Mesh &mesh, MaterialInstance *mat, const AABB &aabb)
 	{
-		Model *model = new Model(game->GetRenderer(), mesh, mat, aabb);
+		Model *model = new Model(game->GetRenderer(), mesh, mat, aabb, ModelType::BASIC);
 		uniqueModels[modelID] = model;
 		modelID++;						// Won't work when serialiazing and then deserializing because we use the path as ID and for this model the path is empty
 		return model;
+	}
+
+	Mesh ModelManager::LoadPrimitive(ModelType type)
+	{
+		Mesh mesh = {};
+
+		if (type == ModelType::PRIMITIVE_CUBE)
+		{
+			// Instead of always loading the mesh, reuse these meshes
+			if (!cubePrimitive.vao)
+				cubePrimitive = MeshDefaults::CreateCube(game->GetRenderer(), 0.5f);
+
+			mesh = cubePrimitive;
+		}
+		else if (type == ModelType::PRIMITIVE_SPHERE)
+		{
+			if (!spherePrimitive.vao)
+				spherePrimitive = MeshDefaults::CreateSphere(game->GetRenderer(), 0.5f);
+
+			mesh = spherePrimitive;
+		}
+
+		return mesh;
 	}
 
 	void ModelManager::AddAnimation(Animation *anim, const std::string &path)
@@ -774,7 +839,7 @@ namespace Engine
 		s.Write(uniqueModels.size());
 		for (auto it = uniqueModels.begin(); it != uniqueModels.end(); it++)
 		{
-			(*it).second->Serialize(s);
+			it->second->Serialize(s);
 		}
 
 		s.Write(animatedModels.size());
@@ -789,11 +854,15 @@ namespace Engine
 		{
 			const ModelInstance &mi = models[i];
 			s.Write(mi.e.id);
+
 			ModelType type = mi.model->GetType();
 			s.Write((int)type);
+
 			if (type == ModelType::BASIC)
+			{
 				s.Write(SID(mi.model->GetPath()));
-			else
+			}
+			else if (type == ModelType::ANIMATED)
 			{
 				for (size_t j = 0; j < animatedModels.size(); i++)			// Stored animated models separately so we don't have to search for the index
 				{
@@ -803,6 +872,10 @@ namespace Engine
 						break;
 					}
 				}
+			}
+			else if (type == ModelType::PRIMITIVE_CUBE || type == ModelType::PRIMITIVE_SPHERE)
+			{
+				mi.model->Serialize(s);
 			}
 		}	
 	}
@@ -851,19 +924,53 @@ namespace Engine
 			{
 				ModelInstance mi;
 				s.Read(mi.e.id);
-				int modelType = 0;
-				s.Read(modelType);
-				if (modelType == 0)
+
+				int type = 0;
+				s.Read(type);
+
+				ModelType modelType = (ModelType)type;
+
+				if (modelType == ModelType::BASIC)
 				{
 					unsigned int id;
 					s.Read(id);
 					mi.model = uniqueModels[id];
 				}
-				else
+				else if(modelType == ModelType::ANIMATED)
 				{
 					unsigned int index;
 					s.Read(index);
 					mi.model = animatedModels[index];
+				}
+				else if (modelType == ModelType::PRIMITIVE_CUBE || modelType == ModelType::PRIMITIVE_SPHERE)
+				{
+					// TODO: This isn't good, we can't new a model here and call deserialize because otherwise it would call LoadModel and we don't have a model to load and also the material names would be gone
+					// And we also can't call new Model(mesh, mat,...) because we don't have materials to pass
+					std::string path;
+					bool castShadows = true;
+					float lodDistance = 10000.0f;
+					AABB originalAABB = {};
+
+					s.Read(path);
+					s.Read(castShadows);
+					s.Read(lodDistance);
+					s.Read(originalAABB.min);
+					s.Read(originalAABB.max);
+
+					unsigned int matCount;
+					s.Read(matCount);
+
+					// These types of models can only have one material
+					assert(matCount == 1);
+
+					std::string matPath;
+					s.Read(matPath);
+
+					Mesh mesh = LoadPrimitive(modelType);
+					MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), matPath, mesh.vao->GetVertexInputDescs());
+
+					mi.model = new Model(game->GetRenderer(), mesh, mat, {glm::vec3(-0.5f), glm::vec3(0.5f)}, modelType);
+					//mi.model->Deserialize(s, game, true);			// Use reload true so we don't load the model
 				}
 
 				models[i] = mi;
@@ -894,19 +1001,45 @@ namespace Engine
 				ModelInstance &mi = models[i];
 				s.Read(mi.e.id);
 
-				int modelType = 0;
-				s.Read(modelType);
-				if (modelType == 0)
+				int type = 0;
+				s.Read(type);
+
+				ModelType modelType = (ModelType)type;
+
+				if (modelType == ModelType::BASIC)
 				{
 					unsigned int id;
 					s.Read(id);
 					mi.model = uniqueModels[id];
 				}
-				else
+				else if(modelType == ModelType::ANIMATED)
 				{
 					unsigned int index;
 					s.Read(index);
 					mi.model = animatedModels[index];
+				}
+				else if (modelType == ModelType::PRIMITIVE_CUBE || modelType == ModelType::PRIMITIVE_SPHERE)
+				{
+					// While this isn't fixed just read the data
+					std::string path;
+					bool castShadows = true;
+					float lodDistance = 10000.0f;
+					AABB originalAABB = {};
+
+					s.Read(path);
+					s.Read(castShadows);
+					s.Read(lodDistance);
+					s.Read(originalAABB.min);
+					s.Read(originalAABB.max);
+
+					unsigned int matCount;
+					s.Read(matCount);
+
+					// These types of models can only have one material
+					assert(matCount == 1);
+
+					std::string matPath;
+					s.Read(matPath);
 				}
 			}
 		}

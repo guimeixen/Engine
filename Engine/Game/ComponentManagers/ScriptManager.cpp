@@ -72,7 +72,7 @@ namespace Engine
 			.addData("hitDistance", &RaycastResult::hitDistance, true)
 			.endClass()
 
-			.beginClass<TransformManager>("TransformManager")
+			.beginClass<TransformManager>("Transform")
 			.addFunction("setLocalPos", &TransformManager::SetLocalPosition)
 			.addFunction("setLocalRot", &TransformManager::SetLocalRotation)
 			.addFunction("setLocalRotEuler", &TransformManager::SetLocalRotationEuler)
@@ -83,7 +83,7 @@ namespace Engine
 			.addFunction("getWorldPos", &TransformManager::GetWorldPosition)
 			.endClass()
 
-			.beginClass<PhysicsManager>("PhysicsManager")
+			.beginClass<PhysicsManager>("Physics")
 			.addFunction("getRigidBody", &PhysicsManager::GetRigidBodySafe)
 			.addFunction("getCollider", &PhysicsManager::GetColliderSafe)
 			.addFunction("getTrigger", &PhysicsManager::GetTriggerSafe)
@@ -124,6 +124,7 @@ namespace Engine
 			.addStaticFunction("wasKeyReleased", &Input::WasKeyReleased)
 			.addStaticFunction("isMouseButtonDown", &Input::IsMouseButtonDown)
 			.addStaticFunction("wasMouseButtonReleased", &Input::WasMouseButtonReleased)
+			.addStaticFunction("isVitaButtonDown", &Input::IsVitaButtonDown)
 			.endClass()
 
 			.beginClass<Game>("Game")
@@ -258,7 +259,7 @@ namespace Engine
 		lua_setglobal(L, "Game");
 
 		luabridge::push(L, &game->GetTransformManager());
-		lua_setglobal(L, "TransformManager");
+		lua_setglobal(L, "Transform");
 
 		//luabridge::push(L, &game->GetModelManager());
 		//lua_setglobal(L, "ModelManager");
@@ -270,7 +271,7 @@ namespace Engine
 		//lua_setglobal(L, "ParticleManager");
 
 		luabridge::push(L, &game->GetPhysicsManager());
-		lua_setglobal(L, "PhysicsManager");
+		lua_setglobal(L, "Physics");
 
 		luabridge::push(L, this);
 		lua_setglobal(L, "ScriptManager");
@@ -312,6 +313,8 @@ namespace Engine
 			si.s->CallOnAddEditorProperty(si.e);
 			si.s->RemovedUnusedProperties();
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Reload all scripts\n");
 	}
 
 	void ScriptManager::ReloadScripts()
@@ -355,6 +358,10 @@ namespace Engine
 			return scripts[map.at(e.id)].s;
 
 		Script *s = LoadScript(fileName);
+
+		// If the script fails to load, then just return nullptr and continue as if AddScript wasn't called so it doesn't crash
+		if (!s)
+			return nullptr;
 
 		ScriptInstance si = {};
 		si.e = e;
@@ -718,28 +725,31 @@ namespace Engine
 		}
 		if (occurrences > 0)
 		{
-			std::ifstream file(fileName);
-			if (file.is_open())
+			std::ifstream file = game->GetFileManager()->OpenForReading(fileName);
+
+			if (!file.is_open())
 			{
-				std::stringstream buffer;
-				buffer << file.rdbuf();
-				fileStr = buffer.str();
-
-				size_t tableNamePos = fileStr.find(tableName);
-				while (tableNamePos != std::string::npos)
-				{
-					//newTableName = tableName + std::to_string(scripts.size());		// Append the script count instead of occurrences otherwise we will have errors
-					newTableName = tableName + std::to_string(usedScripts);
-
-					fileStr.replace(tableNamePos, tableName.length(), newTableName);
-					tableNamePos = fileStr.find(tableName, tableNamePos + tableName.length());	// Advance tableName.length to the offset so when we use find again we don't get the same position	
-				}
-
-				/*std::ofstream outF("Data/test.lua");
-				outF << fileStr;
-				outF.close();*/
-				file.close();
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to open script file: %s\n", fileName.c_str());
+				return nullptr;
 			}
+
+			std::stringstream buffer;
+			buffer << file.rdbuf();
+			fileStr = buffer.str();
+
+			size_t tableNamePos = fileStr.find(tableName);
+			while (tableNamePos != std::string::npos)
+			{
+				newTableName = tableName + std::to_string(usedScripts);				// Append the script count instead of occurrences otherwise we will have errors
+
+				fileStr.replace(tableNamePos, tableName.length(), newTableName);
+				tableNamePos = fileStr.find(tableName, tableNamePos + tableName.length());	// Advance tableName.length to the offset so when we use find again we don't get the same position	
+			}
+
+			/*std::ofstream outF("Data/test.lua");
+			outF << fileStr;
+			outF.close();*/
+			file.close();
 		}
 
 		if (occurrences > 0)
@@ -757,8 +767,9 @@ namespace Engine
 			}
 			else
 			{
-				std::cout << "Error in script: " << fileName << "\n";
-				std::cout << lua_tostring(L, -1) << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "Error in script: %s\n", fileName.c_str());
+				Log::Print(LogLevel::LEVEL_ERROR, "%s\n", lua_tostring(L, -1));
+				return nullptr;
 			}
 		}
 		else
@@ -798,6 +809,7 @@ namespace Engine
 			{
 				Log::Print(LogLevel::LEVEL_ERROR, "Error in script: %s\n", fileName.c_str());
 				Log::Print(LogLevel::LEVEL_ERROR, "%s\n", lua_tostring(L, -1));
+				return nullptr;
 			}
 		}
 

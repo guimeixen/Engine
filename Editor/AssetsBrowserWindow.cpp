@@ -2,25 +2,92 @@
 
 #include "Program/Utils.h"
 #include "Program/Log.h"
+#include "Program/Input.h"
 #include "EditorManager.h"
 
 #include <iostream>
 #include <filesystem>
-#include <Windows.h>
-#include <shellapi.h>
-
 
 AssetsBrowserWindow::AssetsBrowserWindow()
 {
 	memset(folderName, 0, 64);
+	memset(fileName, 0, 64);
+	openContext = false;
+	openAddScript = false;
+	isFileHovered = false;
+	contextFileIndex = 0;
 }
 
 void AssetsBrowserWindow::Render()
 {
 	if (BeginWindow("Assets Browser"))
 	{
+		if (!isFileHovered && ImGui::IsWindowHovered() && Engine::Input::WasMouseButtonReleased(1))
+		{
+			ImGui::OpenPopup("Asset context");
+			openContext = true;
+		}
+
+		if (ImGui::BeginPopup("Asset context"))
+		{
+			ImGui::Text("Add file");
+			if (ImGui::Button("Lua script"))
+			{
+				openAddScript = true;
+				ImGui::CloseCurrentPopup();
+				
+			}
+			ImGui::EndPopup();
+		}
+
+		if (openAddScript)
+		{
+			ImGui::OpenPopup("Create script popup");
+			openAddScript = false;
+		}
+
+		if (ImGui::BeginPopup("Create script popup"))
+		{
+			if (ImGui::InputText("Name", fileName, 64, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				// OpenFileWithDefaultProgram needs full path
+				std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + currentDir + '/' + fileName + ".lua";
+				std::ofstream file(path);
+
+				file << fileName << " = {\n\n\tonInit = function(self, e)\n\t\t\n\tend,\n\n\tonUpdate = function(self, e, dt)\n\t\t\n\tend\n}";
+				file.close();
+
+				Engine::utils::OpenFileWithDefaultProgram(path);
+
+				SetFiles(currentDir);
+
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::Button("Create"))
+			{
+				//std::string path = currentDir + '/' + fileName + ".lua";
+				std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + currentDir + '/' + fileName + ".lua";
+				std::ofstream file(path);
+
+				file << fileName << " = {\n\n\tonInit = function(self, e)\n\t\t\n\tend,\n\n\tonUpdate = function(self, e, dt)\n\t\t\n\tend\n}";
+				file.close();
+
+				Engine::utils::OpenFileWithDefaultProgram(path);
+
+				SetFiles(currentDir);
+
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
 		if (ImGui::Button("Create folder"))
 			ImGui::OpenPopup("Create folder popup");
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Create file"))
+			ImGui::OpenPopup("Create file popup");
 
 		if (ImGui::BeginPopup("Create folder popup"))
 		{
@@ -55,6 +122,10 @@ void AssetsBrowserWindow::Render()
 			Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false);
 			directoriesDepth--;
 		}
+
+
+		isFileHovered = false;
+
 		for (size_t i = 0; i < filesInCurrentDir.size(); i++)
 		{
 			size_t lastSlashIdx = filesInCurrentDir[i].find_last_of('/') + 1;		// +1 to removed the slash
@@ -75,22 +146,47 @@ void AssetsBrowserWindow::Render()
 					{
 						std::cout << std::experimental::filesystem::current_path() << '\n';
 						std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[i];
-						ShellExecuteA(0, 0, path.c_str(), 0, 0, SW_SHOW);
+
+						Engine::utils::OpenFileWithDefaultProgram(path);
 					}
 				}
 			}
 
-			/*if (ImGui::IsItemHovered())
+			if (ImGui::IsItemHovered() && Engine::Input::WasMouseButtonReleased(1))
 			{
-				if (std::strstr(filesInCurrentDir[i].c_str(), ".fbx") > 0)
+				isFileHovered = true;
+				contextFileIndex = i;
+
+				/*if (std::strstr(filesInCurrentDir[i].c_str(), ".fbx") > 0)
 				{
 					// Load model
 					// Render to fbo
 					// Render fbo texture has a thumbnail
 
-				}
-			}*/		
+				}*/
+			}
 		}
+
+		if (isFileHovered)
+			ImGui::OpenPopup("File context popup");
+
+		if (ImGui::BeginPopup("File context popup"))
+		{
+			if (ImGui::Button("Open"))
+			{
+				std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[contextFileIndex];
+				Engine::utils::OpenFileWithDefaultProgram(path);
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::Button("Delete"))
+			{
+				std::remove(filesInCurrentDir[contextFileIndex].c_str());
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
 		//ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetCursorScreenPos(), ImVec2(50.0f, 50.0f), IM_COL32(255, 0, 0, 255));
 	}
 	EndWindow();

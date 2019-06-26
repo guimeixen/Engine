@@ -9,7 +9,8 @@ namespace Engine
 	namespace MeshDefaults
 	{
 		// Use default size 0.5 to make a unit cube
-		Mesh CreateCube(Renderer *renderer, float size = 0.5f, bool lines = false, bool instanced = false);		// lines == true won't make the cube render as lines but will make it ready to be rendered as lines with a material that uses lines topology
+		// lines == true won't make the cube render as lines but will make it ready to be rendered as lines with a material that uses lines topology
+		Mesh CreateCube(Renderer *renderer, float size = 0.5f, bool lines = false, bool instanced = false);
 		Mesh CreateLine(Renderer *renderer, float size = 0.5f);
 		Mesh CreateSphere(Renderer *renderer, float radius = 0.5f, bool instanced = false);
 		Mesh CreateQuad(Renderer *renderer, float size = 1.0f);

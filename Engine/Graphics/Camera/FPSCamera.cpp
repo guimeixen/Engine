@@ -151,11 +151,11 @@ namespace Engine
 #else
 		glm::vec2 rightXY = glm::vec2(Input::GetRightAnalogueStickX(), Input::GetRightAnalogueStickY());
 
-		if (rightXY.x > 0.05f || rightXY.x < -0.05f)
+		if (rightXY.x > 0.1f || rightXY.x < -0.1f)
 		{
 			yaw -= rightXY.x * sensitivity * 5.0f;
 		}
-		if (rightXY.y > 0.05f || rightXY.y < -0.05f)
+		if (rightXY.y > 0.1f || rightXY.y < -0.1f)
 		{
 			pitch += rightXY.y * sensitivity * 5.0f;
 		}

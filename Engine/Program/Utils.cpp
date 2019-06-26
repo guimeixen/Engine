@@ -16,6 +16,7 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <shellapi.h>
 #endif
 
 namespace Engine
@@ -277,6 +278,13 @@ namespace Engine
 			}
 
 			return p;
+		}
+
+		void OpenFileWithDefaultProgram(const std::string &path)
+		{
+#ifdef _WIN32
+			ShellExecuteA(0, 0, path.c_str(), 0, 0, SW_SHOW);
+#endif
 		}
 	}
 }

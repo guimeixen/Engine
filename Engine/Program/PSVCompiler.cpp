@@ -17,10 +17,13 @@ namespace Engine
 		if (!utils::DirectoryExists(folderPath))
 			utils::CreateDir(folderPath.c_str());
 
+		std::string appNameNoSpaces = appName;
+		appNameNoSpaces.erase(remove_if(appNameNoSpaces.begin(), appNameNoSpaces.end(), isspace), appNameNoSpaces.end());
+
 		std::string cmakelists = "cmake_minimum_required(VERSION 2.8)\n";
 		cmakelists += "cmake_policy(SET CMP0015 NEW)\n";
 		cmakelists += "if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)\n\tif (DEFINED ENV{VITASDK})\n\t\tset(CMAKE_TOOLCHAIN_FILE \"$ENV{VITASDK}/share/vita.toolchain.cmake\" CACHE PATH \"toolchain file\")\n\telse()\n\t\tmessage(FATAL_ERROR \"Please define VITASDK to point to your SDK path!\")\n\tendif()\nendif()\n";
-		cmakelists += "project(" + appName + ")\n";
+		cmakelists += "project(" + appNameNoSpaces + ")\n";
 		cmakelists += "include(\"${VITASDK}/share/vita.cmake\" REQUIRED)\n";
 		cmakelists += "set(VITA_APP_NAME \"";
 		cmakelists += appName;
@@ -32,10 +35,10 @@ namespace Engine
 		cmakelists += "set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} -Wall -O3\")\nset(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -O3 -std=gnu++11 -DGLM_ENABLE_EXPERIMENTAL -DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE -DVITA\")\nset(VITA_MKSFOEX_FLAGS \"${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=1\")\n";
 		cmakelists += "include_directories(\n\t../../../../\n\t../../../../Engine\n\t../../../../include/bullet\n)\n";
 		cmakelists += "link_directories(\n\t${CMAKE_CURRENT_BINARY_DIR}\n\t../../../../\n../../../../vitalibs\n)\n";
-		cmakelists += "add_executable(" + appName + " main.cpp)\n";
-		cmakelists += "target_link_libraries(" + appName + "\n\tVitaEngine\n\tLua5_3_4\n\tBulletDynamics\n\tBulletCollision\n\tBulletSoftBody\n\tLinearMath\n\tSceLibKernel_stub\n\tSceGxm_stub\n\tSceDisplay_stub\n\tSceCtrl_stub\n)\n";
-		cmakelists += "vita_create_self(" + appName + ".self " + appName + ")\n";
-		cmakelists += "vita_create_vpk(" + appName + ".vpk ${VITA_TITLEID} " + appName + ".self VERSION ${VITA_VERSION} NAME ${VITA_APP_NAME} FILE sce_sys sce_sys\n";
+		cmakelists += "add_executable(" + appNameNoSpaces + " main.cpp)\n";
+		cmakelists += "target_link_libraries(" + appNameNoSpaces + "\n\tVitaEngine\n\tLua5_3_4\n\tBulletDynamics\n\tBulletCollision\n\tBulletSoftBody\n\tLinearMath\n\tSceLibKernel_stub\n\tSceGxm_stub\n\tSceDisplay_stub\n\tSceCtrl_stub\n)\n";
+		cmakelists += "vita_create_self(" + appNameNoSpaces + ".self " + appNameNoSpaces + ")\n";
+		cmakelists += "vita_create_vpk(" + appNameNoSpaces + ".vpk ${VITA_TITLEID} " + appNameNoSpaces + ".self VERSION ${VITA_VERSION} NAME ${VITA_APP_NAME} FILE sce_sys sce_sys\n";
 
 		// Add used files
 		cmakelists += "FILE Data/" + curProjectName + ".proj Data/Levels/" + curProjectName + '/' + curProjectName + ".proj\n";
@@ -54,8 +57,6 @@ namespace Engine
 			Model *m = it->second;
 
 			const std::string &p = m->GetPath();
-			/*size_t slashIndex = p.find('/', 12) + 1;		// Add offset of 12 to skip  Data/Levels/     +1 to not include the slash
-			std::string s = p.substr(slashIndex);*/
 
 			// Add the model's path
 			cmakelists += "FILE ../../../../" + p + ' ' + p + '\n';
@@ -73,7 +74,41 @@ namespace Engine
 					Texture *t = mm.mat->textures[j];
 					cmakelists += "FILE ../../../../" + t->GetPath() + ' ' + t->GetPath() + "\n";
 				}			
-			}		
+			}
+		}
+
+		// Add primitive models materials and textures
+		const std::vector<ModelInstance> &models = game->GetModelManager().GetModels();
+		for (size_t i = 0; i < models.size(); i++)
+		{
+			Model *m = models[i].model;
+
+			if (m->GetType() == ModelType::PRIMITIVE_CUBE || m->GetType() == ModelType::PRIMITIVE_SPHERE)
+			{
+				const std::vector<MeshMaterial> &meshesAndMaterials = m->GetMeshesAndMaterials();
+				for (size_t i = 0; i < meshesAndMaterials.size(); i++)
+				{
+					const MeshMaterial &mm = meshesAndMaterials[i];
+
+					cmakelists += "FILE ../../../../" + mm.mat->path + ' ' + mm.mat->path + "\n";
+
+					for (size_t j = 0; j < mm.mat->textures.size(); j++)
+					{
+						Texture *t = mm.mat->textures[j];
+						cmakelists += "FILE ../../../../" + t->GetPath() + ' ' + t->GetPath() + "\n";
+					}
+				}
+			}
+		}
+
+
+		// Add scripts
+		const std::vector<ScriptInstance> &scripts = game->GetScriptManager().GetScripts();
+		for (size_t i = 0; i < scripts.size(); i++)
+		{
+			const std::string &p = scripts[i].s->GetPath();
+
+			cmakelists += "FILE ../../../../" + p + ' ' + p + '\n';
 		}
 
 		const std::map<unsigned int, MaterialRefInfo> &uniqueMaterials = ResourcesLoader::GetMaterials();

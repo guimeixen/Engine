@@ -85,80 +85,48 @@ namespace Engine
 			{
 				float vertices[] =
 				{
-					size,  size, -size, 0.0f, 0.0f,  0.0f,  0.0f, -1.0,
-					size, -size, -size, 0.0f, 1.0,  0.0f,  0.0f, -1.0,
-					-size, -size, -size, 1.0, 1.0,  0.0f,  0.0f, -1.0,
-					-size, -size, -size, 1.0, 1.0,  0.0f,  0.0f, -1.0f,
-					-size,  size, -size, 1.0f, 0.0f,  0.0f,  0.0f, -1.0f,
 					size,  size, -size, 0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
+					size, -size, -size, 0.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+					-size, -size, -size, 1.0f, 1.0f,  0.0f,  0.0f, -1.0f,
+					-size,  size, -size, 1.0f, 0.0f,  0.0f,  0.0f, -1.0f,
 
 					-size, -size,  size, 0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
 					size, -size,  size, 1.0f, 0.0f,  0.0f,  0.0f,  1.0f,
 					size,  size,  size, 1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
-					size,  size,  size, 1.0f, 1.0f,  0.0f,  0.0f,  1.0f,
 					-size,  size,  size, 0.0f, 1.0f,  0.0f,  0.0f,  1.0f,
-					-size, -size,  size, 0.0f, 0.0f,  0.0f,  0.0f,  1.0f,
 
 					-size,  size,  size, 1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
 					-size,  size, -size, 1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
 					-size, -size, -size, 0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-					-size, -size, -size, 0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
 					-size, -size,  size, 0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-					-size,  size,  size, 1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
 
 					size, -size,  -size, 0.0f, 0.0f,  1.0f,  0.0f,  0.0f,
 					size, size, -size, 1.0f, 0.0f,  1.0f,  0.0f,  0.0f,
 					size,  size,  size, 1.0f, 1.0f,  1.0f,  0.0f,  0.0f,
-					size,  size,  size, 1.0f, 1.0f,  1.0f,  0.0f,  0.0f,
 					size, -size,  size, 0.0f, 1.0f,  1.0f,  0.0f,  0.0f,
-					size, -size, -size, 0.0f, 0.0f,  1.0f,  0.0f,  0.0f,
 
 					-size, -size, -size, 0.0f, 0.0f,  0.0f, -1.0f,  0.0f,
 					size, -size, -size, 1.0f, 0.0f,  0.0f, -1.0f,  0.0f,
 					size, -size,  size, 1.0f, 1.0f,  0.0f, -1.0f,  0.0f,
-					size, -size,  size, 1.0f, 1.0f,  0.0f, -1.0f,  0.0f,
 					-size, -size,  size, 0.0f, 1.0f,  0.0f, -1.0f,  0.0f,
-					-size, -size, -size, 0.0f, 0.0f,  0.0f, -1.0f,  0.0f,
 
 					size,  size,  size, 1.0f, 1.0f,  0.0f,  1.0f,  0.0f,
 					size,  size, -size, 1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-					-size,  size, -size, 0.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-					size,  size,  size, 1.0f, 1.0f,  0.0f,  1.0f,  0.0f,
-					-size,  size, -size, 0.0f, 0.0f,  0.0f,  1.0f,  0.0f,
+					-size,  size, -size, 0.0f, 0.0f,  0.0f,  1.0f,  0.0f,		
 					-size,  size,  size, 0.0f, 1.0f,  0.0f,  1.0f,  0.0f,
 				};
 
-				/*float vertices[] = {
-					-size, -size, -size,
-					-size, -size, size,
-					size, -size, size,
-					size, -size, -size,
-					-size, size, -size,
-					-size, size, size,
-					size, size, size,
-					size, size, -size,
-				};
 
+				// Needs to use indices because the Vita only supports indexed draws
 				unsigned short indices[] =
 				{
-					3,1,0,
-					2,1,3,
-
-					6,4,5,
-					7,4,6,
-
-					3,4,7,
-					0,4,3,
-
-					1,6,5,
-					2,6,1,
-
-					0,5,4,
-					1,5,0,
-
-					2,7,6,
-					3,7,2
-				};*/
+					0,1,2,2,3,0,
+					4,5,6,6,7,4,
+					8,9,10,10,11,8,
+					12,13,14,14,15,12,
+					16,17,18,18,19,16,
+					20,21,22,22,23,20
+				};
 
 				VertexAttribute position = {};
 				position.count = 3;
@@ -178,10 +146,10 @@ namespace Engine
 				desc.stride = 8 * sizeof(float);
 
 				Buffer *vb = renderer->CreateVertexBuffer(vertices, sizeof(vertices), BufferUsage::STATIC);
-				//Buffer *ib = renderer->CreateIndexBuffer(indices, sizeof(indices), BufferUsage::STATIC);
+				Buffer *ib = renderer->CreateIndexBuffer(indices, sizeof(indices), BufferUsage::STATIC);
 
 				Mesh m = {};
-				m.vertexCount = 36;
+				m.indexCount = 36;
 
 				/*if (instanced)
 				{
@@ -213,7 +181,7 @@ namespace Engine
 				}
 				else
 				{*/
-					m.vao = renderer->CreateVertexArray(desc, vb, nullptr);
+					m.vao = renderer->CreateVertexArray(desc, vb, ib);
 				//}
 
 				return m;
@@ -240,66 +208,65 @@ namespace Engine
 
 		Mesh CreateSphere(Renderer *renderer, float radius, bool instanced)
 		{
-			// Create the debug sphere vertices and indices
 			int latBands = 16;
-			int longBands = 24;
-			std::vector<glm::vec3> vertices;
-			std::vector<unsigned short> indices;
-
-			for (int y = 0; y <= latBands; y++)
-			{
-				float theta = y * 3.14159f / latBands;
-				float sinTheta = glm::sin(theta);
-				float cosTheta = glm::cos(theta);
-
-				for (int x = 0; x <= longBands; x++)
-				{
-					float phi = x * 2.0f * 3.14159f / longBands;
-					float sinPhi = glm::sin(phi);
-					float cosPhi = glm::cos(phi);
-
-					glm::vec3 v;
-					v.x = radius * cosPhi * sinTheta;
-					v.z = radius * sinPhi * sinTheta;
-					v.y = radius * cosTheta;
-					vertices.push_back(v);
-				}
-			}
-
-			for (short y = 0; y < latBands; y++)
-			{
-				for (short x = 0; x < longBands; x++)
-				{
-					short first = (y * (longBands + 1)) + x;
-					short second = first + longBands + 1;
-
-					indices.push_back(first + 1);
-					indices.push_back(second);
-					indices.push_back(first);
-
-					indices.push_back(first + 1);
-					indices.push_back(second + 1);
-					indices.push_back(second);
-				}
-			}
-
-			VertexAttribute position = {};
-			position.count = 3;
-			position.vertexAttribFormat = VertexAttributeFormat::FLOAT;
-			position.offset = 0;
-
-			VertexInputDesc desc = {};
-			desc.attribs = { position };
-			desc.stride = 3 * sizeof(float);
-
-			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(glm::vec3), BufferUsage::STATIC);
-			Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
-
-			Mesh m = {};
-			m.indexCount = indices.size();
+			int longBands = 24;		
 
 			if (instanced)
 			{
+				std::vector<glm::vec3> vertices;
+				std::vector<unsigned short> indices;
+
+				for (int y = 0; y <= latBands; y++)
+				{
+					float ySegment = (float)y / latBands;
+					float theta = ySegment * 3.14159265f;
+					float sinTheta = glm::sin(theta);
+					float cosTheta = glm::cos(theta);
+
+					for (int x = 0; x <= longBands; x++)
+					{
+						float xSegment = (float)x / longBands;
+						float phi = xSegment * 2.0f * 3.14159365f;
+						float sinPhi = glm::sin(phi);
+						float cosPhi = glm::cos(phi);
+
+						glm::vec3 v;
+						v.x = radius * cosPhi * sinTheta;
+						v.y = radius * cosTheta;
+						v.z = radius * sinPhi * sinTheta;
+						vertices.push_back(v);
+					}
+				}
+
+				for (short y = 0; y < latBands; y++)
+				{
+					for (short x = 0; x < longBands; x++)
+					{
+						short first = (y * (longBands + 1)) + x;
+						short second = first + longBands + 1;
+
+						indices.push_back(first + 1);
+						indices.push_back(second);
+						indices.push_back(first);
+
+						indices.push_back(first + 1);
+						indices.push_back(second + 1);
+						indices.push_back(second);
+					}
+				}
+
+				VertexAttribute position = {};
+				position.count = 3;
+				position.vertexAttribFormat = VertexAttributeFormat::FLOAT;
+				position.offset = 0;
+
+				VertexInputDesc desc = {};
+				desc.attribs = { position };
+				desc.stride = 3 * sizeof(float);
+
+				Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(glm::vec3), BufferUsage::STATIC);
+				Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
+
 				VertexAttribute attribs[5] = {};
 
 				// Instance mat4 attrib
@@ -324,14 +291,90 @@ namespace Engine
 
 				VertexInputDesc descs[2] = { desc,instDesc };
 
+				Mesh m = {};
 				m.vao = renderer->CreateVertexArray(descs, 2, { vb }, ib);
+				m.indexCount = indices.size();			
+
+				return m;
 			}
 			else
 			{
-				m.vao = renderer->CreateVertexArray(desc, vb, ib);
-			}
+				std::vector<VertexPOS3D_UV_NORMAL> vertices;
+				std::vector<unsigned short> indices;
 
-			return m;
+				for (int y = 0; y <= latBands; y++)
+				{
+					float ySegment = (float)y / latBands;
+					float theta = ySegment * 3.14159265f;
+					float sinTheta = glm::sin(theta);
+					float cosTheta = glm::cos(theta);
+
+					for (int x = 0; x <= longBands; x++)
+					{
+						float xSegment = (float)x / longBands;
+						float phi = xSegment * 2.0f * 3.14159365f;
+						float sinPhi = glm::sin(phi);
+						float cosPhi = glm::cos(phi);
+
+						VertexPOS3D_UV_NORMAL v = {};
+						v.pos.x = radius * cosPhi * sinTheta;
+						v.pos.y = radius * cosTheta;
+						v.pos.z = radius * sinPhi * sinTheta;
+						v.uv.x = xSegment;
+						v.uv.y = ySegment;
+						v.normal.x = v.pos.x;
+						v.normal.y = v.pos.y;
+						v.normal.z = v.pos.z;
+						vertices.push_back(v);
+					}
+				}
+
+				for (short y = 0; y < latBands; y++)
+				{
+					for (short x = 0; x < longBands; x++)
+					{
+						short first = (y * (longBands + 1)) + x;
+						short second = first + longBands + 1;
+
+						indices.push_back(first + 1);
+						indices.push_back(second);
+						indices.push_back(first);
+
+						indices.push_back(first + 1);
+						indices.push_back(second + 1);
+						indices.push_back(second);
+					}
+				}
+
+				VertexAttribute position = {};
+				position.count = 3;
+				position.vertexAttribFormat = VertexAttributeFormat::FLOAT;
+				position.offset = 0;
+
+				VertexAttribute uv = {};
+				uv.count = 2;
+				uv.vertexAttribFormat = VertexAttributeFormat::FLOAT;
+				uv.offset = 3 * sizeof(float);
+
+				VertexAttribute normal = {};
+				normal.count = 3;
+				normal.vertexAttribFormat = VertexAttributeFormat::FLOAT;
+				normal.offset = 5 * sizeof(float);
+
+				VertexInputDesc desc = {};
+				desc.attribs = { position, uv, normal };
+				desc.stride = 8 * sizeof(float);
+
+				Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL), BufferUsage::STATIC);
+				Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
+
+				Mesh m = {};
+				m.indexCount = indices.size();
+
+				m.vao = renderer->CreateVertexArray(desc, vb, ib);
+
+				return m;
+			}
 		}
 
 		Mesh CreateQuad(Renderer *renderer, float size)

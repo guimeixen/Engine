@@ -1,8 +1,10 @@
 #version 450
 
+#include include/common.glsl
+
 layout(location = 0) out vec4 outColor;
 
-layout(std140, binding = 1) uniform MaterialUBO
+layout(std140, binding = MAT_UBO_BINDING) uniform MaterialUBO
 {
 	vec3 color;
 };
