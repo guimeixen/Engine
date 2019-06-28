@@ -54,7 +54,7 @@ void AssetsBrowserWindow::Render()
 				std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + currentDir + '/' + fileName + ".lua";
 				std::ofstream file(path);
 
-				file << fileName << " = {\n\n\tonInit = function(self, e)\n\t\t\n\tend,\n\n\tonUpdate = function(self, e, dt)\n\t\t\n\tend\n}";
+				file << "require('common')\n\n" << fileName << " = {\n\n\tonInit = function(self, e)\n\t\t\n\tend,\n\n\tonUpdate = function(self, e, dt)\n\t\t\n\tend\n}";
 				file.close();
 
 				Engine::utils::OpenFileWithDefaultProgram(path);

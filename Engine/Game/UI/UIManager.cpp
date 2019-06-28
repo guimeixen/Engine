@@ -31,6 +31,9 @@ namespace Engine
 		this->game = game;
 		mesh = MeshDefaults::CreateQuad(game->GetRenderer());
 
+		usedWidgets = 0;
+		disabledWidgets = 0;
+
 		showCursor = true;
 		cursor = nullptr;
 		//FIX IDS
@@ -70,7 +73,9 @@ namespace Engine
 
 	void UIManager::Update(float dt)
 	{
-		for (unsigned int i = 0; i < usedWidgets; i++)
+		unsigned int numEnabledWidgets = usedWidgets - disabledWidgets;
+
+		for (unsigned int i = 0; i < numEnabledWidgets; i++)
 		{
 			if (widgets[i].w->IsEnabled())
 				widgets[i].w->Update(dt);
@@ -111,8 +116,9 @@ namespace Engine
 			cursor->SetRectPosPercent(posPercent);
 		}*/
 #endif
+		unsigned int numEnabledWidgets = usedWidgets - disabledWidgets;
 
-		for (unsigned int i = 0; i < usedWidgets; i++)
+		for (unsigned int i = 0; i < numEnabledWidgets; i++)
 		{
 			if (widgets[i].w->IsEnabled())
 				widgets[i].w->UpdateInGame(dt);
@@ -149,11 +155,13 @@ namespace Engine
 	{
 		const ShaderPass &pass = widgets[0].w->matInstance->baseMaterial->GetShaderPass(0);			// We can use the first widget's shader pass because all widgets use the same material
 
+		unsigned int numEnabledWidgets = usedWidgets - disabledWidgets;
+
 		for (size_t i = 0; i < passCount; i++)
 		{
 			if (passIds[i] == pass.queueID)
 			{
-				for (unsigned int j = 0; j < usedWidgets; j++)
+				for (unsigned int j = 0; j < numEnabledWidgets; j++)
 				{
 					Widget *widget = widgets[j].w;
 					WidgetType type = widget->GetType();
@@ -216,18 +224,7 @@ namespace Engine
 		wi.e = e;
 		wi.w = button;
 
-		if (usedWidgets < widgets.size())
-		{
-			widgets[usedWidgets] = wi;
-			map[e.id] = usedWidgets;
-		}
-		else
-		{
-			widgets.push_back(wi);
-			map[e.id] = (unsigned int)widgets.size() - 1;
-		}
-
-		usedWidgets++;
+		InsertWidgetInstance(wi);
 
 		return button;
 	}
@@ -247,18 +244,7 @@ namespace Engine
 		wi.e = e;
 		wi.w = text;
 
-		if (usedWidgets < widgets.size())
-		{
-			widgets[usedWidgets] = wi;
-			map[e.id] = usedWidgets;
-		}
-		else
-		{
-			widgets.push_back(wi);
-			map[e.id] = (unsigned int)widgets.size() - 1;
-		}
-
-		usedWidgets++;
+		InsertWidgetInstance(wi);
 
 		return text;
 	}
@@ -279,18 +265,7 @@ namespace Engine
 		wi.e = e;
 		wi.w = image;
 
-		if (usedWidgets < widgets.size())
-		{
-			widgets[usedWidgets] = wi;
-			map[e.id] = usedWidgets;
-		}
-		else
-		{
-			widgets.push_back(wi);
-			map[e.id] = (unsigned int)widgets.size() - 1;
-		}
-
-		usedWidgets++;
+		InsertWidgetInstance(wi);
 
 		return image;
 	}
@@ -314,18 +289,7 @@ namespace Engine
 		wi.e = e;
 		wi.w = editText;
 
-		if (usedWidgets < widgets.size())
-		{
-			widgets[usedWidgets] = wi;
-			map[e.id] = usedWidgets;
-		}
-		else
-		{
-			widgets.push_back(wi);
-			map[e.id] = (unsigned int)widgets.size() - 1;
-		}
-
-		usedWidgets++;
+		InsertWidgetInstance(wi);
 
 		return editText;
 	}
@@ -408,35 +372,177 @@ namespace Engine
 		wi.e = newE;
 		wi.w = newW;
 
+		InsertWidgetInstance(wi);
+	}
+
+	void UIManager::SetWidgetEnabled(Entity e, bool enable)
+	{
+		if (HasWidget(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledWidgets == 1)
+				{
+					disabledWidgets--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = map.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedWidgets - disabledWidgets;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					WidgetInstance wi1 = widgets[entityIndex];
+					WidgetInstance wi2 = widgets[firstDisabledEntityIndex];
+
+					widgets[entityIndex] = wi2;
+					widgets[firstDisabledEntityIndex] = wi1;
+
+					map[e.id] = firstDisabledEntityIndex;
+					map[wi2.e.id] = entityIndex;
+
+					disabledWidgets--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = map.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedWidgets - disabledWidgets - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				WidgetInstance wi1 = widgets[entityIndex];
+				WidgetInstance wi2 = widgets[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				widgets[entityIndex] = wi2;
+				widgets[firstDisabledEntityIndex] = wi1;
+
+				// Swap the indices
+				map[e.id] = firstDisabledEntityIndex;
+				map[wi2.e.id] = entityIndex;
+
+				disabledWidgets++;
+			}
+		}
+	}
+
+	void UIManager::LoadWidgetFromPrefab(Serializer &s, Entity e)
+	{
+		WidgetInstance wi = {};
+		wi.e = e;
+
+		int t = 0;
+		s.Read(t);
+		WidgetType type = (WidgetType)t;
+
+		if (type == WidgetType::TEXT)
+		{
+			StaticText *text = new StaticText(game);
+			text->SetMaterial(game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
+			text->Deserialize(s);
+
+			wi.w = text;
+		}
+		else if (type == WidgetType::BUTTON)
+		{
+			Button *button = new Button(game);
+			button->SetMaterial(game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
+			button->Deserialize(s, game->GetRenderer());
+
+			wi.w = button;
+		}
+		else if (type == WidgetType::IMAGE)
+		{
+			Image *image = new Image(game);
+			image->SetMaterial(game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
+			image->Deserialize(s, game->GetRenderer());
+
+			wi.w = image;
+		}
+		else if (type == WidgetType::EDIT_TEXT)
+		{
+			EditText *editText = new EditText(game);
+			editText->SetMaterial(game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
+			editText->Deserialize(s, game->GetRenderer());
+
+			wi.w = editText;
+		}
+
+		InsertWidgetInstance(wi);
+	}
+
+	void UIManager::InsertWidgetInstance(const WidgetInstance &wi)
+	{
 		if (usedWidgets < widgets.size())
 		{
 			widgets[usedWidgets] = wi;
-			map[newE.id] = usedWidgets;
+			map[wi.e.id] = usedWidgets;
 		}
 		else
 		{
 			widgets.push_back(wi);
-			map[newE.id] = (unsigned int)widgets.size() - 1;
+			map[wi.e.id] = (unsigned int)widgets.size() - 1;
 		}
 
 		usedWidgets++;
+
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledWidgets > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedWidgets - 1;
+			unsigned int firstDisabledEntityIndex = usedWidgets - disabledWidgets - 1;		// Get the first entity disabled
+
+			WidgetInstance wi1 = widgets[newEntityIndex];
+			WidgetInstance wi2 = widgets[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			widgets[newEntityIndex] = wi2;
+			widgets[firstDisabledEntityIndex] = wi1;
+
+			// Swap the indices
+			map[wi.e.id] = firstDisabledEntityIndex;
+			map[wi2.e.id] = newEntityIndex;
+		}
 	}
 
 	void UIManager::RemoveWidget(Entity e)
 	{
 		if (HasWidget(e))
 		{
-			unsigned int index = map.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = map.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedWidgets - disabledWidgets - 1;
 
-			WidgetInstance temp = widgets[index];
-			WidgetInstance last = widgets[widgets.size() - 1];
-			widgets[widgets.size() - 1] = temp;
-			widgets[index] = last;
+			WidgetInstance entityToRemoveWi = widgets[entityToRemoveIndex];
+			WidgetInstance lastEnabledEntityWi = widgets[lastEnabledEntityIndex];
 
-			map[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			widgets[lastEnabledEntityIndex] = entityToRemoveWi;
+			widgets[entityToRemoveIndex] = lastEnabledEntityWi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			map[lastEnabledEntityWi.e.id] = entityToRemoveIndex;
 			map.erase(e.id);
 
-			delete temp.w;
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledWidgets > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedWidgets - 1;
+
+				WidgetInstance lastDisabledEntityWi = widgets[lastDisabledEntityIndex];
+
+				widgets[lastDisabledEntityIndex] = entityToRemoveWi;
+				widgets[entityToRemoveIndex] = lastDisabledEntityWi;
+
+				map[lastDisabledEntityWi.e.id] = entityToRemoveIndex;
+			}
+
+			delete entityToRemoveWi.w;
 			usedWidgets--;
 		}
 	}
@@ -453,7 +559,9 @@ namespace Engine
 
 	Entity UIManager::PerformRaycast(const glm::vec2 &point)
 	{
-		for (unsigned int i = 0; i < usedWidgets; i++)
+		const unsigned int numEnabledWidgets = usedWidgets - disabledWidgets;
+
+		for (unsigned int i = 0; i < numEnabledWidgets; i++)
 		{
 			const Rect &rect = widgets[i].w->GetRect();
 			glm::vec2 topLeft = rect.position - rect.size * 0.5f;
@@ -471,6 +579,7 @@ namespace Engine
 	void UIManager::Serialize(Serializer &s) const
 	{
 		s.Write(usedWidgets);
+		s.Write(disabledWidgets);
 		for (unsigned int i = 0; i < usedWidgets; i++)
 		{
 			const WidgetInstance &wi = widgets[i];
@@ -488,6 +597,7 @@ namespace Engine
 		if (!reload)
 		{
 			s.Read(usedWidgets);
+			s.Read(disabledWidgets);
 			widgets.resize(usedWidgets);
 			for (unsigned int i = 0; i < usedWidgets; i++)
 			{
@@ -536,6 +646,7 @@ namespace Engine
 		else
 		{
 			s.Read(usedWidgets);
+			s.Read(disabledWidgets);
 			for (unsigned int i = 0; i < usedWidgets; i++)
 			{
 				WidgetInstance &wi = widgets[i];

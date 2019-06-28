@@ -25,6 +25,7 @@ namespace Engine
 		Log::Print(LogLevel::LEVEL_INFO, "USER_RW available size: %d\n\n", info.size_user);
 
 		fileManager.Init();
+		inputManager.LoadInputMappings(&fileManager, "");
 
 		Random::Init();
 

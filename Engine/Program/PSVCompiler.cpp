@@ -45,6 +45,9 @@ namespace Engine
 		cmakelists += "FILE ../main.bin Data/Levels/" + curProjectName + "/main.bin\n";
 		cmakelists += "FILE ../main.rendersettings Data/Levels/" + curProjectName + "/main.rendersettings\n";
 
+		// Add common scripts
+		cmakelists += "FILE ../../../Resources/Scripts Data/Resources/Scripts\n";
+
 		// Add font
 		const Font &font = game->GetRenderingPath()->GetFont();
 		cmakelists += "FILE ../../../../" + font.GetFontPath() + ' ' + font.GetFontPath() + '\n';

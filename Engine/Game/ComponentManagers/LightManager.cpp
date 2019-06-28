@@ -27,7 +27,9 @@ namespace Engine
 
 	void LightManager::Update(Camera *mainCamera)
 	{
-		for (unsigned int i = 0; i < usedPointLights; i++)
+		const unsigned int numEnabledPointLights = usedPointLights - disabledPointLights;
+
+		for (unsigned int i = 0; i < numEnabledPointLights; i++)
 		{
 			PointLightInstance &pli = pointLights[i];
 			pli.pl->position = transformManager->GetLocalToWorld(pli.e)[3];
@@ -42,12 +44,14 @@ namespace Engine
 		float absZ = std::fabs(lastCamPos.z - camPos.z);
 		if (needsSort || absX > 0.01f || absY > 0.01f || absZ > 0.01f)
 		{
-			std::sort(pointLights.begin(), pointLights.end(), [camPos](const PointLightInstance &a, const PointLightInstance &b) -> bool
+			// We can't sort the actual pointLights list because it would mess up the map indices and disabled points lights
+			// We would need to sort the shader light lists instead of this one
+			/*std::sort(pointLights.begin(), pointLights.end() - disabledPointLights, [camPos](const PointLightInstance &a, const PointLightInstance &b) -> bool
 			{
 				return glm::length2(camPos - a.pl->position + a.pl->positionOffset) < glm::length2(camPos - b.pl->position + b.pl->positionOffset);
-			});
+			});*/
 
-			unsigned int size = usedPointLights > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : usedPointLights;
+			unsigned int size = numEnabledPointLights > MAX_POINT_LIGHTS ? MAX_POINT_LIGHTS : numEnabledPointLights;
 
 			plUBO.numPointLights = (int)size;
 
@@ -76,8 +80,8 @@ namespace Engine
 			needsSort = false;
 		}
 
-		if (usedPointLights > lightsShaderReady.size())
-			lightsShaderReady.resize(usedPointLights);
+		if (numEnabledPointLights > lightsShaderReady.size())
+			lightsShaderReady.resize(numEnabledPointLights);
 
 		const glm::mat4 &view = mainCamera->GetViewMatrix();
 		glm::mat4 t;
@@ -125,18 +129,7 @@ namespace Engine
 		pli.e = e;
 		pli.pl = light;
 
-		if (usedPointLights < pointLights.size())
-		{
-			pointLights[usedPointLights] = pli;
-			plMap[e.id] = usedPointLights;
-		}
-		else
-		{
-			pointLights.push_back(pli);
-			plMap[e.id] = (unsigned int)pointLights.size() - 1;
-		}
-
-		usedPointLights++;
+		InsertPointLightInstance(pli);
 
 		return light;
 	}
@@ -160,29 +153,107 @@ namespace Engine
 		pli.e = newE;
 		pli.pl = newPl;
 
+		InsertPointLightInstance(pli);
+	}
+
+	void LightManager::SetPointLightEnabled(Entity e, bool enable)
+	{
+		if (HasPointLight(e))
+		{
+			// We need to rebuild the points lights list
+			lightsShaderReady.clear();
+
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledPointLights == 1)
+				{
+					disabledPointLights--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = plMap.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedPointLights - disabledPointLights;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					PointLightInstance pli1 = pointLights[entityIndex];
+					PointLightInstance pli2 = pointLights[firstDisabledEntityIndex];
+
+					pointLights[entityIndex] = pli2;
+					pointLights[firstDisabledEntityIndex] = pli1;
+
+					plMap[e.id] = firstDisabledEntityIndex;
+					plMap[pli2.e.id] = entityIndex;
+
+					disabledPointLights--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = plMap.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedPointLights - disabledPointLights - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				PointLightInstance pli1 = pointLights[entityIndex];
+				PointLightInstance pli2 = pointLights[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				pointLights[entityIndex] = pli2;
+				pointLights[firstDisabledEntityIndex] = pli1;
+
+				// Swap the indices
+				plMap[e.id] = firstDisabledEntityIndex;
+				plMap[pli2.e.id] = entityIndex;
+
+				disabledPointLights++;
+			}
+		}
+	}
+
+	void LightManager::LoadPointLightFromPrefab(Serializer &s, Entity e)
+	{
+		PointLightInstance pli = {};
+		pli.e = e;
+		pli.pl = new PointLight();
+		pli.pl->Deserialize(s);
+
+		InsertPointLightInstance(pli);
+	}
+
+	void LightManager::InsertPointLightInstance(const PointLightInstance &pli)
+	{
 		if (usedPointLights < pointLights.size())
 		{
 			pointLights[usedPointLights] = pli;
-			plMap[newE.id] = usedPointLights;
+			plMap[pli.e.id] = usedPointLights;
 		}
 		else
 		{
 			pointLights.push_back(pli);
-			plMap[newE.id] = (unsigned int)pointLights.size() - 1;
+			plMap[pli.e.id] = (unsigned int)pointLights.size() - 1;
 		}
 
 		usedPointLights++;
-	}
 
-	void LightManager::EnablePointLight(PointLight *light)
-	{
-		for (size_t i = 0; i < usedPointLights; i++)
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledPointLights > 0)
 		{
-			if (pointLights[i].pl == light)			// If we already have the light don't readd it
-				return;
-		}
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedPointLights - 1;
+			unsigned int firstDisabledEntityIndex = usedPointLights - disabledPointLights - 1;		// Get the first entity disabled
 
-		//pointLights.push_back(light);
+			PointLightInstance pli1 = pointLights[newEntityIndex];
+			PointLightInstance pli2 = pointLights[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			pointLights[newEntityIndex] = pli2;
+			pointLights[firstDisabledEntityIndex] = pli1;
+
+			// Swap the indices
+			plMap[pli.e.id] = firstDisabledEntityIndex;
+			plMap[pli2.e.id] = newEntityIndex;
+		}
 	}
 
 	void LightManager::UpdatePointLights()
@@ -194,33 +265,40 @@ namespace Engine
 	{
 		if (HasPointLight(e))
 		{
-			unsigned int index = plMap.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = plMap.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedPointLights - disabledPointLights - 1;
 
-			PointLightInstance temp = pointLights[index];
-			PointLightInstance last = pointLights[pointLights.size() - 1];
-			pointLights[pointLights.size() - 1] = temp;
-			pointLights[index] = last;
+			PointLightInstance entityToRemovePli = pointLights[entityToRemoveIndex];
+			PointLightInstance lastEnabledEntityPli = pointLights[lastEnabledEntityIndex];
 
-			plMap[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			pointLights[lastEnabledEntityIndex] = entityToRemovePli;
+			pointLights[entityToRemoveIndex] = lastEnabledEntityPli;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			plMap[lastEnabledEntityPli.e.id] = entityToRemoveIndex;
 			plMap.erase(e.id);
 
-			delete temp.pl;
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledPointLights > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedPointLights - 1;
+
+				PointLightInstance lastDisabledEntityPli = pointLights[lastDisabledEntityIndex];
+
+				pointLights[lastDisabledEntityIndex] = entityToRemovePli;
+				pointLights[entityToRemoveIndex] = lastDisabledEntityPli;
+
+				plMap[lastDisabledEntityPli.e.id] = entityToRemoveIndex;
+			}
+
+			delete entityToRemovePli.pl;
 			needsSort = true;
 			usedPointLights--;
-		}
-	}
-
-	void LightManager::RemovePointLight(PointLight *light)
-	{
-		int index = 0;
-		for (auto it = pointLights.begin(); it != pointLights.end(); it++)
-		{
-			if ((*it).pl == light)
-			{
-				pointLights.erase(it);
-				break;
-			}
-			++index;
 		}
 	}
 
@@ -237,6 +315,7 @@ namespace Engine
 	void LightManager::Serialize(Serializer &s)
 	{
 		s.Write(usedPointLights);
+		s.Write(disabledPointLights);
 		for (unsigned int i = 0; i < usedPointLights; i++)
 		{
 			const PointLightInstance &pli = pointLights[i];
@@ -252,6 +331,7 @@ namespace Engine
 		if (!reload)
 		{
 			s.Read(usedPointLights);
+			s.Read(disabledPointLights);
 			pointLights.resize(usedPointLights);
 			for (unsigned int i = 0; i < usedPointLights; i++)
 			{
@@ -267,6 +347,7 @@ namespace Engine
 		else
 		{
 			s.Read(usedPointLights);
+			s.Read(disabledPointLights);
 			for (unsigned int i = 0; i < usedPointLights; i++)
 			{
 				PointLightInstance &pli = pointLights[i];

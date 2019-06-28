@@ -287,6 +287,15 @@ namespace Engine
 		CalcTransform(e);
 	}
 
+	void TransformManager::Rotate(Entity e, const glm::vec3 &rot)
+	{
+		glm::quat q = glm::quat(glm::vec3(glm::radians(rot.x), glm::radians(rot.y), glm::radians(rot.z)));
+
+		instanceData.localRotation[e.id] *= q;
+		
+		CalcTransform(e);
+	}
+
 	const glm::mat4 &TransformManager::GetLocalToWorld(Entity e) const
 	{
 		return instanceData.localToWorld[e.id];

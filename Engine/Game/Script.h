@@ -68,8 +68,6 @@ namespace Engine
 		const std::string &GetName() const { return name; }
 		const std::string &GetPath() const { return path; }
 
-		bool HasTriggerFunctions() const { return hasTriggerFunctions; }
-
 		const std::vector<ScriptProperty> &GetProperties() const { return properties; }
 
 		void Serialize(Serializer &s);
@@ -85,7 +83,6 @@ namespace Engine
 		lua_State *L;
 		std::string name;
 		std::string path;
-		bool hasTriggerFunctions = false;
 		std::vector<ScriptProperty> properties;
 		std::vector<int> newProperties;
 		luabridge::LuaRef table;

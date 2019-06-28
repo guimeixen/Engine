@@ -5,6 +5,7 @@
 #include "Graphics/MeshDefaults.h"
 #include "Graphics/VertexArray.h"
 #include "Program/Serializer.h"
+#include "Program/Log.h"
 
 #include <iostream>
 
@@ -143,12 +144,20 @@ namespace Engine
 	void RenderingPath::Render()
 	{
 		tod.Update(game->GetDeltaTime());
-
 		const TimeInfo &t = tod.GetCurrentTimeInfo();
-		const glm::vec3 mainLightDir = glm::normalize(t.dirLightDirection);
+
+		glm::vec3 mainLightDir = glm::vec3(0.0f);
+		if (lockMainLightToTOD)
+		{
+			mainLightDir = glm::normalize(t.dirLightDirection);
+		}
+		else
+		{
+			mainLightDir = glm::normalize(mainDirectionalLight.direction);
+		}
 
 		CascadedShadowMap::Update(csmInfo, *mainCamera, mainLightDir);
-
+		
 		glm::vec3 fakeLightPos = mainCamera->GetPosition() + mainLightDir * 100.0f;
 		glm::vec4 lightScreenPos = mainCamera->GetProjectionMatrix() * mainCamera->GetViewMatrix() * glm::vec4(fakeLightPos, 1.0f);
 		lightScreenPos.x /= lightScreenPos.w;
@@ -171,7 +180,7 @@ namespace Engine
 		DirLightUBO ubo = {};
 
 		if (lockMainLightToTOD)
-		{
+		{	
 			ubo.dirAndIntensity = glm::vec4(mainLightDir, t.intensity);
 			ubo.dirLightColor = glm::vec4(t.dirLightColor, t.ambient);
 			ubo.skyColor = t.skyColor;
@@ -183,10 +192,9 @@ namespace Engine
 		}
 		else
 		{
-			ubo.dirAndIntensity = glm::vec4(mainLightDir, mainDirectionalLight.intensity);
+			ubo.dirAndIntensity = glm::vec4(mainDirectionalLight.direction, mainDirectionalLight.intensity);
 			ubo.dirLightColor = glm::vec4(mainDirectionalLight.color, mainDirectionalLight.ambient);
-			//ubo.skyColor=mainDirectionalLight.sk
-			ubo.skyColor = glm::vec4(1.0f);
+			ubo.skyColor = glm::vec4(0.0f);
 
 			frameData.lightShaftsIntensity = baseLightShaftsIntensity * lightShaftsIntensity;
 		}
@@ -333,6 +341,7 @@ namespace Engine
 		s.Write(frameData.ambientTopColor);
 		s.Write(frameData.ambientBottomColor);
 
+		s.Write(mainDirectionalLight.direction);
 		s.Write(mainDirectionalLight.color);
 		s.Write(mainDirectionalLight.intensity);
 		s.Write(mainDirectionalLight.ambient);
@@ -388,6 +397,7 @@ namespace Engine
 			s.Read(frameData.ambientTopColor);
 			s.Read(frameData.ambientBottomColor);
 
+			s.Read(mainDirectionalLight.direction);
 			s.Read(mainDirectionalLight.color);
 			s.Read(mainDirectionalLight.intensity);
 			s.Read(mainDirectionalLight.ambient);

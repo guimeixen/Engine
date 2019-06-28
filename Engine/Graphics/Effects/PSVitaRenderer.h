@@ -14,7 +14,5 @@ namespace Engine
 		void Render();
 
 	private:
-		Buffer *mainLightUBO;
-		DirLight mainDirectionalLight;
 	};
 }

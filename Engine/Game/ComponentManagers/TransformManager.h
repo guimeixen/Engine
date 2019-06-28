@@ -54,6 +54,7 @@ namespace Engine
 		void SetLocalScale(Entity e, const glm::vec3 &scale);
 		void SetLocalToWorld(Entity e, const glm::mat4 &localToWorld);
 		void SetLocalToParent(Entity e, const glm::mat4 &localToParent);
+		void Rotate(Entity e, const glm::vec3 &rot);
 
 		const glm::mat4 &GetLocalToWorld(Entity e) const;
 

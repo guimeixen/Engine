@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Graphics\GL\GLRenderer.h"					// TODO: Switch from GLEW to GLAD. To remove the gl included before glew error
-#include "include\GLFW\glfw3.h"
+#include "Graphics/GL/GLRenderer.h"					// TODO: Switch from GLEW to GLAD. To remove the gl included before glew error
+#include "include/GLFW/glfw3.h"
 
-#include "Graphics\Renderer.h"
-#include "Input.h"
-#include "Game\Game.h"
+//#include "Graphics/Renderer.h"
+#include "Game/Game.h"
 
 #ifdef EDITOR
 #include "../Editor/EditorManager.h"
@@ -14,6 +13,7 @@
 #include <iostream>
 
 class EditorManager;
+class InputManager;
 
 namespace Engine
 {
@@ -21,9 +21,8 @@ namespace Engine
 	{
 	public:
 		Window();
-		~Window();
 
-		bool Init(GraphicsAPI api, unsigned int width, unsigned int height);
+		bool Init(InputManager *inputManager, GraphicsAPI api, unsigned int width, unsigned int height);
 		void Dispose();
 
 		void UpdateInput();
@@ -95,6 +94,7 @@ namespace Engine
 	private:
 		GLFWwindow *window;
 		EditorManager *editorManager;
+		InputManager *inputManager;
 
 		unsigned int width;
 		unsigned int height;
@@ -104,8 +104,6 @@ namespace Engine
 		bool isFullscreen;
 		bool wasResized = false;
 		bool isMinimized = false;
-
-		InputManager inputManager;
 
 		float lastXpos = 0.0f;
 		float lastYpos = 0.0f;

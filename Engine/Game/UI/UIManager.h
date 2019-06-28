@@ -44,6 +44,8 @@ namespace Engine
 		Widget *AddEditText(Entity e);
 
 		void DuplicateWidget(Entity e, Entity newE);
+		void SetWidgetEnabled(Entity e, bool enable);
+		void LoadWidgetFromPrefab(Serializer &s, Entity e);
 		void RemoveWidget(Entity e);
 		bool HasWidget(Entity e) const;
 		Widget *GetWidget(Entity e) const;
@@ -59,11 +61,15 @@ namespace Engine
 		void Deserialize(Serializer &s, bool reload = false);
 
 	private:
+		void InsertWidgetInstance(const WidgetInstance &wi);
+
+	private:
 		Game *game;
 		Mesh mesh;
 		std::vector<WidgetInstance> widgets;
 		std::unordered_map<unsigned int, unsigned int> map;
-		unsigned int usedWidgets = 0;
+		unsigned int usedWidgets;
+		unsigned int disabledWidgets;
 
 		Image *cursor;
 		bool showCursor;

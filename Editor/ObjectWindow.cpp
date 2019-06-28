@@ -113,14 +113,6 @@ void ObjectWindow::Render()
 			return;
 		}
 
-		//ImGui::PushItemWidth(150);
-
-		/*if (ImGui::Button("Save Prefab"))
-		{
-			CreatePrefabFolder();
-			std::string path = editorManager->GetCurrentProjectDir() + "/Prefabs/" + editorManager->GetSceneWindow().GetNameAt(obj->GetID()) + ".prefab";
-			game->GetSceneManager()->SavePrefab(obj, path);
-		}*/
 		ImGui::Text(editorManager->GetEditorNameManager().GetName(selectedEntity));
 
 		//Engine::ObjectType type = obj->GetType();
@@ -155,11 +147,38 @@ void ObjectWindow::Render()
 			}
 		}*/
 
-		if (ImGui::Button("Duplicate"))
+		if (isEntityEnabled)
+		{
+			if (ImGui::Button("Disable"))
+			{
+				game->SetEntityEnabled(selectedEntity, false);
+				isEntityEnabled = false;
+			}
+		}
+		else
+		{
+			if (ImGui::Button("Enable"))
+			{
+				game->SetEntityEnabled(selectedEntity, true);
+				isEntityEnabled = true;
+			}
+		}
+		
+		ImGui::SameLine();
+		if (ImGui::Button("Duplicate") || (Engine::Input::IsKeyPressed(Engine::Keys::KEY_LEFT_CONTROL) && Engine::Input::WasKeyReleased(Engine::Keys::KEY_D)))
 		{
 			Engine::Entity newE = game->DuplicateEntity(selectedEntity);
 			editorManager->GetGizmo().SetSelectedEntity(newE);
 			SetEntity(newE);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Save Prefab"))
+		{
+			if (CreatePrefabFolder())
+			{
+				std::string path = editorManager->GetCurrentProjectDir() + "/Prefabs/" + editorManager->GetEditorNameManager().GetName(selectedEntity) + ".prefab";
+				game->SaveEntityPrefab(selectedEntity, path);
+			}
 		}
 
 		/*if (type == Engine::ObjectType::AI_OBJECT)
@@ -477,6 +496,7 @@ void ObjectWindow::SetEntity(Engine::Entity entity)
 
 	selectedEntity = entity;
 	selected = true;
+	isEntityEnabled = game->GetEntityManager().IsEntityEnabled(entity);
 
 	selectedModel = nullptr;
 	selectedPS = nullptr;
@@ -1940,41 +1960,48 @@ void ObjectWindow::AddParticleSystem()
 
 void ObjectWindow::AddTrigger(Engine::ShapeType type)
 {
-	const glm::mat4 &localToWorld = transformManager->GetLocalToWorld(selectedEntity);
-
+	glm::mat4 localToWorld = transformManager->GetLocalToWorld(selectedEntity);
+	
 	glm::vec3 pos = localToWorld[3];
 	btVector3 center = btVector3(pos.x, pos.y, pos.z);
 
-	//glm::vec3 size = aabb.max - aabb.min;
-	glm::vec3 size = glm::vec3(1.0f);
+	glm::vec3 worldScale = glm::vec3(glm::length(localToWorld[0]), glm::length(localToWorld[1]), glm::length(localToWorld[2]));
+	//glm::vec3 size = glm::vec3(1.0f);
 
-	if (size.x <= 0.01f || size.y <= 0.01f || size.z <= 0.01f)
-		size = glm::vec3(0.5f);
+	if (worldScale.x <= 0.01f || worldScale.y <= 0.01f || worldScale.z <= 0.01f)
+		worldScale = glm::vec3(0.5f);
 
 	if (type == Engine::ShapeType::BOX)
 	{
 		selectedTrigger = physicsManager->AddBoxTrigger(selectedEntity, center, btVector3(0.5f, 0.5f, 0.5f));
-		selectedTrigger->SetBoxSize(size);
+		selectedTrigger->SetBoxSize(worldScale);
 	}
 	else if (type == Engine::ShapeType::SPHERE)
 	{
-		float radius = glm::max(size.x, glm::max(size.y, size.z));
+		float radius = glm::max(worldScale.x, glm::max(worldScale.y, worldScale.z));
 
 		selectedTrigger = physicsManager->AddSphereTrigger(selectedEntity, center, 1.0f);
 		selectedTrigger->SetRadius(radius);
 	}
 	else if (type == Engine::ShapeType::CAPSULE)
 	{
-		float radius = glm::max(size.x, glm::max(size.y, size.z));
+		float radius = glm::max(worldScale.x, glm::max(worldScale.y, worldScale.z));
 
 		selectedTrigger = physicsManager->AddCapsuleTrigger(selectedEntity, center, 0.5f, 1.0f);
 		selectedTrigger->SetRadius(radius);
-		selectedTrigger->SetCapsuleHeight(size.y);
+		selectedTrigger->SetCapsuleHeight(worldScale.y);
 	}
 
 	if (selectedTrigger)
 	{
-		selectedTrigger->SetPosition(localToWorld[3]);
+		//selectedTrigger->SetPosition(localToWorld[3]);
+
+		// Normalize scale
+		localToWorld[0] = glm::normalize(localToWorld[0]);
+		localToWorld[1] = glm::normalize(localToWorld[1]);
+		localToWorld[2] = glm::normalize(localToWorld[2]);
+
+		selectedTrigger->SetTransform(localToWorld);
 
 		if (selectedScript)
 			selectedTrigger->SetScript(selectedScript);
@@ -1994,9 +2021,7 @@ void ObjectWindow::AddCollider(Engine::ShapeType type)
 	btVector3 center = btVector3(worldPos.x, worldPos.y, worldPos.z);
 
 	glm::vec3 worldScale = glm::vec3(glm::length(localToWorld[0]), glm::length(localToWorld[1]), glm::length(localToWorld[2]));
-
-	//glm::vec3 size = aabb.max - aabb.min;
-	glm::vec3 size = glm::vec3(1.0f);
+	//glm::vec3 size = glm::vec3(1.0f);
 
 	/*btVector3 halfExtents = btVector3(
 		aabb.max.x - worldPos.x,
@@ -2141,12 +2166,9 @@ void ObjectWindow::AddTexture()
 	}
 }
 
-void ObjectWindow::CreatePrefabFolder()
+bool ObjectWindow::CreatePrefabFolder()
 {
 	std::string prefabDir = editorManager->GetCurrentProjectDir() + "/Prefabs";
 
-	if (!CreateDirectoryA(prefabDir.c_str(), NULL))
-	{
-		std::cout << "Failed to create project directory. Error: " << GetLastError() << '\n';
-	}
+	return Engine::utils::CreateDir(prefabDir.c_str());
 }

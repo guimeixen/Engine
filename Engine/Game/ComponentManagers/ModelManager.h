@@ -40,6 +40,9 @@ namespace Engine
 		// ModelType Basic and Animated can't be used here
 		Model *AddPrimitiveModel(Entity e, ModelType type);
 		void DuplicateModel(Entity e, Entity newE);
+		void SetModelEnabled(Entity e, bool enable);
+		void SaveModelPrefab(Serializer &s, Entity e);
+		void LoadModelPrefab(Serializer &s, Entity e);	
 		void RemoveModel(Entity e);
 		Model *GetModel(Entity e) const;
 		AnimatedModel *GetAnimatedModel(Entity e) const;
@@ -69,6 +72,8 @@ namespace Engine
 		//void LoadModelNew(unsigned int index, const std::string &path, const std::vector<std::string> &matNames, bool isInstanced = false, bool loadVertexColors = false);
 		//Mesh ProcessMesh(unsigned int index, const aiMesh *aimesh, const aiScene *aiscene, bool isInstanced, bool loadVertexColors);
 
+		void InsertModelInstance(const ModelInstance &mi);
+
 	private:
 		struct ModelS
 		{
@@ -94,7 +99,8 @@ namespace Engine
 		TransformManager *transformManager;
 		std::vector<ModelInstance> models;
 		std::unordered_map<unsigned int, unsigned int> map;
-		unsigned int usedModels = 0;
+		unsigned int usedModels;
+		unsigned int disabledModels;
 
 		ModelsData data;
 		//std::vector<std::string> paths;
@@ -105,7 +111,7 @@ namespace Engine
 
 		unsigned int shadowPassID;
 
-		unsigned int modelID = 0;			// Used for models which are not loaded from a file but from a mesh create from code
+		unsigned int modelID;			// Used for models which are not loaded from a file but from a mesh create from code
 
 		Mesh cubePrimitive;
 		Mesh spherePrimitive;

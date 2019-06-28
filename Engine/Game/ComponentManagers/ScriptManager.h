@@ -29,7 +29,9 @@ namespace Engine
 
 		Script *AddScript(Entity e, const std::string &fileName);
 		void DuplicateScript(Entity e, Entity newE);
+		void LoadFromPrefab(Serializer &s, Entity e);
 		void RemoveScript(Entity e);
+		void SetScriptEnabled(Entity e, bool enable);
 		void ExecuteFile(const std::string &fileName);
 		void CallFunction(const std::string &functionName);
 
@@ -65,6 +67,9 @@ namespace Engine
 	private:
 		void ReadTable(Script *script, const luabridge::LuaRef &table);
 		Script *LoadScript(const std::string &fileName);
+		void ExecuteString(const char *str);
+
+		void InsertScriptInstance(const ScriptInstance &si);
 
 	private:
 		lua_State *L;
@@ -73,5 +78,6 @@ namespace Engine
 		std::vector<ScriptInstance> scripts;
 		std::unordered_map<unsigned int, unsigned int> map;
 		unsigned int usedScripts = 0;
+		unsigned int disabledScripts = 0;
 	};
 }

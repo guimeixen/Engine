@@ -48,6 +48,9 @@ EditorManager::EditorManager()
 	memset(projectName, 0, 256);
 	memset(vitaAppName, 0, 128);
 	memset(vitaAppTitleID, 0, 10);
+
+	changingPositiveKey = false;
+	changingNegativeKey = false;
 }
 
 void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputManager *inputManager)
@@ -357,8 +360,22 @@ void EditorManager::Render()
 		for (size_t i = 0; i < files.size(); i++)
 		{
 			if (ImGui::Selectable(files[i].c_str()))
-			{			
-				//game->GetSceneManager()->LoadPrefab(files[i]);
+			{
+				Engine::Entity e = game->LoadEntityPrefab(files[i]);
+				char name[128];
+				sprintf(name, "%u", e.id);
+				editorNameManager.SetName(e, name);
+				objectWindow.SetEntity(e);
+				gizmo.SetSelectedEntity(e);
+
+				// Also add names for the children
+				Engine::Entity child = game->GetTransformManager().GetFirstChild(e);
+				while (child.IsValid())
+				{
+					sprintf(name, "%u", child.id);
+					editorNameManager.SetName(child, name);
+					child = game->GetTransformManager().GetNextSibling(child);
+				}
 			}
 		}
 
@@ -554,10 +571,10 @@ void EditorManager::ShowMainMenuBar()
 		{
 
 		}*/
-		/*if (ImGui::MenuItem("Input Settings"))
+		if (ImGui::MenuItem("Input Settings"))
 		{
 			wasInputSettingsSelected = true;
-		}*/
+		}
 		ImGui::EndMenu();
 	}
 	if (ImGui::BeginMenu("Add"))
@@ -734,7 +751,7 @@ void EditorManager::ShowMainMenuBar()
 		ImGui::EndPopup();
 	}
 
-	/*if (wasInputSettingsSelected)
+	if (wasInputSettingsSelected)
 	{
 		ImGui::OpenPopup("Input Settings");
 		ImGui::SetNextWindowSize(ImVec2(500, 400));
@@ -742,42 +759,43 @@ void EditorManager::ShowMainMenuBar()
 	}
 
 	bool openInput = true;			// To show the X button
+	int i = 0;
 
 	if (ImGui::BeginPopupModal("Input Settings", &openInput, ImGuiWindowFlags_None))
 	{
-		std::vector<Engine::InputMapping> &inputMappings = inputManager->GetInputMappings();
-		for (size_t i = 0; i < inputMappings.size(); i++)
+		std::unordered_map<std::string, Engine::InputMapping> &inputMappings = inputManager->GetInputMappings();
+		for (auto it = inputMappings.begin(); it != inputMappings.end(); it++)
 		{
-			Engine::InputMapping &inputMapping = inputMappings[i];
+			Engine::InputMapping &im = it->second;
 
-			if (ImGui::CollapsingHeader(inputMapping.name))
+			if (ImGui::CollapsingHeader(it->first.c_str()))
 			{
-				ImGui::PushID(999 + (int)i);
+				/*ImGui::PushID(999 + (int)i);
 				ImGui::InputText("Name", inputMapping.name, 64);
-				ImGui::PopID();
+				ImGui::PopID();*/
 
 				ImGui::Text("Positive key:");
 				ImGui::SameLine();
 
-				static const char* items[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D" };
-				if (ImGui::Combo("", &currentPositiveKeyIndex, items, 14))
+				/*static const char* items[] = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V" };
+				if (ImGui::Combo("", &currentPositiveKeyIndex, items, 32))
 				{
-
-				}
+					
+				}*/
 
 				if (changingPositiveKey && i == changingInputMappingIndex)
 				{
 					ImGui::Text("Type a key");
 
-					if (inputManager->AnyKeyPressed())
+					if (Engine::Input::AnyKeyPressed())
 					{
-						inputManager->GetInputMappings()[changingInputMappingIndex].positiveKey = inputManager->GetLastKeyPressed();
+						im.positiveKey = Engine::Input::GetLastKeyPressed();
 						changingPositiveKey = false;
 					}
 				}
 				else
 				{
-					if (ImGui::Selectable(inputManager->GetStringOfKey(inputMapping.positiveKey).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
+					if (ImGui::Selectable(inputManager->GetStringOfKey(im.positiveKey).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
 					{
 						changingPositiveKey = true;
 						changingInputMappingIndex = i;
@@ -786,15 +804,30 @@ void EditorManager::ShowMainMenuBar()
 
 				ImGui::Text("Negative key:");
 				ImGui::SameLine();
-				if (ImGui::Selectable(inputManager->GetStringOfKey(inputMapping.negativeKey).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
+
+				if (changingNegativeKey && i == changingInputMappingIndex)
 				{
-					changingNegativeKey = true;
-					changingInputMappingIndex = i;
+					ImGui::Text("Type a key");
+
+					if (Engine::Input::AnyKeyPressed())
+					{
+						im.negativeKey = Engine::Input::GetLastKeyPressed();
+						changingNegativeKey = false;
+					}
 				}
+				else
+				{
+					if (ImGui::Selectable(inputManager->GetStringOfKey(im.negativeKey).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
+					{
+						changingNegativeKey = true;
+						changingInputMappingIndex = i;
+					}
+				}
+				
 
 				ImGui::Text("Positive Vita button:");
 				ImGui::SameLine();
-				if (ImGui::Selectable(inputManager->GetStringOfVitaButton(inputMapping.positiveVitaButton).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
+				if (ImGui::Selectable(inputManager->GetStringOfVitaButton(im.positiveVitaButton).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
 				{
 					changingPositiveVitaButton = true;
 					changingInputMappingIndex = i;
@@ -802,16 +835,22 @@ void EditorManager::ShowMainMenuBar()
 
 				ImGui::Text("Negative Vita button:");
 				ImGui::SameLine();
-				if (ImGui::Selectable(inputManager->GetStringOfVitaButton(inputMapping.negativeVitaButton).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
+				if (ImGui::Selectable(inputManager->GetStringOfVitaButton(im.negativeVitaButton).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
 				{
 					changingNegativeVitaButton = true;
 					changingInputMappingIndex = i;
 				}
+
+				ImGui::Checkbox("Use Left Stick X", &im.useLeftAnalogueStickX);
+				ImGui::Checkbox("Use Left Stick Y", &im.useLeftAnalogueStickY);
+				ImGui::Checkbox("Use Right Stick X", &im.useRightAnalogueStickX);
+				ImGui::Checkbox("Use Right Stick Y", &im.useRightAnalogueStickY);
 			}
+			i++;
 		}
 
 		ImGui::EndPopup();
-	}*/
+	}
 }
 
 void EditorManager::ShowGameViewToolBar()
@@ -977,8 +1016,6 @@ void EditorManager::HandleProjectCreation()
 					if (s.IsOpen())
 						editorNameManager.Deserialize(s);
 					s.Close();
-
-					game->GetRenderingPath()->LoadRenderingSettings(curLevelDir + '/' + name + ".rendersettings");
 				}
 
 				aiWindow.Update();
@@ -1163,7 +1200,7 @@ void EditorManager::SaveProject()
 		s.Save(curLevelDir + "/" + name + ".names");
 		s.Close();
 
-		game->GetRenderingPath()->SaveRenderingSettings(curLevelDir + '/' + name + ".rendersettings");
+		//game->GetRenderingPath()->SaveRenderingSettings(curLevelDir + '/' + name + ".rendersettings");
 	}
 	else
 		needsSaving = true;

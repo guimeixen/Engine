@@ -53,7 +53,7 @@ namespace Engine
 		void Resize(unsigned int width, unsigned int height);
 
 		void AddText(const std::string &text, const glm::vec2 &pos, const glm::vec2 &scale, const glm::vec4 &color = glm::vec4(1.0f));
-		void AddText(const std::string &text, const Rect &rect);
+		//void AddText(const std::string &text, const Rect &rect);
 		glm::vec2 CalculateTextSize(const std::string &text, const glm::vec2 &scale);
 		glm::vec2 CalculateCharSize(char c, const glm::vec2 &scale);
 

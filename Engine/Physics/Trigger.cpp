@@ -153,7 +153,6 @@ namespace Engine
 
 		btTransform t;
 		t.setFromOpenGLMatrix(glm::value_ptr(m));
-		//t.setOrigin(btVector3(position.x + center.x, position.y + center.y, position.z + center.z));
 		ghost->setWorldTransform(t);
 	}
 

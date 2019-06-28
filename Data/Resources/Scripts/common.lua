@@ -1,38 +1,42 @@
-function vecDot(a, b)
+function vec3Dot(a, b)
    return (a.x * b.x) + (a.y * b.y) + (a.z * b.z)
 end
 
-function vecSum(a,b)
+function vec3Add(a, b)
+	return vec3(a.x + b.x, a.y + b.y, a.z + b.z)
+end
+
+function vec3AddFast(a,b)
 	a.x = a.x + b.x
 	a.y = a.y + b.y
 	a.z = a.z + b.z
 end
 
-function vecScale(a,b)
+function vec3Scale(a,b)
 	a.x = a.x * b
 	a.y = a.y * b
 	a.z = a.z * b
 end
 
-function vecSub(a, b)
+function vec3Sub(a, b)
 	return vec3(a.x - b.x, a.y - b.y, a.z - b.z)
 end
 
-function vecSubFast(a, b)
+function vec3SubFast(a, b)
 	a.x = a.x - b.x
 	a.y = a.y - b.y
 	a.z = a.z - b.z
 end
 
-function vecLengthSq(a)
+function vec3LengthSq(a)
 	return (a.x * a.x + a.y * a.y + a.z * a.z)
 end
 
-function vecLength(a)
+function vec3Length(a)
 	return math.sqrt(vecLengthSq(a))
 end
 
-function vecNormalize(a)
+function vec3Normalize(a)
 	local length = math.sqrt(vecLengthSq(a))
 	local multiplier
 	if (length > 0) then
@@ -43,6 +47,10 @@ function vecNormalize(a)
 	a.x = a.x * multiplier
 	a.y = a.y * multiplier
 	a.z = a.z * multiplier
+end
+
+function printVec3(a)
+	print('x: ' .. tostring(a.x) .. ' y: ' .. tostring(a.y) .. ' z:' .. tostring(a.z))
 end
 
 function lerp(a, b, t)

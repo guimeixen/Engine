@@ -1,5 +1,7 @@
 #include "Script.h"
 
+#include "Program/Log.h"
+
 #include <iostream>
 
 namespace Engine
@@ -43,7 +45,7 @@ namespace Engine
 			}
 			catch (luabridge::LuaException const& e)
 			{
-				std::cout << "OnInit LuaException: " << e.what() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "OnInit LuaException: %s\n", e.what());
 			}
 		}
 	}
@@ -61,8 +63,8 @@ namespace Engine
 			}
 			catch (luabridge::LuaException const& e)
 			{
-				std::cout << path << '\n';
-				std::cout << "OnUpdate LuaException: " << e.what() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "%s\n", path.c_str());
+				Log::Print(LogLevel::LEVEL_ERROR, "OnUpdate LuaException: %s\n", e.what());
 			}
 		}
 	}
@@ -87,11 +89,12 @@ namespace Engine
 		{
 			try
 			{
-				(*ref)(e);
+				//(*ref)(table, e);
+				ref->colon(table, e);
 			}
 			catch (luabridge::LuaException const& e)
 			{
-				std::cout << "OnTriggerEnter LuaException: " << e.what() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "OnTriggerEnter LuaException: %s\n", e.what());
 			}
 		}
 	}
@@ -106,7 +109,7 @@ namespace Engine
 			}
 			catch (luabridge::LuaException const& e)
 			{
-				std::cout << "OnTriggerStay LuaException: " << e.what() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "OnTriggerStay LuaException: %s\n", e.what());
 			}
 		}
 	}
@@ -121,7 +124,7 @@ namespace Engine
 			}
 			catch (luabridge::LuaException const& e)
 			{
-				std::cout << "OnTriggerExit LuaException: " << e.what() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "OnTriggerExit LuaException: %s\n", e.what());
 			}
 		}
 	}
@@ -196,11 +199,6 @@ namespace Engine
 	void Script::SetFunction(ScriptFunctionID id, luabridge::LuaRef *func)
 	{
 		functions[id] = func;
-
-		if (id == OnTriggerEnter || id == OnTriggerStay || id == OnTriggerExit)
-		{
-			hasTriggerFunctions = true;
-		}
 	}
 
 	void Script::AddProperty(const std::string &name)

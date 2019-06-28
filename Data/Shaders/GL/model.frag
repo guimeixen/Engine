@@ -106,7 +106,6 @@ void main()
 		lighting += skyColor * skyColorMultiplier;
 		//lighting *= indirectDiffuse.a;
 	//}
-	
 	outColor.rgb *= lighting;
 	//outColor.rgb=color;
 	//outColor.rgb=vec3( indirectDiffuse.rgb);
@@ -117,6 +116,4 @@ void main()
 	
 	//outColor.rgb = vec3(shadow) * cascadeColor[cascadeIndex];
 	//outColor.rgb = vec3(shadow);
-	
-	//outColor.a = 1.0;
 }

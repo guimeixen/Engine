@@ -12,7 +12,7 @@ namespace Engine
 {
 	bool Application::Init(GraphicsAPI api, unsigned int width, unsigned int height)
 	{
-		if (!window.Init(api, width, height))
+		if (!window.Init(&inputManager, api, width, height))
 			return false;
 
 		fileManager.Init();

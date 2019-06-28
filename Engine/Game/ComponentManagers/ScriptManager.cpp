@@ -45,11 +45,24 @@ namespace Engine
 		L = luaL_newstate();
 		luaL_openlibs(L);
 
+#ifdef VITA
+		// Add app0 as path for searching modules
+		ExecuteString("package.path = package.path .. \";app0:Data/Resources/Scripts/?.lua\"");
+#else
+		ExecuteString("package.path = package.path .. \";Data/Resources/Scripts/?.lua\"");
+#endif
+
 		Log::Print(LogLevel::LEVEL_INFO, "Init Lua\n");
 
 		luabridge::getGlobalNamespace(L)
 
 			.beginClass<Entity>("Entity")
+			.endClass()
+
+			.beginClass<glm::vec2>("vec2")
+			.addConstructor<void(*)(float, float)>()
+			.addData("x", &glm::vec2::x, true)
+			.addData("y", &glm::vec2::y, true)
 			.endClass()
 
 			.beginClass<glm::vec3>("vec3")
@@ -59,10 +72,12 @@ namespace Engine
 			.addData("z", &glm::vec3::z, true)
 			.endClass()
 
-			.beginClass<glm::vec2>("vec2")
-			.addConstructor<void(*)(float, float)>()
-			.addData("x", &glm::vec2::x, true)
-			.addData("y", &glm::vec2::y, true)
+			.beginClass<glm::vec4>("vec4")
+			.addConstructor<void(*)(float, float, float, float)>()
+			.addData("x", &glm::vec4::x, true)
+			.addData("y", &glm::vec4::y, true)
+			.addData("z", &glm::vec4::z, true)
+			.addData("w", &glm::vec4::w, true)
 			.endClass()
 
 			.beginClass<RaycastResult>("RaycastResult")
@@ -81,6 +96,8 @@ namespace Engine
 			.addFunction("getLocalRot", &TransformManager::GetLocalRotation)
 			.addFunction("getLocalScale", &TransformManager::GetLocalScale)
 			.addFunction("getWorldPos", &TransformManager::GetWorldPosition)
+			.addFunction("getParent", &TransformManager::GetParent)
+			.addFunction("rotate", &TransformManager::Rotate)
 			.endClass()
 
 			.beginClass<PhysicsManager>("Physics")
@@ -125,6 +142,8 @@ namespace Engine
 			.addStaticFunction("isMouseButtonDown", &Input::IsMouseButtonDown)
 			.addStaticFunction("wasMouseButtonReleased", &Input::WasMouseButtonReleased)
 			.addStaticFunction("isVitaButtonDown", &Input::IsVitaButtonDown)
+			.addStaticFunction("getAxis", &Input::GetAxis)
+			.addStaticFunction("getAction", &Input::GetAction)
 			.endClass()
 
 			.beginClass<Game>("Game")
@@ -139,6 +158,7 @@ namespace Engine
 			.addFunction("shutdown", &Game::Shutdown)
 			.addFunction("play", &Game::Play)
 			.addFunction("pause", &Game::Pause)
+			.addFunction("setEntityEnabled", &Game::SetEntityEnabled)
 			.endClass()
 
 			/*.beginClass<MainView>("Renderer")
@@ -147,6 +167,14 @@ namespace Engine
 			.addFunction("getWidth", &MainView::GetWidth)
 			.addFunction("getHeight", &MainView::GetHeight)
 			.endClass()*/
+
+			.beginClass<RenderingPath>("Renderer")
+			.addFunction("getFont", &RenderingPath::GetFont)
+			.endClass()
+
+			.beginClass<Font>("Font")
+			.addFunction("addText", &Font::AddText)
+			.endClass()
 
 			.beginClass<TimeOfDayManager>("TOD")
 			.addFunction("setCurrentTime", &TimeOfDayManager::SetCurrentTime)
@@ -159,8 +187,6 @@ namespace Engine
 
 			.beginClass<LightManager>("LightManager")
 			.addFunction("toPointLight", &LightManager::CastToPointLight)
-			.addFunction("enableLight", &LightManager::EnablePointLight)
-			.addFunction("disableLight", &LightManager::RemovePointLight)
 			.endClass()
 
 			.beginClass<UIManager>("UI")
@@ -288,7 +314,8 @@ namespace Engine
 
 	void ScriptManager::Play()
 	{
-		for (size_t i = 0; i < usedScripts; i++)
+		const unsigned int numEnabledScripts = usedScripts - disabledScripts;
+		for (unsigned int i = 0; i < numEnabledScripts; i++)
 		{
 			const ScriptInstance &si = scripts[i];
 			si.s->CallOnInit(si.e);
@@ -297,7 +324,8 @@ namespace Engine
 
 	void ScriptManager::UpdateInGame(float dt)
 	{
-		for (size_t i = 0; i < usedScripts; i++)
+		const unsigned int numEnabledScripts = usedScripts - disabledScripts;
+		for (unsigned int i = 0; i < numEnabledScripts; i++)
 		{
 			const ScriptInstance &si = scripts[i];
 			si.s->CallOnUpdate(si.e, dt);
@@ -367,18 +395,7 @@ namespace Engine
 		si.e = e;
 		si.s = s;
 
-		if (usedScripts < scripts.size())
-		{
-			scripts[usedScripts] = si;
-			map[e.id] = usedScripts;
-		}
-		else
-		{
-			scripts.push_back(si);
-			map[e.id] = (unsigned int)scripts.size() - 1;
-		}
-
-		usedScripts++;
+		InsertScriptInstance(si);
 
 		Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Added script %s to entity %d\n", fileName.c_str(), e.id);
 
@@ -406,37 +423,154 @@ namespace Engine
 		si.e = newE;
 		si.s = newS;
 
+		InsertScriptInstance(si);
+	}
+
+	void ScriptManager::LoadFromPrefab(Serializer &s, Entity e)
+	{
+		std::string path;
+		s.Read(path);
+
+		ScriptInstance si = {};
+
+		si.e = e;
+		si.s = LoadScript(path);
+
+		if (!si.s)
+			return;
+
+		si.s->Deserialize(s);
+
+		InsertScriptInstance(si);
+
+		Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Added script %s to entity %d\n", path.c_str(), e.id);
+	}
+
+	void ScriptManager::InsertScriptInstance(const ScriptInstance &si)
+	{
 		if (usedScripts < scripts.size())
 		{
 			scripts[usedScripts] = si;
-			map[newE.id] = usedScripts;
+			map[si.e.id] = usedScripts;
 		}
 		else
 		{
 			scripts.push_back(si);
-			map[newE.id] = (unsigned int)scripts.size() - 1;
+			map[si.e.id] = (unsigned int)scripts.size() - 1;
 		}
 
 		usedScripts++;
+
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledScripts > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedScripts - 1;
+			unsigned int firstDisabledEntityIndex = usedScripts - disabledScripts - 1;					// Get the first entity disabled
+
+			ScriptInstance si1 = scripts[newEntityIndex];
+			ScriptInstance si2 = scripts[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			scripts[newEntityIndex] = si2;
+			scripts[firstDisabledEntityIndex] = si1;
+
+			// Swap the indices
+			map[si.e.id] = firstDisabledEntityIndex;
+			map[si2.e.id] = newEntityIndex;
+		}
 	}
 
 	void ScriptManager::RemoveScript(Entity e)
 	{
 		if (HasScript(e))
 		{
-			unsigned int index = map.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = map.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedScripts - disabledScripts - 1;
 
-			ScriptInstance temp = scripts[index];
-			ScriptInstance last = scripts[scripts.size() - 1];
-			scripts[scripts.size() - 1] = temp;
-			scripts[index] = last;
+			ScriptInstance entityToRemoveSi = scripts[entityToRemoveIndex];
+			ScriptInstance lastEnabledEntitySi = scripts[lastEnabledEntityIndex];
 
-			map[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			scripts[lastEnabledEntityIndex] = entityToRemoveSi;
+			scripts[entityToRemoveIndex] = lastEnabledEntitySi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			map[lastEnabledEntitySi.e.id] = entityToRemoveIndex;
 			map.erase(e.id);
 
-			temp.s->Dispose();
-			delete temp.s;
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledScripts > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedScripts - 1;
+
+				ScriptInstance lastDisabledEntitySi = scripts[lastDisabledEntityIndex];
+
+				scripts[lastDisabledEntityIndex] = entityToRemoveSi;
+				scripts[entityToRemoveIndex] = lastDisabledEntitySi;
+
+				map[lastDisabledEntitySi.e.id] = entityToRemoveIndex;
+			}
+
+			entityToRemoveSi.s->Dispose();
+			delete entityToRemoveSi.s;
 			usedScripts--;
+		}
+	}
+
+	void ScriptManager::SetScriptEnabled(Entity e, bool enable)
+	{
+		if (HasScript(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledScripts == 1)
+				{
+					disabledScripts--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = map.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedScripts - disabledScripts;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					ScriptInstance si1 = scripts[entityIndex];
+					ScriptInstance si2 = scripts[firstDisabledEntityIndex];
+
+					scripts[entityIndex] = si2;
+					scripts[firstDisabledEntityIndex] = si1;
+
+					map[e.id] = firstDisabledEntityIndex;
+					map[si2.e.id] = entityIndex;
+
+					disabledScripts--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = map.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedScripts - disabledScripts - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				ScriptInstance si1 = scripts[entityIndex];
+				ScriptInstance si2 = scripts[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				scripts[entityIndex] = si2;
+				scripts[firstDisabledEntityIndex] = si1;
+
+				// Swap the indices
+				map[e.id] = firstDisabledEntityIndex;
+				map[si2.e.id] = entityIndex;
+
+				disabledScripts++;
+			}		
 		}
 	}
 
@@ -481,6 +615,21 @@ namespace Engine
 		}*/
 	}
 
+	void ScriptManager::ExecuteString(const char *str)
+	{
+		if (!str)
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Script string is null\n");
+			return;
+		}
+
+		if (luaL_dostring(L, str) != 0)
+		{
+			Log::Print(LogLevel::LEVEL_INFO, "Error in script string: %s\n", str);
+			Log::Print(LogLevel::LEVEL_INFO, "%s\n", lua_tostring(L, -1));
+		}
+	}
+	
 	void ScriptManager::CallFunction(const std::string &functionName)
 	{
 		luabridge::LuaRef function = luabridge::getGlobal(L, functionName.c_str());
@@ -507,6 +656,7 @@ namespace Engine
 	void ScriptManager::Serialize(Serializer &s) const
 	{
 		s.Write(usedScripts);
+		s.Write(disabledScripts);
 		for (unsigned int i = 0; i < usedScripts; i++)
 		{
 			const ScriptInstance &si = scripts[i];
@@ -522,6 +672,7 @@ namespace Engine
 		if (!reload)
 		{
 			s.Read(usedScripts);
+			s.Read(disabledScripts);
 			scripts.resize(usedScripts);
 			for (unsigned int i = 0; i < usedScripts; i++)
 			{
@@ -547,6 +698,7 @@ namespace Engine
 		else
 		{
 			s.Read(usedScripts);
+			s.Read(disabledScripts);
 			for (unsigned int i = 0; i < usedScripts; i++)
 			{
 				ScriptInstance &si = scripts[i];

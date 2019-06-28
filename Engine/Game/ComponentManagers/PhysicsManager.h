@@ -104,9 +104,17 @@ namespace Engine
 		Collider *GetColliderSafe(Entity e) const;
 		Trigger *GetTriggerSafe(Entity e) const;
 
+		void SetRigidBodyEnabled(Entity e, bool enable);
+		void SetColliderEnabled(Entity e, bool enable);
+		void SetTriggerEnabled(Entity e, bool enable);
+
 		void DuplicateRigidBody(Entity e, Entity newE);
 		void DuplicateCollider(Entity e, Entity newE);
 		void DuplicateTrigger(Entity e, Entity newE);
+
+		void LoadRigidBodyFromPrefab(Serializer &s, Entity e);
+		void LoadColliderFromPrefab(Serializer &s, Entity e);
+		void LoadTriggerFromPrefab(Serializer &s, Entity e);
 
 		void RemoveRigidBody(Entity e);
 		void RemoveCollider(Entity e);
@@ -133,6 +141,10 @@ namespace Engine
 	private:
 		int RecreateTerrainShape(int shapeID, int newResolution, const void *newData, float newMaxHeight);
 
+		void InsertRigidBodyInstance(const RigidBodyInstance &rbi);
+		void InsertColliderInstance(const ColliderInstance &ci);
+		void InsertTriggerInstance(const TriggerInstance &ti);
+
 	private:
 		bool isInit;
 		btBroadphaseInterface* broadphase;
@@ -141,7 +153,7 @@ namespace Engine
 		btSequentialImpulseConstraintSolver* solver;
 		btDiscreteDynamicsWorld* dynamicsWorld;
 
-		//btGhostPairCallback *ghostCallback;
+		btGhostPairCallback *ghostCallback;
 
 		std::vector<btCollisionShape*> collisionShapes;
 
@@ -153,9 +165,12 @@ namespace Engine
 		std::unordered_map<unsigned int, unsigned int> rbMap;
 		std::unordered_map<unsigned int, unsigned int> trMap;
 		std::unordered_map<unsigned int, unsigned int> colMap;
-		unsigned int usedRigidBodies = 0;
-		unsigned int usedColliders = 0;
-		unsigned int usedTriggers = 0;
+		unsigned int usedRigidBodies;
+		unsigned int usedColliders;
+		unsigned int usedTriggers;
+		unsigned int disabledRigidBodies;
+		unsigned int disabledColliders;
+		unsigned int disabledTriggers;
 
 		//btGhostObject ghost;
 		//btPairCachingGhostObject ghost;		// Used to check overlaps to set the astar grid walkable areas

@@ -5,6 +5,7 @@
 #include "Program/Window.h"
 #include "Program/FileManager.h"
 #include "Program/Allocator.h"
+#include "Program/Input.h"
 
 namespace Engine
 {

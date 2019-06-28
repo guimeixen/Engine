@@ -108,11 +108,11 @@ namespace Engine
 			textBuffer.push_back({ text, pos, scale, color });
 	}
 
-	void Font::AddText(const std::string &text, const Rect &rect)
+	/*void Font::AddText(const std::string &text, const Rect &rect)
 	{
 		if (enabled)
 			textBuffer.push_back({ text, rect.position, rect.size, glm::vec4(1.0f) });
-	}
+	}*/
 
 	glm::vec2 Font::CalculateTextSize(const std::string &text, const glm::vec2 &scale)
 	{

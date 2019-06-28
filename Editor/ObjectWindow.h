@@ -58,7 +58,7 @@ private:
 
 	void AddTexture();
 
-	void CreatePrefabFolder();
+	bool CreatePrefabFolder();
 
 private:
 	Engine::TransformManager*		transformManager;
@@ -99,6 +99,8 @@ private:
 	bool widgetOpen;
 
 	int layerComboID = 0;
+
+	bool isEntityEnabled = true;
 
 	// AI
 	std::string targetName;

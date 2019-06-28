@@ -70,9 +70,10 @@ namespace Engine
 
 		Entity AddEntity();
 		Entity DuplicateEntity(Entity e);
-		void DestroyEntity(Entity e);		
-		void SaveEntityPrefab(const std::string &path);
-		void LoadEntityPrefab(const std::string &path);
+		void SetEntityEnabled(Entity e, bool enable);
+		void DestroyEntity(Entity e);
+		void SaveEntityPrefab(Entity e, const std::string &path);
+		Entity LoadEntityPrefab(const std::string &path);
 
 		void AddTerrain(const TerrainInfo &info);
 
@@ -122,6 +123,8 @@ namespace Engine
 		bool LoadProjectFile(const std::string &projectName);
 		void LoadTerrainFromFile(const std::string &projectName, const std::string &sceneName);
 		void LoadObjectsFromFile(const std::string &projectName, const std::string &sceneName);
+		void SaveEntityPrefabRecursively(Serializer &s, Entity e);
+		void LoadEntityPrefabRecursively(Serializer &s, Entity e);
 
 	private:
 		std::string projectName;

@@ -16,6 +16,9 @@ namespace Engine
 	{
 		cubePrimitive = {};
 		spherePrimitive = {};
+		usedModels = 0;
+		disabledModels = 0;
+		modelID = 0;
 
 		this->game = game;
 		transformManager = &game->GetTransformManager();
@@ -43,7 +46,9 @@ namespace Engine
 	{
 		// Use transform manager modified transforms on update
 		// update aabb if transform changed
-		for (unsigned int i = 0; i < usedModels; i++)
+
+		const unsigned int numEnabledModels = usedModels - disabledModels;
+		for (unsigned int i = 0; i < numEnabledModels; i++)
 		{
 			ModelInstance &mi = models[i];
 			mi.aabb = utils::RecomputeAABB(mi.model->GetOriginalAABB(), transformManager->GetLocalToWorld(mi.e));
@@ -103,13 +108,15 @@ namespace Engine
 
 	void ModelManager::Cull(unsigned int passAndFrustumCount, unsigned int *passIds, const Frustum *frustums, std::vector<VisibilityIndices*> &out)
 	{
+		const unsigned int numEnabledModels = usedModels - disabledModels;
+
 		/*const glm::vec3 &camPos = game->GetMainCamera()->GetPosition();
 
 		float lodDist = 100000.0f;
 
 		for (unsigned int i = 0; i < passAndFrustumCount; i++)
 		{
-			for (size_t j = 0; j < models.size(); j++)
+			for (size_t j = 0; j < numEnabledModels; j++)
 			{
 				const ModelInstance &mi = models[j];
 				lodDist = mi.model->GetLODDistance();
@@ -134,10 +141,11 @@ namespace Engine
 	void ModelManager::GetRenderItems(unsigned int passCount, unsigned int *passIds, const VisibilityIndices &visibility, RenderQueue &outQueues)
 	{
 		float dt = game->GetDeltaTime();
+		const unsigned int numEnabledModels = usedModels - disabledModels;
 
-		if (models.size() > 0)
+		if (numEnabledModels > 0)
 		{
-			for (size_t i = 0; i < models.size(); i++)
+			for (size_t i = 0; i < numEnabledModels; i++)
 			{
 				const ModelInstance &mi = models[i];
 				Model *model = mi.model;
@@ -415,19 +423,7 @@ namespace Engine
 		mi.aabb = { glm::vec3(-0.5f), glm::vec3(0.5f) };
 		mi.aabb = utils::RecomputeAABB(model->GetOriginalAABB(), transformManager->GetLocalToWorld(mi.e));
 
-		if (usedModels < models.size())
-		{
-			models[usedModels] = mi;
-			map[e.id] = usedModels;
-		}
-		else
-		{
-			models.push_back(mi);
-			map[e.id] = models.size() - 1;
-		}	
-
-		usedModels++;
-
+		InsertModelInstance(mi);
 
 		/*LoadModelNew(data.size, path, {}, false, false);
 
@@ -458,18 +454,7 @@ namespace Engine
 		mi.aabb = { glm::vec3(-0.5f), glm::vec3(0.5f) };
 		mi.aabb = utils::RecomputeAABB(model->GetOriginalAABB(), transformManager->GetLocalToWorld(mi.e));
 
-		if (usedModels < models.size())
-		{
-			models[usedModels] = mi;
-			map[e.id] = usedModels;
-		}
-		else
-		{
-			models.push_back(mi);
-			map[e.id] = models.size() - 1;
-		}
-
-		usedModels++;
+		InsertModelInstance(mi);
 
 		return model;
 	}
@@ -495,18 +480,7 @@ namespace Engine
 		mi.aabb = { glm::vec3(-0.5f), glm::vec3(0.5f) };
 		mi.aabb = utils::RecomputeAABB(model->GetOriginalAABB(), transformManager->GetLocalToWorld(mi.e));
 
-		if (usedModels < models.size())
-		{
-			models[usedModels] = mi;
-			map[e.id] = usedModels;
-		}
-		else
-		{
-			models.push_back(mi);
-			map[e.id] = models.size() - 1;
-		}
-
-		usedModels++;
+		InsertModelInstance(mi);
 
 		return model;
 	}
@@ -554,58 +528,266 @@ namespace Engine
 		mi.aabb = { glm::vec3(-0.5f), glm::vec3(0.5f) };
 		mi.aabb = utils::RecomputeAABB(m->GetOriginalAABB(), transformManager->GetLocalToWorld(mi.e));
 
+		InsertModelInstance(mi);
+	}
+
+	void ModelManager::SetModelEnabled(Entity e, bool enable)
+	{
+		if (HasModel(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledModels == 1)
+				{
+					disabledModels--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = map.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedModels - disabledModels;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					ModelInstance mi1 = models[entityIndex];
+					ModelInstance mi2 = models[firstDisabledEntityIndex];
+
+					models[entityIndex] = mi2;
+					models[firstDisabledEntityIndex] = mi1;
+
+					map[e.id] = firstDisabledEntityIndex;
+					map[mi2.e.id] = entityIndex;
+
+					disabledModels--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = map.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedModels - disabledModels - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				ModelInstance mi1 = models[entityIndex];
+				ModelInstance mi2 = models[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				models[entityIndex] = mi2;
+				models[firstDisabledEntityIndex] = mi1;
+
+				// Swap the indices
+				map[e.id] = firstDisabledEntityIndex;
+				map[mi2.e.id] = entityIndex;
+
+				disabledModels++;
+			}
+		}
+	}
+
+	void ModelManager::SaveModelPrefab(Serializer &s, Entity e)
+	{
+		const ModelInstance &mi = models[map.at(e.id)];
+
+		ModelType type = mi.model->GetType();
+		s.Write((int)type);
+
+		if (type == ModelType::BASIC)
+		{
+			s.Write(SID(mi.model->GetPath()));
+			mi.model->Serialize(s);
+		}
+		else if (type == ModelType::ANIMATED)
+		{
+			AnimatedModel *am = static_cast<AnimatedModel*>(mi.model);
+			am->Serialize(s);
+		}
+		else if (type == ModelType::PRIMITIVE_CUBE || type == ModelType::PRIMITIVE_SPHERE)
+		{
+			mi.model->Serialize(s);
+		}
+	}
+
+	void ModelManager::LoadModelPrefab(Serializer &s, Entity e)
+	{
+		ModelInstance mi = {};
+		mi.e = e;
+
+		int t;
+		s.Read(t);
+		ModelType type = (ModelType)t;
+
+		if (type == ModelType::BASIC)
+		{
+			unsigned int id;
+			s.Read(id);
+			// Check if we've already loaded the model. If not then load it and add it to the unique models
+			if (uniqueModels.find(id) != uniqueModels.end())
+			{
+				mi.model = uniqueModels[id];
+
+				// TODO: Fix this
+				std::string path;
+				bool castShadows = true;
+				float lodDistance = 10000.0f;
+				AABB originalAABB = {};
+				s.Read(path);
+				s.Read(castShadows);
+				s.Read(lodDistance);
+				s.Read(originalAABB.min);
+				s.Read(originalAABB.max);
+
+				unsigned int matCount;
+				s.Read(matCount);
+
+				std::vector<std::string> matNames(matCount);
+				for (size_t i = 0; i < matCount; i++)
+					s.Read(matNames[i]);
+			}
+			else
+			{
+				mi.model = new Model();
+				mi.model->Deserialize(s, game);
+
+				Log::Print(LogLevel::LEVEL_INFO, "Loaded model: %s\n", mi.model->GetPath().c_str());
+
+				uniqueModels[SID(mi.model->GetPath())] = mi.model;
+			}
+		}
+		else if (type == ModelType::ANIMATED)
+		{
+			AnimatedModel *am = new AnimatedModel();
+			am->Deserialize(s, game);
+
+			animatedModels.push_back(am);
+
+			mi.model = am;
+		}
+		else if (type == ModelType::PRIMITIVE_CUBE || type == ModelType::PRIMITIVE_SPHERE)
+		{
+			// TODO: This isn't good, we can't new a model here and call deserialize because otherwise it would call LoadModel and we don't have a model to load and also the material names would be gone
+					// And we also can't call new Model(mesh, mat,...) because we don't have materials to pass
+			std::string path;
+			bool castShadows = true;
+			float lodDistance = 10000.0f;
+			AABB originalAABB = {};
+
+			s.Read(path);
+			s.Read(castShadows);
+			s.Read(lodDistance);
+			s.Read(originalAABB.min);
+			s.Read(originalAABB.max);
+
+			unsigned int matCount;
+			s.Read(matCount);
+
+			// These types of models can only have one material
+			assert(matCount == 1);
+
+			std::string matPath;
+			s.Read(matPath);
+
+			Mesh mesh = LoadPrimitive(type);
+			MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), matPath, mesh.vao->GetVertexInputDescs());
+
+			mi.model = new Model(game->GetRenderer(), mesh, mat, { glm::vec3(-0.5f), glm::vec3(0.5f) }, type);
+		}
+
+		InsertModelInstance(mi);
+	}
+
+	void ModelManager::InsertModelInstance(const ModelInstance &mi)
+	{
 		if (usedModels < models.size())
 		{
 			models[usedModels] = mi;
-			map[newE.id] = usedModels;
+			map[mi.e.id] = usedModels;
 		}
 		else
 		{
 			models.push_back(mi);
-			map[newE.id] = models.size() - 1;
+			map[mi.e.id] = models.size() - 1;
 		}
 
 		usedModels++;
+
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledModels > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedModels - 1;
+			unsigned int firstDisabledEntityIndex = usedModels - disabledModels - 1;		// Get the first entity disabled
+
+			ModelInstance mi1 = models[newEntityIndex];
+			ModelInstance mi2 = models[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			models[newEntityIndex] = mi2;
+			models[firstDisabledEntityIndex] = mi1;
+
+			// Swap the indices
+			map[mi.e.id] = firstDisabledEntityIndex;
+			map[mi2.e.id] = newEntityIndex;
+		}
 	}
 
 	void ModelManager::RemoveModel(Entity e)
 	{
 		if (HasModel(e))
 		{
-			unsigned int index = map.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = map.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedModels - disabledModels - 1;
 
-			ModelInstance temp = models[index];
-			ModelInstance last = models[models.size() - 1];
-			models[models.size() - 1] = temp;
-			models[index] = last;
+			ModelInstance entityToRemoveMi = models[entityToRemoveIndex];
+			ModelInstance lastEnabledEntityMi = models[lastEnabledEntityIndex];
 
-			map[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			models[lastEnabledEntityIndex] = entityToRemoveMi;
+			models[entityToRemoveIndex] = lastEnabledEntityMi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			map[lastEnabledEntityMi.e.id] = entityToRemoveIndex;
 			map.erase(e.id);
 
-			if (temp.model->GetType() == ModelType::ANIMATED)
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledModels > 0)
 			{
-				AnimatedModel *am = static_cast<AnimatedModel*>(temp.model);
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedModels - 1;
+
+				ModelInstance lastDisabledEntityMi = models[lastDisabledEntityIndex];
+
+				models[lastDisabledEntityIndex] = entityToRemoveMi;
+				models[entityToRemoveIndex] = lastDisabledEntityMi;
+
+				map[lastDisabledEntityMi.e.id] = entityToRemoveIndex;
+			}
+
+			if (entityToRemoveMi.model->GetType() == ModelType::ANIMATED)
+			{
+				AnimatedModel *am = static_cast<AnimatedModel*>(entityToRemoveMi.model);
 				am->RemoveBoneAttachments(*transformManager);
 				
 				for (auto it = animatedModels.begin(); it != animatedModels.end(); it++)
 				{
-					if ((*it) == temp.model)
+					if ((*it) == entityToRemoveMi.model)
 					{
 						animatedModels.erase(it);
-						delete temp.model;
+						delete entityToRemoveMi.model;
 					}
 				}
 			}
-			else if (temp.model->GetType() == ModelType::BASIC)
+			else if (entityToRemoveMi.model->GetType() == ModelType::BASIC)
 			{
 				for (auto it = uniqueModels.begin(); it != uniqueModels.end(); it++)
 				{
-					if (it->second == temp.model)
+					if (it->second == entityToRemoveMi.model)
 					{
 						if (it->second->GetRefCount() == 1)		// Erase when there's only one reference
 							uniqueModels.erase(it);
 
-						temp.model->RemoveReference();
+						entityToRemoveMi.model->RemoveReference();
 						break;
 					}
 				}
@@ -660,7 +842,9 @@ namespace Engine
 		int index = -1;
 		int objTested = 0;
 
-		for (size_t i = 0; i < usedModels; i++)
+		const unsigned int numEnabledModels = usedModels - disabledModels;
+
+		for (size_t i = 0; i < numEnabledModels; i++)
 		{
 			objTested++;
 
@@ -850,6 +1034,7 @@ namespace Engine
 		}
 
 		s.Write(usedModels);
+		s.Write(disabledModels);
 		for (unsigned int i = 0; i < usedModels; i++)
 		{
 			const ModelInstance &mi = models[i];
@@ -864,9 +1049,9 @@ namespace Engine
 			}
 			else if (type == ModelType::ANIMATED)
 			{
-				for (size_t j = 0; j < animatedModels.size(); i++)			// Stored animated models separately so we don't have to search for the index
+				for (size_t j = 0; j < animatedModels.size(); j++)			// Stored animated models separately so we don't have to search for the index
 				{
-					if (animatedModels[i] == mi.model)
+					if (animatedModels[j] == mi.model)
 					{
 						s.Write(j);
 						break;
@@ -918,6 +1103,7 @@ namespace Engine
 			}
 
 			s.Read(usedModels);
+			s.Read(disabledModels);
 			models.resize(usedModels);
 
 			for (unsigned int i = 0; i < usedModels; i++)
@@ -995,6 +1181,7 @@ namespace Engine
 			}
 
 			s.Read(usedModels);
+			s.Read(disabledModels);
 
 			for (unsigned int i = 0; i < usedModels; i++)
 			{

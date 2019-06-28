@@ -29,7 +29,9 @@ namespace Engine
 
 		ParticleSystem *AddParticleSystem(Entity e);
 		ParticleSystem *GetParticleSystem(Entity e) const;
+		void SetParticleSystemEnabled(Entity e, bool enable);
 		void DuplicateParticleSystem(Entity e, Entity newE);
+		void LoadParticleSystemFromPrefab(Serializer &s, Entity e);
 		void RemoveParticleSystem(Entity e);
 		bool HasParticleSystem(Entity e) const;
 
@@ -37,10 +39,14 @@ namespace Engine
 		void Deserialize(Serializer &s, bool reload = false);
 
 	private:
+		void InsertParticleSystem(const ParticleInstance &pi);
+
+	private:
 		Game *game;
 		TransformManager *transformManager;
 		std::vector<ParticleInstance> particleSystems;
 		std::unordered_map<unsigned int, unsigned int> map;
-		unsigned int usedParticleSystems = 0;
+		unsigned int usedParticleSystems;
+		unsigned int disabledParticleSystems;
 	};
 }

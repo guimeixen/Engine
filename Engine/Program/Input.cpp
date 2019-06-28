@@ -1,6 +1,8 @@
 #include "Input.h"
 
+#include "Program/StringID.h"
 #include "Program/FileManager.h"
+#include "Program/Log.h"
 
 namespace Engine
 {
@@ -28,7 +30,13 @@ namespace Engine
 
 		scrollWheelY = 0.0f;
 
+		lastKeyPressed = Keys::KEY_SPACE;
+
 		buttons = 0;
+		leftStickX = 0.0f;
+		leftStickY = 0.0f;
+		rightStickX = 0.0f;
+		rightStickY = 0.0f;
 
 		keysToString[Keys::KEY_0] = "0";
 		keysToString[Keys::KEY_1] = "1";
@@ -126,33 +134,32 @@ namespace Engine
 	void InputManager::LoadInputMappings(FileManager *fileManager, const std::string &path)
 	{
 		// Not finished
-		std::ifstream file = fileManager->OpenForReading(path);
+		/*std::ifstream file = fileManager->OpenForReading(path);
 
 		if (file.is_open())
 		{
 
 		}
 		else
-		{
-			inputMappings.resize(3);
-			
+		{*/
 			InputMapping horizontal = {};
 			horizontal.positiveKey = Keys::KEY_D;
 			horizontal.negativeKey = Keys::KEY_A;
-			strncpy(horizontal.name, "Horizontal", 64);
+			horizontal.useLeftAnalogueStickX = true;
 
 			InputMapping vertical = {};
 			vertical.positiveKey = Keys::KEY_W;
 			vertical.negativeKey = Keys::KEY_S;
-			strncpy(vertical.name, "Vertical", 64);
+			vertical.useLeftAnalogueStickY = true;
 
 			InputMapping fire = {};
-			strncpy(fire.name, "Fire", 64);
+			fire.mouseButton = MouseButtonType::Left;
+			fire.positiveVitaButton = VitaButtons::VITA_RTRIGGER;
 
-			inputMappings[0] = horizontal;
-			inputMappings[1] = vertical;
-			inputMappings[2] = fire;
-		}
+			inputMappings["Horizontal"] = horizontal;
+			inputMappings["Vertical"] = vertical;
+			inputMappings["Fire"] = fire;
+		//}
 	}
 
 	int InputManager::AnyKeyPressed() const
@@ -178,7 +185,7 @@ namespace Engine
 		return false;
 	}
 
-	Keys InputManager::GetLastKeyPressed()
+	Keys InputManager::GetLastKeyPressed() const
 	{
 		return lastKeyPressed;
 	}
@@ -230,10 +237,10 @@ namespace Engine
 		{
 			if (action == KEY_PRESSED)
 			{
+				lastKeyPressed = (Keys)key;
 				keys[key].state = true;
 				keys[key].justReleased = false;
-				keys[key].justPressed = true;
-				lastKeyPressed = (Keys)key;
+				keys[key].justPressed = true;			
 			}
 			else if (action == KEY_RELEASED)
 			{
@@ -303,6 +310,7 @@ namespace Engine
 		
 		this->leftStickY = (float)leftStickY;
 		this->leftStickY = (this->leftStickY - 128.0f) / 128.0f;
+		this->leftStickY *= -1.0f;			// Flip the Y to -1 on the bottom and 1 on the top because the analogue stick is -1 on the top and 1 on the bottom
 
 		this->rightStickX = (float)rightStickX;
 		this->rightStickX = (this->rightStickX - 128.0f) / 128.0f;
@@ -314,5 +322,42 @@ namespace Engine
 	bool InputManager::IsVitaButtonDown(int button)
 	{
 		return buttons & button;
+	}
+
+	float InputManager::GetAxis(const std::string &name)
+	{
+		// If using strings as the key becomes slows, then we could try ints
+		//unsigned int id = SID(name);
+		
+		const InputMapping &im = inputMappings[name];
+
+#ifdef VITA
+		if (im.useLeftAnalogueStickX && (leftStickX > 0.1f || leftStickX < -0.1f))
+			return leftStickX;
+
+		if (im.useLeftAnalogueStickY && (leftStickY > 0.1f || leftStickY < -0.1f))
+			return leftStickY;
+#else
+		if (IsKeyPressed(im.positiveKey))
+			return 1.0f;
+
+		if (IsKeyPressed(im.negativeKey))
+			return -1.0f;
+#endif	
+		return 0.0f;
+	}
+
+	bool InputManager::GetAction(const std::string &name)
+	{
+		const InputMapping &im = inputMappings[name];
+
+#ifdef VITA
+		if (buttons & im.positiveVitaButton)
+			return true;
+#else
+		if (IsKeyPressed(im.positiveKey))
+			return true;
+#endif
+		return false;
 	}
 }

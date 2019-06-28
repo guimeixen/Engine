@@ -1,14 +1,13 @@
 #include "PhysicsManager.h"
 
 #include "Program/Log.h"
+#include "Program/Utils.h"
 #include "Physics/RigidBody.h"
 #include "Physics/Collider.h"
 #include "Physics/Trigger.h"
 #include "ScriptManager.h"
 #include "Graphics/Effects/DebugDrawManager.h"
 #include "TransformManager.h"
-
-#include "Program/Utils.h"
 
 #include "include/bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 
@@ -22,6 +21,12 @@ namespace Engine
 	{
 		terrainCollider = nullptr;
 		isInit = false;
+		usedRigidBodies = 0;
+		usedColliders = 0;
+		usedTriggers = 0;
+		disabledRigidBodies = 0;
+		disabledColliders = 0;
+		disabledTriggers = 0;
 	}
 
 	void PhysicsManager::Init(TransformManager *transformManager)
@@ -35,12 +40,12 @@ namespace Engine
 		collisionConfiguration = new btDefaultCollisionConfiguration();
 		dispatcher = new btCollisionDispatcher(collisionConfiguration);
 		solver = new btSequentialImpulseConstraintSolver;
-		//ghostCallback = new btGhostPairCallback();
+		ghostCallback = new btGhostPairCallback();
 
 		// The world
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 		dynamicsWorld->setGravity(btVector3(0.0f, -9.81f, 0.0f));
-		//dynamicsWorld->getPairCache()->setInternalGhostPairCallback(ghostCallback);			// For the ghost to work correctly
+		dynamicsWorld->getPairCache()->setInternalGhostPairCallback(ghostCallback);			// For the ghost to work correctly
 
 		isInit = true;
 		
@@ -387,18 +392,7 @@ namespace Engine
 		rbi.e = newE;
 		rbi.rb = newRB;
 
-		if (usedRigidBodies < rigidBodies.size())
-		{
-			rigidBodies[usedRigidBodies] = rbi;
-			rbMap[newE.id] = usedRigidBodies;
-		}
-		else
-		{
-			rigidBodies.push_back(rbi);
-			rbMap[newE.id] = (unsigned int)rigidBodies.size() - 1;
-		}
-
-		usedRigidBodies++;
+		InsertRigidBodyInstance(rbi);
 	}
 
 	void PhysicsManager::DuplicateCollider(Entity e, Entity newE)
@@ -449,18 +443,7 @@ namespace Engine
 		ci.e = newE;
 		ci.col = newCol;
 
-		if (usedColliders < colliders.size())
-		{
-			colliders[usedColliders] = ci;
-			colMap[newE.id] = usedColliders;
-		}
-		else
-		{
-			colliders.push_back(ci);
-			colMap[newE.id] = (unsigned int)colliders.size() - 1;
-		}
-
-		usedColliders++;
+		InsertColliderInstance(ci);
 	}
 
 	void PhysicsManager::DuplicateTrigger(Entity e, Entity newE)
@@ -513,39 +496,208 @@ namespace Engine
 		ti.e = newE;
 		ti.tr = newTr;
 
+		InsertTriggerInstance(ti);
+	}
+
+	void PhysicsManager::LoadRigidBodyFromPrefab(Serializer &s, Entity e)
+	{
+		RigidBodyInstance rbi = {};
+		rbi.e = e;
+		rbi.rb = new RigidBody();
+		rbi.rb->Deserialize(*this, s);
+
+		glm::mat4 m = transformManager->GetLocalToWorld(rbi.e);
+		m[0] = glm::normalize(m[0]);				// Set scale to 1. Rigidbody size is set through it's own size property and not by the entity's scale
+		m[1] = glm::normalize(m[1]);
+		m[2] = glm::normalize(m[2]);
+
+		rbi.rb->SetTransform(m);					// Otherwise it wouldn't be updated correctly
+		rbi.rb->GetHandle()->setUserIndex((int)rbi.e.id);
+
+		dynamicsWorld->addRigidBody(rbi.rb->GetHandle(), Layer::DEFAULT, Layer::ALL);		// Read the layer from file
+
+		InsertRigidBodyInstance(rbi);
+	}
+
+	void PhysicsManager::LoadColliderFromPrefab(Serializer &s, Entity e)
+	{
+		ColliderInstance ci = {};
+		ci.e = e;
+		ci.col = new Collider();
+		ci.col->Deserialize(*this, s);
+
+		glm::mat4 m = transformManager->GetLocalToWorld(ci.e);
+		m[0] = glm::normalize(m[0]);				// Set scale to 1. Collider size is set through it's own size property and not by the entity's scale
+		m[1] = glm::normalize(m[1]);
+		m[2] = glm::normalize(m[2]);
+
+		ci.col->SetTransform(m);		// Otherwise it wouldn't be updated correctly
+		ci.col->GetHandle()->setUserIndex((int)ci.e.id);
+
+		dynamicsWorld->addCollisionObject(ci.col->GetHandle(), Layer::DEFAULT, Layer::DEFAULT | Layer::OBSTACLE | Layer::ENEMY);
+
+		InsertColliderInstance(ci);
+	}
+
+	void PhysicsManager::LoadTriggerFromPrefab(Serializer &s, Entity e)
+	{
+		TriggerInstance ti = {};
+		ti.e = e;
+		ti.tr = new Trigger();
+		ti.tr->Deserialize(*this, s);
+		ti.tr->GetHandle()->setUserIndex((int)ti.e.id);
+		ti.tr->SetTransform(transformManager->GetLocalToWorld(ti.e));			// Set the triggers transform otherwise it will cause all of them to call OnTriggerEnter,etc because they all get initialized at (0,0,0)
+
+		dynamicsWorld->addCollisionObject(ti.tr->GetHandle(), Layer::DEFAULT, Layer::DEFAULT | Layer::OBSTACLE | Layer::ENEMY);
+
+		InsertTriggerInstance(ti);
+	}
+
+	void PhysicsManager::InsertRigidBodyInstance(const RigidBodyInstance &rbi)
+	{
+		if (usedRigidBodies < rigidBodies.size())
+		{
+			rigidBodies[usedRigidBodies] = rbi;
+			rbMap[rbi.e.id] = usedRigidBodies;
+		}
+		else
+		{
+			rigidBodies.push_back(rbi);
+			rbMap[rbi.e.id] = (unsigned int)rigidBodies.size() - 1;
+		}
+
+		usedRigidBodies++;
+
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledRigidBodies > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedRigidBodies - 1;
+			unsigned int firstDisabledEntityIndex = usedRigidBodies - disabledRigidBodies - 1;		// Get the first entity disabled
+
+			RigidBodyInstance rbi1 = rigidBodies[newEntityIndex];
+			RigidBodyInstance rbi2 = rigidBodies[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			rigidBodies[newEntityIndex] = rbi2;
+			rigidBodies[firstDisabledEntityIndex] = rbi1;
+
+			// Swap the indices
+			rbMap[rbi.e.id] = firstDisabledEntityIndex;
+			rbMap[rbi2.e.id] = newEntityIndex;
+		}
+	}
+
+	void PhysicsManager::InsertColliderInstance(const ColliderInstance &ci)
+	{
+		if (usedColliders < colliders.size())
+		{
+			colliders[usedColliders] = ci;
+			colMap[ci.e.id] = usedColliders;
+		}
+		else
+		{
+			colliders.push_back(ci);
+			colMap[ci.e.id] = (unsigned int)colliders.size() - 1;
+		}
+
+		usedColliders++;
+
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledColliders > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedColliders - 1;
+			unsigned int firstDisabledEntityIndex = usedColliders - disabledColliders - 1;		// Get the first entity disabled
+
+			ColliderInstance ci1 = colliders[newEntityIndex];
+			ColliderInstance ci2 = colliders[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			colliders[newEntityIndex] = ci2;
+			colliders[firstDisabledEntityIndex] = ci1;
+
+			// Swap the indices
+			colMap[ci.e.id] = firstDisabledEntityIndex;
+			colMap[ci2.e.id] = newEntityIndex;
+		}
+	}
+
+	void PhysicsManager::InsertTriggerInstance(const TriggerInstance &ti)
+	{
 		if (usedTriggers < triggers.size())
 		{
 			triggers[usedTriggers] = ti;
-			trMap[newE.id] = usedTriggers;
+			trMap[ti.e.id] = usedTriggers;
 		}
 		else
 		{
 			triggers.push_back(ti);
-			trMap[newE.id] = (unsigned int)triggers.size() - 1;
+			trMap[ti.e.id] = (unsigned int)triggers.size() - 1;
 		}
 
 		usedTriggers++;
+
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledTriggers > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedTriggers - 1;
+			unsigned int firstDisabledEntityIndex = usedTriggers - disabledTriggers - 1;		// Get the first entity disabled
+
+			TriggerInstance ti1 = triggers[newEntityIndex];
+			TriggerInstance ti2 = triggers[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			triggers[newEntityIndex] = ti2;
+			triggers[firstDisabledEntityIndex] = ti1;
+
+			// Swap the indices
+			trMap[ti.e.id] = firstDisabledEntityIndex;
+			trMap[ti2.e.id] = newEntityIndex;
+		}
 	}
 
 	void PhysicsManager::RemoveRigidBody(Entity e)
 	{
 		if (HasRigidBody(e))
 		{
-			unsigned int index = rbMap.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = rbMap.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedRigidBodies - disabledRigidBodies - 1;
 
-			RigidBodyInstance temp = rigidBodies[index];
-			RigidBodyInstance last = rigidBodies[rigidBodies.size() - 1];
-			rigidBodies[rigidBodies.size() - 1] = temp;
-			rigidBodies[index] = last;
+			RigidBodyInstance entityToRemoveRbi = rigidBodies[entityToRemoveIndex];
+			RigidBodyInstance lastEnabledEntityRbi = rigidBodies[lastEnabledEntityIndex];
 
-			rbMap[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			rigidBodies[lastEnabledEntityIndex] = entityToRemoveRbi;
+			rigidBodies[entityToRemoveIndex] = lastEnabledEntityRbi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			rbMap[lastEnabledEntityRbi.e.id] = entityToRemoveIndex;
 			rbMap.erase(e.id);
 
-			btRigidBody *rigidBody = temp.rb->GetHandle();
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledRigidBodies > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedRigidBodies - 1;
+
+				RigidBodyInstance lastDisabledEntityRbi = rigidBodies[lastDisabledEntityIndex];
+
+				rigidBodies[lastDisabledEntityIndex] = entityToRemoveRbi;
+				rigidBodies[entityToRemoveIndex] = lastDisabledEntityRbi;
+
+				rbMap[lastDisabledEntityRbi.e.id] = entityToRemoveIndex;
+			}
+
+			btRigidBody *rigidBody = entityToRemoveRbi.rb->GetHandle();
 			dynamicsWorld->removeRigidBody(rigidBody);
 			delete rigidBody->getMotionState();
 			delete rigidBody;
-			delete temp.rb;
+			delete entityToRemoveRbi.rb;
 			usedRigidBodies--;
 		}
 	}
@@ -554,20 +706,41 @@ namespace Engine
 	{
 		if (HasCollider(e))
 		{
-			unsigned int index = colMap.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = colMap.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedColliders - disabledColliders - 1;
 
-			ColliderInstance temp = colliders[index];
-			ColliderInstance last = colliders[colliders.size() - 1];
-			colliders[colliders.size() - 1] = temp;
-			colliders[index] = last;
+			ColliderInstance entityToRemoveCi = colliders[entityToRemoveIndex];
+			ColliderInstance lastEnabledEntityCi = colliders[lastEnabledEntityIndex];
 
-			colMap[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			colliders[lastEnabledEntityIndex] = entityToRemoveCi;
+			colliders[entityToRemoveIndex] = lastEnabledEntityCi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			colMap[lastEnabledEntityCi.e.id] = entityToRemoveIndex;
 			colMap.erase(e.id);
 
-			btCollisionObject *collider = temp.col->GetHandle();
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledColliders > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedColliders - 1;
+
+				ColliderInstance lastDisabledEntityCi = colliders[lastDisabledEntityIndex];
+
+				colliders[lastDisabledEntityIndex] = entityToRemoveCi;
+				colliders[entityToRemoveIndex] = lastDisabledEntityCi;
+
+				colMap[lastDisabledEntityCi.e.id] = entityToRemoveIndex;
+			}
+
+			btCollisionObject *collider = entityToRemoveCi.col->GetHandle();
 			dynamicsWorld->removeCollisionObject(collider);
 			delete collider;
-			delete temp.col;
+			delete entityToRemoveCi.col;
 			usedColliders--;
 		}
 	}
@@ -576,21 +749,42 @@ namespace Engine
 	{
 		if (HasTrigger(e))
 		{
-			unsigned int index = trMap.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = trMap.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedTriggers - disabledTriggers - 1;
 
-			TriggerInstance temp = triggers[index];
-			TriggerInstance last = triggers[triggers.size() - 1];
-			triggers[triggers.size() - 1] = temp;
-			triggers[index] = last;
+			TriggerInstance entityToRemoveTi = triggers[entityToRemoveIndex];
+			TriggerInstance lastEnabledEntityTi = triggers[lastEnabledEntityIndex];
 
-			trMap[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			triggers[lastEnabledEntityIndex] = entityToRemoveTi;
+			triggers[entityToRemoveIndex] = lastEnabledEntityTi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			trMap[lastEnabledEntityTi.e.id] = entityToRemoveIndex;
 			trMap.erase(e.id);
 
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledTriggers > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedTriggers - 1;
+
+				TriggerInstance lastDisabledEntityTi = triggers[lastDisabledEntityIndex];
+
+				triggers[lastDisabledEntityIndex] = entityToRemoveTi;
+				triggers[entityToRemoveIndex] = lastDisabledEntityTi;
+
+				trMap[lastDisabledEntityTi.e.id] = entityToRemoveIndex;
+			}
+
 			//btGhostObject *ghostTrigger = ghost->GetHandle();
-			btPairCachingGhostObject *ghostTrigger = temp.tr->GetHandle();
+			btPairCachingGhostObject *ghostTrigger = entityToRemoveTi.tr->GetHandle();
 			dynamicsWorld->removeCollisionObject(ghostTrigger);
 			delete ghostTrigger;
-			delete temp.tr;
+			delete entityToRemoveTi.tr;
 			usedTriggers--;
 		}
 	}
@@ -611,18 +805,7 @@ namespace Engine
 		rbi.e = e;
 		rbi.rb = rb;
 
-		if (usedRigidBodies < rigidBodies.size())
-		{
-			rigidBodies[usedRigidBodies] = rbi;
-			rbMap[e.id] = usedRigidBodies;
-		}
-		else
-		{
-			rigidBodies.push_back(rbi);
-			rbMap[e.id] = (unsigned int)rigidBodies.size() - 1;
-		}
-
-		usedRigidBodies++;
+		InsertRigidBodyInstance(rbi);
 
 		return rb;
 	}
@@ -643,18 +826,7 @@ namespace Engine
 		rbi.e = e;
 		rbi.rb = rb;
 
-		if (usedRigidBodies < rigidBodies.size())
-		{
-			rigidBodies[usedRigidBodies] = rbi;
-			rbMap[e.id] = usedRigidBodies;
-		}
-		else
-		{
-			rigidBodies.push_back(rbi);
-			rbMap[e.id] = (unsigned int)rigidBodies.size() - 1;
-		}		
-
-		usedRigidBodies++;
+		InsertRigidBodyInstance(rbi);
 
 		return rb;
 	}
@@ -679,18 +851,7 @@ namespace Engine
 		rbi.e = e;
 		rbi.rb = rb;
 
-		if (usedRigidBodies < rigidBodies.size())
-		{
-			rigidBodies[usedRigidBodies] = rbi;
-			rbMap[e.id] = usedRigidBodies;
-		}
-		else
-		{
-			rigidBodies.push_back(rbi);
-			rbMap[e.id] = (unsigned int)rigidBodies.size() - 1;
-		}
-
-		usedRigidBodies++;
+		InsertRigidBodyInstance(rbi);
 
 		return rb;
 	}
@@ -795,18 +956,7 @@ namespace Engine
 		ci.e = e;
 		ci.col = col;
 
-		if (usedColliders < colliders.size())
-		{
-			colliders[usedColliders] = ci;
-			colMap[e.id] = usedColliders;
-		}
-		else
-		{
-			colliders.push_back(ci);
-			colMap[e.id] = (unsigned int)colliders.size() - 1;
-		}
-
-		usedColliders++;
+		InsertColliderInstance(ci);
 
 		return col;
 	}
@@ -831,18 +981,7 @@ namespace Engine
 		ci.e = e;
 		ci.col = col;
 
-		if (usedColliders < colliders.size())
-		{
-			colliders[usedColliders] = ci;
-			colMap[e.id] = usedColliders;
-		}
-		else
-		{
-			colliders.push_back(ci);
-			colMap[e.id] = (unsigned int)colliders.size() - 1;
-		}
-
-		usedColliders++;
+		InsertColliderInstance(ci);
 
 		return col;
 	}
@@ -871,18 +1010,7 @@ namespace Engine
 		ci.e = e;
 		ci.col = col;
 
-		if (usedColliders < colliders.size())
-		{
-			colliders[usedColliders] = ci;
-			colMap[e.id] = usedColliders;
-		}
-		else
-		{
-			colliders.push_back(ci);
-			colMap[e.id] = (unsigned int)colliders.size() - 1;
-		}
-
-		usedColliders++;
+		InsertColliderInstance(ci);
 
 		return col;
 	}
@@ -982,18 +1110,7 @@ namespace Engine
 		ti.e = e;
 		ti.tr = tr;
 	
-		if (usedTriggers < triggers.size())
-		{
-			triggers[usedTriggers] = ti;
-			trMap[e.id] = usedTriggers;
-		}
-		else
-		{
-			triggers.push_back(ti);
-			trMap[e.id] = (unsigned int)triggers.size() - 1;
-		}
-
-		usedTriggers++;
+		InsertTriggerInstance(ti);
 
 		return tr;
 	}
@@ -1023,18 +1140,7 @@ namespace Engine
 		ti.e = e;
 		ti.tr = tr;
 
-		if (usedTriggers < triggers.size())
-		{
-			triggers[usedTriggers] = ti;
-			trMap[e.id] = usedTriggers;
-		}
-		else
-		{
-			triggers.push_back(ti);
-			trMap[e.id] = (unsigned int)triggers.size() - 1;
-		}
-
-		usedTriggers++;
+		InsertTriggerInstance(ti);
 
 		return tr;
 	}
@@ -1068,18 +1174,7 @@ namespace Engine
 		ti.e = e;
 		ti.tr = tr;
 
-		if (usedTriggers < triggers.size())
-		{
-			triggers[usedTriggers] = ti;
-			trMap[e.id] = usedTriggers;
-		}
-		else
-		{
-			triggers.push_back(ti);
-			trMap[e.id] = (unsigned int)triggers.size() - 1;
-		}
-
-		usedTriggers++;
+		InsertTriggerInstance(ti);
 
 		return tr;
 	}
@@ -1121,6 +1216,162 @@ namespace Engine
 			return triggers[trMap.at(e.id)].tr;
 
 		return nullptr;
+	}
+
+	void PhysicsManager::SetRigidBodyEnabled(Entity e, bool enable)
+	{
+		if (HasRigidBody(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledRigidBodies == 1)
+				{
+					disabledRigidBodies--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = rbMap.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedRigidBodies - disabledRigidBodies;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					RigidBodyInstance rbi1 = rigidBodies[entityIndex];
+					RigidBodyInstance rbi2 = rigidBodies[firstDisabledEntityIndex];
+
+					rigidBodies[entityIndex] = rbi2;
+					rigidBodies[firstDisabledEntityIndex] = rbi1;
+
+					rbMap[e.id] = firstDisabledEntityIndex;
+					rbMap[rbi2.e.id] = entityIndex;
+
+					disabledRigidBodies--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = rbMap.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedRigidBodies - disabledRigidBodies - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				RigidBodyInstance rbi1 = rigidBodies[entityIndex];
+				RigidBodyInstance rbi2 = rigidBodies[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				rigidBodies[entityIndex] = rbi2;
+				rigidBodies[firstDisabledEntityIndex] = rbi1;
+
+				// Swap the indices
+				rbMap[e.id] = firstDisabledEntityIndex;
+				rbMap[rbi2.e.id] = entityIndex;
+
+				disabledRigidBodies++;
+			}
+		}
+	}
+
+	void PhysicsManager::SetColliderEnabled(Entity e, bool enable)
+	{
+		if (HasCollider(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledColliders == 1)
+				{
+					disabledColliders--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = colMap.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedColliders - disabledColliders;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					ColliderInstance ci1 = colliders[entityIndex];
+					ColliderInstance ci2 = colliders[firstDisabledEntityIndex];
+
+					colliders[entityIndex] = ci2;
+					colliders[firstDisabledEntityIndex] = ci1;
+
+					colMap[e.id] = firstDisabledEntityIndex;
+					colMap[ci2.e.id] = entityIndex;
+
+					disabledColliders--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = colMap.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedColliders - disabledColliders - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				ColliderInstance ci1 = colliders[entityIndex];
+				ColliderInstance ci2 = colliders[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				colliders[entityIndex] = ci2;
+				colliders[firstDisabledEntityIndex] = ci1;
+
+				// Swap the indices
+				colMap[e.id] = firstDisabledEntityIndex;
+				colMap[ci2.e.id] = entityIndex;
+
+				disabledColliders++;
+			}
+		}
+	}
+
+	void PhysicsManager::SetTriggerEnabled(Entity e, bool enable)
+	{
+		if (HasTrigger(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledTriggers == 1)
+				{
+					disabledTriggers--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = trMap.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedTriggers - disabledTriggers;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					TriggerInstance ti1 = triggers[entityIndex];
+					TriggerInstance ti2 = triggers[firstDisabledEntityIndex];
+
+					triggers[entityIndex] = ti2;
+					triggers[firstDisabledEntityIndex] = ti1;
+
+					trMap[e.id] = firstDisabledEntityIndex;
+					trMap[ti2.e.id] = entityIndex;
+
+					disabledTriggers--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = trMap.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedTriggers - disabledTriggers - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				TriggerInstance ti1 = triggers[entityIndex];
+				TriggerInstance ti2 = triggers[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				triggers[entityIndex] = ti2;
+				triggers[firstDisabledEntityIndex] = ti1;
+
+				// Swap the indices
+				trMap[e.id] = firstDisabledEntityIndex;
+				trMap[ti2.e.id] = entityIndex;
+
+				disabledTriggers++;
+			}
+		}
 	}
 
 	void PhysicsManager::ChangeLayer(RigidBody *rigidBody, int newLayer)
@@ -1241,6 +1492,7 @@ namespace Engine
 	void PhysicsManager::Serialize(Serializer &s) const
 	{
 		s.Write(usedRigidBodies);
+		s.Write(disabledRigidBodies);
 		for (unsigned int i = 0; i < usedRigidBodies; i++)
 		{
 			const RigidBodyInstance &rbi = rigidBodies[i];
@@ -1248,6 +1500,7 @@ namespace Engine
 			rbi.rb->Serialize(s);
 		}
 		s.Write(usedColliders);
+		s.Write(disabledColliders);
 		for (unsigned int i = 0; i < usedColliders; i++)
 		{
 			const ColliderInstance &ci = colliders[i];
@@ -1255,6 +1508,7 @@ namespace Engine
 			ci.col->Serialize(s);
 		}
 		s.Write(usedTriggers);
+		s.Write(disabledTriggers);
 		for (unsigned int i = 0; i < usedTriggers; i++)
 		{
 			const TriggerInstance &ti = triggers[i];
@@ -1270,6 +1524,7 @@ namespace Engine
 		if (!reload)
 		{
 			s.Read(usedRigidBodies);
+			s.Read(disabledRigidBodies);
 			rigidBodies.resize(usedRigidBodies);
 			for (unsigned int i = 0; i < usedRigidBodies; i++)
 			{
@@ -1292,7 +1547,9 @@ namespace Engine
 				rigidBodies[i] = rbi;
 				rbMap[rbi.e.id] = i;
 			}
+
 			s.Read(usedColliders);
+			s.Read(disabledColliders);
 			colliders.resize(usedColliders);
 			for (unsigned int i = 0; i < usedColliders; i++)
 			{
@@ -1315,7 +1572,9 @@ namespace Engine
 				colliders[i] = ci;
 				colMap[ci.e.id] = i;
 			}
+
 			s.Read(usedTriggers);
+			s.Read(disabledTriggers);
 			triggers.resize(usedTriggers);
 			for (unsigned int i = 0; i < usedTriggers; i++)
 			{
@@ -1336,6 +1595,7 @@ namespace Engine
 		else
 		{
 			s.Read(usedRigidBodies);
+			s.Read(disabledRigidBodies);
 			for (unsigned int i = 0; i < usedRigidBodies; i++)
 			{
 				RigidBodyInstance &rbi = rigidBodies[i];
@@ -1344,6 +1604,7 @@ namespace Engine
 				rbi.rb->SetTransform(transformManager->GetLocalToWorld(rbi.e));
 			}
 			s.Read(usedColliders);
+			s.Read(disabledColliders);
 			for (unsigned int i = 0; i < usedColliders; i++)
 			{
 				ColliderInstance &ci = colliders[i];
@@ -1351,6 +1612,7 @@ namespace Engine
 				ci.col->Deserialize(*this, s);
 			}
 			s.Read(usedTriggers);
+			s.Read(disabledTriggers);
 			for (unsigned int i = 0; i < usedTriggers; i++)
 			{
 				TriggerInstance &ti = triggers[i];

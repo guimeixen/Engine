@@ -36,6 +36,7 @@ namespace Engine
 		void Play();
 		SoundSource *AddSoundSource(Entity e);
 		void DuplicateSoundSource(Entity e, Entity newE);
+		void SetSoundSourceEnabled(Entity e, bool enable);
 		void LoadSound(SoundSource *soundSource, const std::string &path, bool stream);
 		void ReloadSound(SoundSource *soundSource);
 		void RemoveSoundSource(Entity e);
@@ -52,6 +53,9 @@ namespace Engine
 		//FMOD::Sound *LoadMusic(const std::string &path);
 
 	private:
+		void InsertSoundSourceInstance(const SoundSourceInstance &ssi);
+
+	private:
 		Game *game;
 		TransformManager *transformManager;
 		//FMOD::System *fmodSystem;
@@ -59,6 +63,7 @@ namespace Engine
 		std::vector<SoundInfo> sounds;
 		std::vector<SoundSourceInstance> soundSources;
 		std::unordered_map<unsigned int, unsigned int> map;
-		unsigned int usedSoundSources = 0;
+		unsigned int usedSoundSources;
+		unsigned int disabledSoundSources;
 	};
 }

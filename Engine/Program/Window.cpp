@@ -7,20 +7,19 @@
 #include "Graphics\GL\GLUtils.h"
 #include "Game\UI\UIManager.h"
 #include "Utils.h"
+#include "Input.h"
 
 namespace Engine
 {
 	Window::Window()
 	{
 		editorManager = nullptr;
+		inputManager = nullptr;
 	}
 
-	Window::~Window()
+	bool Window::Init(InputManager *inputManager, GraphicsAPI api, unsigned int width, unsigned int height)
 	{
-	}
-
-	bool Window::Init(GraphicsAPI api, unsigned int width, unsigned int height)
-	{
+		this->inputManager = inputManager;
 		this->width = width;
 		this->height = height;
 
@@ -90,8 +89,8 @@ namespace Engine
 
 	void Window::UpdateInput()
 	{
-		inputManager.Reset();
-		inputManager.Update();
+		inputManager->Reset();
+		inputManager->Update();
 
 		glfwPollEvents();
 	}
@@ -111,7 +110,7 @@ namespace Engine
 		/*if (key == GLFW_KEY_ESCAPE)
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		*/
-		inputManager.UpdateKeys(key, scancode, action, mods);
+		inputManager->UpdateKeys(key, scancode, action, mods);
 
 #ifdef EDITOR
 		editorManager->UpdateKeys(key, action, mods);
@@ -177,7 +176,7 @@ namespace Engine
 #ifdef EDITOR
 		glm::vec2 viewportPos = editorManager->GetGameViewportPos();
 		glm::vec2 mousePosInGameView = glm::vec2(xpos - viewportPos.x, ypos - viewportPos.y);		// Subtract the viewport so we get the correct mouse position in the game view dock
-		inputManager.SetMousePosition(mousePosInGameView);
+		inputManager->SetMousePosition(mousePosInGameView);
 #else
 		// Better solution for this?  Maybe move input to UIManager?
 		/*bool visible = game.GetUIManager()->IsCursorVisible();
@@ -207,7 +206,7 @@ namespace Engine
 		}
 		else
 		{*/
-		inputManager.SetMousePosition(glm::vec2(xpos, ypos));
+		inputManager->SetMousePosition(glm::vec2(xpos, ypos));
 		//}	
 
 #endif
@@ -215,7 +214,7 @@ namespace Engine
 
 	void Window::UpdateMouseButtonState(int button, int action, int mods)
 	{
-		inputManager.SetMouseButtonState(button, action);
+		inputManager->SetMouseButtonState(button, action);
 
 #ifdef EDITOR
 		editorManager->UpdateMouse(button, action);
@@ -224,7 +223,7 @@ namespace Engine
 
 	void Window::UpdateScroll(double xoffset, double yoffset)
 	{
-		inputManager.SetScrollWheelYOffset((float)yoffset);
+		inputManager->SetScrollWheelYOffset((float)yoffset);
 
 #ifdef EDITOR
 		editorManager->UpdateScroll(yoffset);
@@ -233,7 +232,7 @@ namespace Engine
 
 	void Window::UpdateChar(unsigned int c)
 	{
-		inputManager.UpdateChar(c);
+		inputManager->UpdateChar(c);
 
 #ifdef EDITOR
 		editorManager->UpdateChar(c);

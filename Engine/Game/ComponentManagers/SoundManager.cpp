@@ -15,6 +15,8 @@ namespace Engine
 	SoundManager::SoundManager()
 	{
 		isInit = false;
+		usedSoundSources = 0;
+		disabledSoundSources = 0;
 	}
 
 	bool SoundManager::Init(Game *game, TransformManager *transformManager)
@@ -71,7 +73,9 @@ namespace Engine
 		if (!isInit)
 			return;
 
-		/*for (size_t i = 0; i < usedSoundSources; i++)
+		const unsigned int numEnabledSoundSources = usedSoundSources - disabledSoundSources;
+
+		/*for (size_t i = 0; i < numEnabledSoundSources; i++)
 		{
 			const SoundSourceInstance &ssi = soundSources[i];
 			SoundSource *ss = ssi.ss;
@@ -120,7 +124,9 @@ namespace Engine
 
 	void SoundManager::Play()
 	{
-		for (size_t i = 0; i < usedSoundSources; i++)
+		const unsigned int numEnabledSoundSources = usedSoundSources - disabledSoundSources;
+
+		for (size_t i = 0; i < numEnabledSoundSources; i++)
 		{
 			SoundSource *ss = soundSources[i].ss;
 			if (ss->playOnStart)
@@ -141,18 +147,7 @@ namespace Engine
 		ssi.e = e;
 		ssi.ss = soundSource;
 
-		if (usedSoundSources < soundSources.size())
-		{
-			soundSources[usedSoundSources] = ssi;
-			map[e.id] = usedSoundSources;
-		}
-		else
-		{
-			soundSources.push_back(ssi);
-			map[e.id] = (unsigned int)soundSources.size() - 1;
-		}
-
-		usedSoundSources++;
+		InsertSoundSourceInstance(ssi);
 
 		return soundSource;
 	}
@@ -180,18 +175,96 @@ namespace Engine
 		ssi.e = newE;
 		ssi.ss = newSS;
 
+		InsertSoundSourceInstance(ssi);
+	}
+
+	void SoundManager::SetSoundSourceEnabled(Entity e, bool enable)
+	{
+		// TODO: This is not finished. We probably want to play/stop the sound when the entity gets enabled/disabled
+
+		if (HasSoundSource(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledSoundSources == 1)
+				{
+					disabledSoundSources--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = map.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedSoundSources - disabledSoundSources;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					SoundSourceInstance ssi1 = soundSources[entityIndex];
+					SoundSourceInstance ssi2 = soundSources[firstDisabledEntityIndex];
+
+					soundSources[entityIndex] = ssi2;
+					soundSources[firstDisabledEntityIndex] = ssi1;
+
+					map[e.id] = firstDisabledEntityIndex;
+					map[ssi2.e.id] = entityIndex;
+
+					disabledSoundSources--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = map.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedSoundSources - disabledSoundSources - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				SoundSourceInstance ssi1 = soundSources[entityIndex];
+				SoundSourceInstance ssi2 = soundSources[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				soundSources[entityIndex] = ssi2;
+				soundSources[firstDisabledEntityIndex] = ssi1;
+
+				// Swap the indices
+				map[e.id] = firstDisabledEntityIndex;
+				map[ssi2.e.id] = entityIndex;
+
+				disabledSoundSources++;
+			}
+		}
+	}
+
+	void SoundManager::InsertSoundSourceInstance(const SoundSourceInstance &ssi)
+	{
 		if (usedSoundSources < soundSources.size())
 		{
 			soundSources[usedSoundSources] = ssi;
-			map[newE.id] = usedSoundSources;
+			map[ssi.e.id] = usedSoundSources;
 		}
 		else
 		{
 			soundSources.push_back(ssi);
-			map[newE.id] = (unsigned int)soundSources.size() - 1;
+			map[ssi.e.id] = (unsigned int)soundSources.size() - 1;
 		}
 
 		usedSoundSources++;
+
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledSoundSources > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedSoundSources - 1;
+			unsigned int firstDisabledEntityIndex = usedSoundSources - disabledSoundSources - 1;		// Get the first entity disabled
+
+			SoundSourceInstance ssi1 = soundSources[newEntityIndex];
+			SoundSourceInstance ssi2 = soundSources[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			soundSources[newEntityIndex] = ssi2;
+			soundSources[firstDisabledEntityIndex] = ssi1;
+
+			// Swap the indices
+			map[ssi.e.id] = firstDisabledEntityIndex;
+			map[ssi2.e.id] = newEntityIndex;
+		}
 	}
 
 	void SoundManager::LoadSound(SoundSource *soundSource, const std::string &path, bool stream)
@@ -263,17 +336,38 @@ namespace Engine
 	{
 		if (HasSoundSource(e))
 		{
-			unsigned int index = map.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = map.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedSoundSources - disabledSoundSources - 1;
 
-			SoundSourceInstance temp = soundSources[index];
-			SoundSourceInstance last = soundSources[soundSources.size() - 1];
-			soundSources[soundSources.size() - 1] = temp;
-			soundSources[index] = last;
+			SoundSourceInstance entityToRemoveSsi = soundSources[entityToRemoveIndex];
+			SoundSourceInstance lastEnabledEntitySsi = soundSources[lastEnabledEntityIndex];
 
-			map[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			soundSources[lastEnabledEntityIndex] = entityToRemoveSsi;
+			soundSources[entityToRemoveIndex] = lastEnabledEntitySsi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			map[lastEnabledEntitySsi.e.id] = entityToRemoveIndex;
 			map.erase(e.id);
 
-			delete temp.ss;
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledSoundSources > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedSoundSources - 1;
+
+				SoundSourceInstance lastDisabledEntitySsi = soundSources[lastDisabledEntityIndex];
+
+				soundSources[lastDisabledEntityIndex] = entityToRemoveSsi;
+				soundSources[entityToRemoveIndex] = lastDisabledEntitySsi;
+
+				map[lastDisabledEntitySsi.e.id] = entityToRemoveIndex;
+			}
+
+			delete entityToRemoveSsi.ss;
 			usedSoundSources--;
 		}
 	}
@@ -319,6 +413,7 @@ namespace Engine
 	void SoundManager::Serialize(Serializer &s) const
 	{
 		s.Write(usedSoundSources);
+		s.Write(disabledSoundSources);
 		for (unsigned int i = 0; i < usedSoundSources; i++)
 		{
 			const SoundSourceInstance &ssi = soundSources[i];
@@ -334,6 +429,7 @@ namespace Engine
 		if (!reload)
 		{
 			s.Read(usedSoundSources);
+			s.Read(disabledSoundSources);
 			soundSources.resize(usedSoundSources);
 			for (unsigned int i = 0; i < usedSoundSources; i++)
 			{
@@ -351,6 +447,7 @@ namespace Engine
 		else
 		{
 			s.Read(usedSoundSources);
+			s.Read(disabledSoundSources);
 			for (unsigned int i = 0; i < usedSoundSources; i++)
 			{
 				SoundSourceInstance &ssi = soundSources[i];

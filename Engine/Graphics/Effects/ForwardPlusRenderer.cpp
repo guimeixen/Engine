@@ -136,8 +136,10 @@ namespace Engine
 	{
 		RenderingPath::Render();
 
-		const std::vector<LightShader> &lights = game->GetLightManager().GetLightsShaderReady();
-		curLightCount = (unsigned int)lights.size();
+		const LightManager &lightManager = game->GetLightManager();
+		const std::vector<LightShader> &lights = lightManager.GetLightsShaderReady();
+		//curLightCount = (unsigned int)lights.size();
+		curLightCount = lightManager.GetEnabledPointLightsCount();
 
 		lightListSSBO->Update(lights.data(), (unsigned int)lights.size() * sizeof(LightShader), 0);
 

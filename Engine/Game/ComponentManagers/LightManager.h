@@ -40,20 +40,24 @@ namespace Engine
 
 		PointLight *AddPointLight(Entity e);
 		void DuplicatePointLight(Entity e, Entity newE);
-		void EnablePointLight(PointLight *light);
+		void SetPointLightEnabled(Entity e, bool enable);
+		void LoadPointLightFromPrefab(Serializer &s, Entity e);
 		void UpdatePointLights();
 		void RemoveLight(Entity e);
-		void RemovePointLight(PointLight *light);
 		bool HasPointLight(Entity e) const;
 		PointLight *GetPointLight(Entity e) const;
 
 		const std::vector<LightShader> &GetLightsShaderReady() const { return lightsShaderReady; }
 		const PointLightUBO &GetPointLightsUBO() const { return plUBO; }
+		unsigned int GetEnabledPointLightsCount() const { return usedPointLights - disabledPointLights; }
 
 		PointLight *CastToPointLight(Light *light) { if (!light) return nullptr; if (light->type == LightType::POINT) { return static_cast<PointLight*>(light); } else { return nullptr; } }
 
 		void Serialize(Serializer &s);
 		void Deserialize(Serializer &s, bool reload = false);
+
+	private:
+		void InsertPointLightInstance(const PointLightInstance &pli);
 
 	private:
 		TransformManager *transformManager;
@@ -69,5 +73,6 @@ namespace Engine
 		bool needsSort = false;
 
 		unsigned int usedPointLights = 0;
+		unsigned int disabledPointLights = 0;
 	};
 }

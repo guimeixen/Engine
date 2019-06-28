@@ -122,11 +122,16 @@ namespace Engine
 
 	struct InputMapping
 	{
-		char name[64];
+		//unsigned int id;
 		Keys positiveKey;
 		Keys negativeKey;
 		VitaButtons positiveVitaButton;
 		VitaButtons negativeVitaButton;
+		MouseButtonType mouseButton;
+		bool useLeftAnalogueStickX;
+		bool useLeftAnalogueStickY;
+		bool useRightAnalogueStickX;
+		bool useRightAnalogueStickY;
 	};
 
 	class FileManager;
@@ -136,8 +141,7 @@ namespace Engine
 	public:
 		InputManager();
 
-		void Update();			// Needs to be called at the start of the frame to reset the just released state. If two requests of WasKeyReleased() are made to the same key only the first would return
-								// the correct state because in the first call it would then reset the state.
+		void Update();			// Needs to be called at the start of the frame to reset the just released state.
 		void Reset();
 
 		// Tries to load the input mappings from file, if there is no file, it loads some default ones
@@ -145,7 +149,7 @@ namespace Engine
 
 		int AnyKeyPressed() const;
 		bool GetLastChar(unsigned char &c);
-		Keys GetLastKeyPressed();
+		Keys GetLastKeyPressed() const;
 		bool IsKeyPressed(int keycode) const;
 		bool WasKeyPressed(int keycode) const;
 		bool WasKeyReleased(int keycode) const;
@@ -159,8 +163,10 @@ namespace Engine
 		float GetRightAnalogueStickX() const { return rightStickX; }
 		float GetRightAnalogueStickY() const { return rightStickY; }
 		bool IsVitaButtonDown(int button);
+		float GetAxis(const std::string &name);
+		bool GetAction(const std::string &name);
 
-		std::vector<InputMapping> &GetInputMappings() { return inputMappings; }
+		std::unordered_map<std::string, InputMapping> &GetInputMappings() { return inputMappings; }
 		const std::string &GetStringOfKey(Keys key) { return keysToString[key]; }
 		const std::string &GetStringOfVitaButton(VitaButtons button) { return vitaButtonsToString[button]; }
 
@@ -191,9 +197,9 @@ namespace Engine
 		float rightStickX;
 		float rightStickY;
 
-		std::vector<InputMapping> inputMappings;
 		std::unordered_map<unsigned short, std::string> keysToString;
 		std::unordered_map<unsigned int, std::string> vitaButtonsToString;
+		std::unordered_map<std::string, InputMapping> inputMappings;
 	};
 
 	class Input
@@ -202,6 +208,7 @@ namespace Engine
 		friend class InputManager;
 	public:
 		static int AnyKeyPressed() { return inputManager->AnyKeyPressed(); }
+		static Keys GetLastKeyPressed() { return inputManager->GetLastKeyPressed(); }
 		static bool GetLastChar(unsigned char &c) { return inputManager->GetLastChar(c); }
 		static bool IsKeyPressed(int keycode) { return inputManager->IsKeyPressed(keycode); }
 		static bool WasKeyPressed(int keycode) { return inputManager->WasKeyPressed(keycode); }
@@ -217,6 +224,8 @@ namespace Engine
 		static float GetRightAnalogueStickX() { return inputManager->GetRightAnalogueStickX(); }
 		static float GetRightAnalogueStickY() { return inputManager->GetRightAnalogueStickY(); }
 		static bool IsVitaButtonDown(int button) { return inputManager->IsVitaButtonDown(button); }
+		static float GetAxis(const std::string &name) { return inputManager->GetAxis(name); }
+		static bool GetAction(const std::string &name) { return inputManager->GetAction(name); }
 
 		static InputManager *GetInputManager() { return inputManager; }
 

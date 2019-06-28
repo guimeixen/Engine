@@ -9,6 +9,9 @@ namespace Engine
 {
 	void ParticleManager::Init(Game *game)
 	{
+		usedParticleSystems = 0;
+		disabledParticleSystems = 0;
+
 		this->game = game;
 		transformManager = &game->GetTransformManager();
 
@@ -30,9 +33,11 @@ namespace Engine
 	{
 		//const glm::vec3 &camPos = game->GetMainCamera()->GetPosition();
 
+		const unsigned int numEnabledPS = usedParticleSystems - disabledParticleSystems;
+
 		for (unsigned int i = 0; i < passAndFrustumCount; i++)
 		{
-			for (size_t j = 0; j < particleSystems.size(); j++)
+			for (size_t j = 0; j < numEnabledPS; j++)
 			{
 				const ParticleInstance &pi = particleSystems[j];
 
@@ -47,8 +52,9 @@ namespace Engine
 	void ParticleManager::GetRenderItems(unsigned int passCount, unsigned int *passIds, const VisibilityIndices &visibility, RenderQueue &outQueues)
 	{
 		float dt = game->GetDeltaTime();
+		const unsigned int numEnabledPS = usedParticleSystems - disabledParticleSystems;
 
-		for (size_t i = 0; i < usedParticleSystems; i++)
+		for (size_t i = 0; i < numEnabledPS; i++)
 		{
 			const ParticleInstance &pi = particleSystems[i];
 			ParticleSystem *ps = pi.ps;
@@ -118,18 +124,7 @@ namespace Engine
 		pi.e = e;
 		pi.ps = ps;
 
-		if (usedParticleSystems < particleSystems.size())
-		{
-			particleSystems[usedParticleSystems] = pi;
-			map[e.id] = usedParticleSystems;
-		}
-		else
-		{
-			particleSystems.push_back(pi);
-			map[e.id] = (unsigned int)particleSystems.size() - 1;
-		}	
-
-		usedParticleSystems++;
+		InsertParticleSystem(pi);
 
 		return ps;
 	}
@@ -137,6 +132,58 @@ namespace Engine
 	ParticleSystem *ParticleManager::GetParticleSystem(Entity e) const
 	{
 		return particleSystems[map.at(e.id)].ps;
+	}
+
+	void ParticleManager::SetParticleSystemEnabled(Entity e, bool enable)
+	{
+		if (HasParticleSystem(e))
+		{
+			if (enable)
+			{
+				// If we only have one disabled, then there's no need to swap
+				if (disabledParticleSystems == 1)
+				{
+					disabledParticleSystems--;
+					return;
+				}
+				else
+				{
+					// To enable when there's more than 1 entity disabled just swap the disabled entity that is going to be enabled with the first disabled entity
+					unsigned int entityIndex = map.at(e.id);
+					unsigned int firstDisabledEntityIndex = usedParticleSystems - disabledParticleSystems;		// Don't subtract -1 because we want the first disabled entity, otherwise we would get the last enabled entity. Eg 6 used, 2 disabled, 6-2=4 the first disabled entity is at index 4 and the second at 5
+
+					ParticleInstance pi1 = particleSystems[entityIndex];
+					ParticleInstance pi2 = particleSystems[firstDisabledEntityIndex];
+
+					particleSystems[entityIndex] = pi2;
+					particleSystems[firstDisabledEntityIndex] = pi1;
+
+					map[e.id] = firstDisabledEntityIndex;
+					map[pi2.e.id] = entityIndex;
+
+					disabledParticleSystems--;
+				}
+			}
+			else
+			{
+				// Get the indices of the entity to disable and the last entity
+				unsigned int entityIndex = map.at(e.id);
+				unsigned int firstDisabledEntityIndex = usedParticleSystems - disabledParticleSystems - 1;		// Get the first entity disabled or the last entity if none are disabled
+
+				ParticleInstance pi1 = particleSystems[entityIndex];
+				ParticleInstance pi2 = particleSystems[firstDisabledEntityIndex];
+
+				// Now swap the entities
+				particleSystems[entityIndex] = pi2;
+				particleSystems[firstDisabledEntityIndex] = pi1;
+
+				// Swap the indices
+				map[e.id] = firstDisabledEntityIndex;
+				map[pi2.e.id] = entityIndex;
+
+				disabledParticleSystems++;
+			}
+		}
 	}
 
 	void ParticleManager::DuplicateParticleSystem(Entity e, Entity newE)
@@ -180,36 +227,96 @@ namespace Engine
 		pi.e = newE;
 		pi.ps = newPS;
 
+		InsertParticleSystem(pi);
+	}
+
+	void ParticleManager::LoadParticleSystemFromPrefab(Serializer &s, Entity e)
+	{
+		ParticleInstance pi = {};
+		pi.e = e;
+
+		std::string matPath;
+		s.Read(matPath);
+
+		pi.ps = new ParticleSystem();
+		pi.ps->Deserialize(s);
+		pi.ps->Init(game, matPath);
+		pi.ps->Create(pi.ps->GetMaxParticles());
+
+		InsertParticleSystem(pi);
+	}
+
+	void ParticleManager::InsertParticleSystem(const ParticleInstance &pi)
+	{
 		if (usedParticleSystems < particleSystems.size())
 		{
 			particleSystems[usedParticleSystems] = pi;
-			map[newE.id] = usedParticleSystems;
+			map[pi.e.id] = usedParticleSystems;
 		}
 		else
 		{
 			particleSystems.push_back(pi);
-			map[newE.id] = (unsigned int)particleSystems.size() - 1;
+			map[pi.e.id] = (unsigned int)particleSystems.size() - 1;
 		}
 
 		usedParticleSystems++;
 
+		// If there is any disabled entity then we need to swap the new one, which was inserted at the end, with the first disabled entity
+		if (disabledParticleSystems > 0)
+		{
+			// Get the indices of the entity to disable and the last entity
+			unsigned int newEntityIndex = usedParticleSystems - 1;
+			unsigned int firstDisabledEntityIndex = usedParticleSystems - disabledParticleSystems - 1;		// Get the first entity disabled
+
+			ParticleInstance pi1 = particleSystems[newEntityIndex];
+			ParticleInstance pi2 = particleSystems[firstDisabledEntityIndex];
+
+			// Now swap the entities
+			particleSystems[newEntityIndex] = pi2;
+			particleSystems[firstDisabledEntityIndex] = pi1;
+
+			// Swap the indices
+			map[pi.e.id] = firstDisabledEntityIndex;
+			map[pi2.e.id] = newEntityIndex;
+		}
 	}
 
 	void ParticleManager::RemoveParticleSystem(Entity e)
 	{
 		if (HasParticleSystem(e))
 		{
-			unsigned int index = map.at(e.id);
+			// To remove an entity we need to swap it with the last one, but, because there could be disabled entities at the end
+			// we need to first swap the entity to remove with the last ENABLED entity and then if there are any disabled entities, swap the entity to remove again,
+			// but this time with the last disabled entity.
+			unsigned int entityToRemoveIndex = map.at(e.id);
+			unsigned int lastEnabledEntityIndex = usedParticleSystems - disabledParticleSystems - 1;
 
-			ParticleInstance temp = particleSystems[index];
-			ParticleInstance last = particleSystems[particleSystems.size() - 1];
-			particleSystems[particleSystems.size() - 1] = temp;
-			particleSystems[index] = last;
+			ParticleInstance entityToRemovePi = particleSystems[entityToRemoveIndex];
+			ParticleInstance lastEnabledEntityPi = particleSystems[lastEnabledEntityIndex];
 
-			map[last.e.id] = index;
+			// Swap the entity to remove with the last enabled entity
+			particleSystems[lastEnabledEntityIndex] = entityToRemovePi;
+			particleSystems[entityToRemoveIndex] = lastEnabledEntityPi;
+
+			// Now change the index of the last enabled entity, which is now in the spot of the entity to remove, to the entity to remove index
+			map[lastEnabledEntityPi.e.id] = entityToRemoveIndex;
 			map.erase(e.id);
 
-			delete temp.ps;
+			// If there any disabled entities then swap the entity to remove, which is is the spot of the last enabled entity, with the last disabled entity
+			if (disabledParticleSystems > 0)
+			{
+				entityToRemoveIndex = lastEnabledEntityIndex;			// The entity to remove is now in the spot of the last enabled entity
+				unsigned int lastDisabledEntityIndex = usedParticleSystems - 1;
+
+				ParticleInstance lastDisabledEntityPi = particleSystems[lastDisabledEntityIndex];
+
+				particleSystems[lastDisabledEntityIndex] = entityToRemovePi;
+				particleSystems[entityToRemoveIndex] = lastDisabledEntityPi;
+
+				map[lastDisabledEntityPi.e.id] = entityToRemoveIndex;
+			}
+
+			delete entityToRemovePi.ps;
 			usedParticleSystems--;
 		}
 	}
@@ -222,6 +329,7 @@ namespace Engine
 	void ParticleManager::Serialize(Serializer &s)
 	{
 		s.Write(usedParticleSystems);
+		s.Write(disabledParticleSystems);
 		for (unsigned int i = 0; i < usedParticleSystems; i++)
 		{
 			const ParticleInstance &pi = particleSystems[i];
@@ -237,6 +345,7 @@ namespace Engine
 		if (!reload)
 		{
 			s.Read(usedParticleSystems);
+			s.Read(disabledParticleSystems);
 			particleSystems.resize(usedParticleSystems);
 			std::string matPath;
 			for (unsigned int i = 0; i < usedParticleSystems; i++)
@@ -257,6 +366,7 @@ namespace Engine
 		else
 		{
 			s.Read(usedParticleSystems);
+			s.Read(disabledParticleSystems);
 			std::string matPath;
 			for (unsigned int i = 0; i < usedParticleSystems; i++)
 			{

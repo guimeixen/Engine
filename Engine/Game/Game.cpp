@@ -14,6 +14,7 @@
 
 #include "UI/UIManager.h"
 
+#include "Graphics/ParticleSystem.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/Model.h"
 #include "Graphics/Material.h"
@@ -102,6 +103,16 @@ namespace Engine
 		entityManager.AddComponentDuplicateCallback(std::bind(&ParticleManager::DuplicateParticleSystem, &particleManager, std::placeholders::_1, std::placeholders::_2));
 		entityManager.AddComponentDuplicateCallback(std::bind(&LightManager::DuplicatePointLight, &lightManager, std::placeholders::_1, std::placeholders::_2));
 		entityManager.AddComponentDuplicateCallback(std::bind(&UIManager::DuplicateWidget, &uiManager, std::placeholders::_1, std::placeholders::_2));
+
+		entityManager.AddComponentSetEnabledCallback(std::bind(&ScriptManager::SetScriptEnabled, &scriptManager, std::placeholders::_1, std::placeholders::_2));
+		entityManager.AddComponentSetEnabledCallback(std::bind(&LightManager::SetPointLightEnabled, &lightManager, std::placeholders::_1, std::placeholders::_2));
+		entityManager.AddComponentSetEnabledCallback(std::bind(&ModelManager::SetModelEnabled, &modelManager, std::placeholders::_1, std::placeholders::_2));
+		entityManager.AddComponentSetEnabledCallback(std::bind(&ParticleManager::SetParticleSystemEnabled, &particleManager, std::placeholders::_1, std::placeholders::_2));
+		entityManager.AddComponentSetEnabledCallback(std::bind(&PhysicsManager::SetRigidBodyEnabled, &physicsManager, std::placeholders::_1, std::placeholders::_2));
+		entityManager.AddComponentSetEnabledCallback(std::bind(&PhysicsManager::SetColliderEnabled, &physicsManager, std::placeholders::_1, std::placeholders::_2));
+		entityManager.AddComponentSetEnabledCallback(std::bind(&PhysicsManager::SetTriggerEnabled, &physicsManager, std::placeholders::_1, std::placeholders::_2));
+		entityManager.AddComponentSetEnabledCallback(std::bind(&UIManager::SetWidgetEnabled, &uiManager, std::placeholders::_1, std::placeholders::_2));
+		//entityManager.AddComponentSetEnabledCallback(std::bind(&SoundManager::SetSoundSourceEnabled, &soundManager, std::placeholders::_1, std::placeholders::_2));
 
 		fpsCamera = new FPSCamera();
 		fpsCamera->SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
@@ -316,6 +327,8 @@ namespace Engine
 
 			if (terrain)
 				terrain->Save(projectFolder, scenes[currentScene].name);
+
+			renderingPath->SaveRenderingSettings("Data/Levels/" + projectName + '/' + scenes[currentScene].name + ".rendersettings");
 		}
 #endif
 		return true;
@@ -327,6 +340,8 @@ namespace Engine
 			return false;
 		LoadTerrainFromFile(projectName, scenes[currentScene].name);
 		LoadObjectsFromFile(projectName, scenes[currentScene].name);
+
+		renderingPath->LoadRenderingSettings("Data/Levels/" + projectName + '/' + scenes[currentScene].name + ".rendersettings");
 
 		// Fill the scripts properties
 		// Must be done after all objects and widgets are loaded because an object's script might have properties using another object/widget
@@ -672,17 +687,200 @@ namespace Engine
 		return entityManager.Duplicate(e);
 	}
 
+	void Game::SetEntityEnabled(Entity e, bool enable)
+	{
+		entityManager.SetEnabled(e, enable);
+
+		// Also enable/disabled the children
+		Entity child = transformManager.GetFirstChild(e);
+		while (child.IsValid())
+		{
+			entityManager.SetEnabled(child, enable);
+			child = transformManager.GetNextSibling(child);
+		}
+	}
+
 	void Game::DestroyEntity(Entity e)
 	{
 		entityManager.Destroy(e);
 	}
 
-	void Game::SaveEntityPrefab(const std::string &path)
+	void Game::SaveEntityPrefab(Entity e, const std::string &path)
 	{
+		if (!e.IsValid())
+			return;
+
+		Serializer s(fileManager);
+		s.OpenForWriting();
+		SaveEntityPrefabRecursively(s, e);
+		s.Save(path);
+		s.Close();
 	}
 
-	void Game::LoadEntityPrefab(const std::string &path)
+	void Game::SaveEntityPrefabRecursively(Serializer &s, Entity e)
 	{
+		s.Write(transformManager.GetLocalPosition(e));
+		s.Write(transformManager.GetLocalRotation(e));
+		s.Write(transformManager.GetLocalScale(e));
+
+		bool hasScript = scriptManager.HasScript(e);
+		s.Write(hasScript);
+		if (hasScript)
+			scriptManager.GetScript(e)->Serialize(s);
+
+		bool hasRb = physicsManager.HasRigidBody(e);
+		s.Write(hasRb);
+		if (hasRb)
+			physicsManager.GetRigidBody(e)->Serialize(s);
+
+		bool hasCol = physicsManager.HasCollider(e);
+		s.Write(hasCol);
+		if (hasCol)
+			physicsManager.GetCollider(e)->Serialize(s);
+
+		bool hasTr = physicsManager.HasTrigger(e);
+		s.Write(hasTr);
+		if (hasTr)
+			physicsManager.GetTrigger(e)->Serialize(s);
+
+		// Sound source
+
+		if (modelManager.HasAnimatedModel(e) || modelManager.HasModel(e))
+		{
+			s.Write(true);
+			modelManager.SaveModelPrefab(s, e);
+		}
+		else
+		{
+			s.Write(false);
+		}
+
+		bool hasPs = particleManager.HasParticleSystem(e);
+		s.Write(hasPs);
+		if (hasPs)
+			particleManager.GetParticleSystem(e)->Serialize(s);
+
+		bool hasPl = lightManager.HasPointLight(e);
+		s.Write(hasPl);
+		if (hasPl)
+			lightManager.GetPointLight(e)->Serialize(s);
+
+		bool hasWidget = uiManager.HasWidget(e);
+		s.Write(hasWidget);
+		if (hasWidget)
+			uiManager.GetWidget(e)->Serialize(s);
+
+		// Loop through every children
+		s.Write(transformManager.HasChildren(e));
+
+		// First save the number of children and then the actual children
+		unsigned short numChildren = 0;
+		Entity child = transformManager.GetFirstChild(e);
+		while (child.IsValid())
+		{
+			numChildren++;
+			child = transformManager.GetNextSibling(child);
+		}
+		s.Write(numChildren);
+
+		child = transformManager.GetFirstChild(e);
+		while (child.IsValid())
+		{
+			SaveEntityPrefabRecursively(s, child);
+			child = transformManager.GetNextSibling(child);
+		}
+	}
+
+	Entity Game::LoadEntityPrefab(const std::string &path)
+	{
+		Entity e = entityManager.Create();
+		transformManager.AddTransform(e);
+
+		Serializer s(fileManager);
+		s.OpenForReading(path);
+
+		if (s.IsOpen())
+		{
+			LoadEntityPrefabRecursively(s, e);
+			s.Close();
+		}
+		else
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to load prefab: %s\n", path.c_str());
+		}
+
+		// Place the entity in front of the camera
+#ifdef EDITOR
+		transformManager.SetLocalPosition(e, editorCam.GetPosition() + editorCam.GetFront() * 4.0f);
+#endif
+		
+		return e;
+	}
+
+	void Game::LoadEntityPrefabRecursively(Serializer &s, Entity e)
+	{
+		glm::vec3 localPos, localScale;
+		glm::quat localRot;
+
+		s.Read(localPos);
+		s.Read(localRot);
+		s.Read(localScale);
+
+		transformManager.SetLocalPosition(e, localPos);
+		transformManager.SetLocalRotation(e, localRot);
+		transformManager.SetLocalScale(e, localScale);
+
+		bool hasScript, hasRb, hasCol, hasTr, hasModel, hasPs, hasPl, hasWidget = false;
+
+		s.Read(hasScript);
+		if (hasScript)
+			scriptManager.LoadFromPrefab(s, e);
+
+		s.Read(hasRb);
+		if (hasRb)
+			physicsManager.LoadRigidBodyFromPrefab(s, e);
+
+		s.Read(hasCol);
+		if (hasCol)
+			physicsManager.LoadColliderFromPrefab(s, e);
+
+		s.Read(hasTr);
+		if (hasTr)
+			physicsManager.LoadTriggerFromPrefab(s, e);
+
+		s.Read(hasModel);
+		if (hasModel)
+			modelManager.LoadModelPrefab(s, e);
+
+		s.Read(hasPs);
+		if (hasPs)
+			particleManager.LoadParticleSystemFromPrefab(s, e);
+
+		s.Read(hasPl);
+		if (hasPl)
+			lightManager.LoadPointLightFromPrefab(s, e);
+
+		s.Read(hasWidget);
+		if (hasWidget)
+			uiManager.LoadWidgetFromPrefab(s, e);
+
+		bool hasChildren = false;
+		s.Read(hasChildren);
+
+		if (hasChildren)
+		{
+			unsigned short numChildren = 0;
+			s.Read(numChildren);
+
+			for (unsigned short i = 0; i < numChildren; i++)
+			{
+				Entity child = entityManager.Create();
+				transformManager.AddTransform(child);
+				transformManager.SetParent(child, e);
+
+				LoadEntityPrefabRecursively(s, child);		
+			}
+		}
 	}
 
 	void Game::AddTerrain(const TerrainInfo &info)
