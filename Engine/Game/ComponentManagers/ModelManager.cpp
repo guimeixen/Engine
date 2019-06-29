@@ -1018,8 +1018,19 @@ namespace Engine
 		}
 	}
 
-	void ModelManager::Serialize(Serializer &s)
+	void ModelManager::Serialize(Serializer &s, bool playMode)
 	{
+		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
+		if (playMode)
+		{
+			s.Write((unsigned int)map.size());
+			for (auto it = map.begin(); it != map.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+		}
+
 		s.Write(uniqueModels.size());
 		for (auto it = uniqueModels.begin(); it != uniqueModels.end(); it++)
 		{
@@ -1062,14 +1073,14 @@ namespace Engine
 			{
 				mi.model->Serialize(s);
 			}
-		}	
+		}
 	}
 
-	void ModelManager::Deserialize(Serializer &s, bool reload)
+	void ModelManager::Deserialize(Serializer &s, bool playMode)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing model manager\n");
 
-		if (!reload)
+		if (!playMode)
 		{
 			unsigned int uniqueModelsCount = 0;
 			s.Read(uniqueModelsCount);
@@ -1165,6 +1176,19 @@ namespace Engine
 		}
 		else
 		{
+			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
+			unsigned int mapSize = 0;
+			s.Read(mapSize);
+
+			unsigned int eid, idx;
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				map[eid] = idx;
+			}
+
+
 			unsigned int uniqueModelsCount = 0;
 			s.Read(uniqueModelsCount);
 			for (auto it = uniqueModels.begin(); it != uniqueModels.end(); it++)
@@ -1184,9 +1208,13 @@ namespace Engine
 			s.Read(disabledModels);
 
 			for (unsigned int i = 0; i < usedModels; i++)
-			{
-				ModelInstance &mi = models[i];
-				s.Read(mi.e.id);
+			{		
+				s.Read(eid);
+				unsigned int idx = map[eid];
+
+				ModelInstance &mi = models[idx];			// Check if idx is needed
+				mi.e.id = eid;
+				//s.Read(mi.e.id);
 
 				int type = 0;
 				s.Read(type);

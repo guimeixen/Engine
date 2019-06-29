@@ -108,7 +108,7 @@ namespace Engine
 			.endClass()
 
 			.beginClass<ScriptManager>("ScriptManager")
-			.addFunction("getScript", &ScriptManager::GetScript)
+			.addFunction("getScript", &ScriptManager::GetScriptEnvironment)
 			.endClass()
 
 			.beginClass<Collider>("Collider")
@@ -191,10 +191,6 @@ namespace Engine
 
 			.beginClass<UIManager>("UI")
 			.addFunction("showCursor", &UIManager::ShowCursor)
-			.endClass()
-
-			.beginClass<Script>("Script")
-			.addFunction("getEnvironment", &Script::GetEnvironment)
 			.endClass()
 
 			.beginClass<Texture>("Texture")			// Required to be able to load a texture through Lua
@@ -653,8 +649,24 @@ namespace Engine
 		return scripts[map.at(e.id)].s;
 	}
 
-	void ScriptManager::Serialize(Serializer &s) const
+	luabridge::LuaRef ScriptManager::GetScriptEnvironment(Entity e) const
 	{
+		return GetScript(e)->GetEnvironment();
+	}
+
+	void ScriptManager::Serialize(Serializer &s, bool playMode) const
+	{
+		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
+		if (playMode)
+		{
+			s.Write((unsigned int)map.size());
+			for (auto it = map.begin(); it != map.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+		}
+
 		s.Write(usedScripts);
 		s.Write(disabledScripts);
 		for (unsigned int i = 0; i < usedScripts; i++)
@@ -662,14 +674,14 @@ namespace Engine
 			const ScriptInstance &si = scripts[i];
 			s.Write(si.e.id);
 			si.s->Serialize(s);
-		}
+		}	
 	}
 
-	void ScriptManager::Deserialize(Serializer &s, bool reload)
+	void ScriptManager::Deserialize(Serializer &s, bool playMode)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing script manager\n");
 
-		if (!reload)
+		if (!playMode)
 		{
 			s.Read(usedScripts);
 			s.Read(disabledScripts);
@@ -697,12 +709,28 @@ namespace Engine
 		}
 		else
 		{
+			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
+			unsigned int mapSize = 0;
+			s.Read(mapSize);
+
+			unsigned int eid, idx;
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				map[eid] = idx;
+			}
+
 			s.Read(usedScripts);
 			s.Read(disabledScripts);
+
 			for (unsigned int i = 0; i < usedScripts; i++)
 			{
-				ScriptInstance &si = scripts[i];
-				s.Read(si.e.id);
+				s.Read(eid);
+				unsigned int idx = map[eid];
+
+				ScriptInstance &si = scripts[idx];
+				si.e.id = eid;
 				std::string path;
 				s.Read(path);
 
@@ -711,7 +739,7 @@ namespace Engine
 				si.s->CallOnAddEditorProperty(si.e);
 				si.s->RemovedUnusedProperties();
 #endif
-			}
+			}	
 		}
 	}
 

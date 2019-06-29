@@ -410,8 +410,19 @@ namespace Engine
 		return soundSources[map.at(e.id)].ss;
 	}
 
-	void SoundManager::Serialize(Serializer &s) const
+	void SoundManager::Serialize(Serializer &s, bool playMode) const
 	{
+		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
+		if (playMode)
+		{
+			s.Write((unsigned int)map.size());
+			for (auto it = map.begin(); it != map.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+		}
+
 		s.Write(usedSoundSources);
 		s.Write(disabledSoundSources);
 		for (unsigned int i = 0; i < usedSoundSources; i++)
@@ -419,14 +430,14 @@ namespace Engine
 			const SoundSourceInstance &ssi = soundSources[i];
 			s.Write(ssi.e.id);
 			ssi.ss->Serialize(s);
-		}
+		}	
 	}
 
-	void SoundManager::Deserialize(Serializer &s, bool reload)
+	void SoundManager::Deserialize(Serializer &s, bool playMode)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing sound manager\n");
 
-		if (!reload)
+		if (!playMode)
 		{
 			s.Read(usedSoundSources);
 			s.Read(disabledSoundSources);
@@ -446,15 +457,31 @@ namespace Engine
 		}
 		else
 		{
+			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
+			unsigned int mapSize = 0;
+			s.Read(mapSize);
+
+			unsigned int eid, idx;
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				map[eid] = idx;
+			}
+
 			s.Read(usedSoundSources);
 			s.Read(disabledSoundSources);
+
 			for (unsigned int i = 0; i < usedSoundSources; i++)
-			{
-				SoundSourceInstance &ssi = soundSources[i];
-				s.Read(ssi.e.id);
+			{		
+				s.Read(eid);
+				unsigned int idx = map[eid];
+
+				SoundSourceInstance &ssi = soundSources[idx];
+				ssi.e.id = eid;
 				ssi.ss->Deserialize(s);
 				ReloadSound(ssi.ss);
-			}
+			}		
 		}
 	}
 

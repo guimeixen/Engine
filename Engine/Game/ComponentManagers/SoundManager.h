@@ -45,8 +45,8 @@ namespace Engine
 		bool HasSoundSource(Entity e) const;
 		SoundSource *GetSoundSource(Entity e) const;
 
-		void Serialize(Serializer &s) const;
-		void Deserialize(Serializer &s, bool reload = false);
+		void Serialize(Serializer &s, bool playMode = false) const;
+		void Deserialize(Serializer &s, bool playMode = false);
 
 		// Script functions
 		//FMOD::Sound *LoadSoundEffect(const std::string &path);		// Path is relative to the project folder

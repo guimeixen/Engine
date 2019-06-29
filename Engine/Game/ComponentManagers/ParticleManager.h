@@ -35,8 +35,8 @@ namespace Engine
 		void RemoveParticleSystem(Entity e);
 		bool HasParticleSystem(Entity e) const;
 
-		void Serialize(Serializer &s);
-		void Deserialize(Serializer &s, bool reload = false);
+		void Serialize(Serializer &s, bool playMode = false);
+		void Deserialize(Serializer &s, bool playMode = false);
 
 	private:
 		void InsertParticleSystem(const ParticleInstance &pi);

@@ -312,8 +312,19 @@ namespace Engine
 		return pointLights[plMap.at(e.id)].pl;
 	}
 
-	void LightManager::Serialize(Serializer &s)
+	void LightManager::Serialize(Serializer &s, bool playMode)
 	{
+		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
+		if (playMode)
+		{
+			s.Write((unsigned int)plMap.size());
+			for (auto it = plMap.begin(); it != plMap.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+		}
+
 		s.Write(usedPointLights);
 		s.Write(disabledPointLights);
 		for (unsigned int i = 0; i < usedPointLights; i++)
@@ -321,14 +332,14 @@ namespace Engine
 			const PointLightInstance &pli = pointLights[i];
 			s.Write(pli.e.id);
 			pli.pl->Serialize(s);
-		}
+		}	
 	}
 
-	void LightManager::Deserialize(Serializer &s, bool reload)
+	void LightManager::Deserialize(Serializer &s, bool playMode)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing light manager\n");
 
-		if (!reload)
+		if (!playMode)
 		{
 			s.Read(usedPointLights);
 			s.Read(disabledPointLights);
@@ -346,12 +357,28 @@ namespace Engine
 		}
 		else
 		{
+			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
+			unsigned int mapSize = 0;
+			s.Read(mapSize);
+
+			unsigned int eid, idx;
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				plMap[eid] = idx;
+			}
+
 			s.Read(usedPointLights);
 			s.Read(disabledPointLights);
+
 			for (unsigned int i = 0; i < usedPointLights; i++)
 			{
-				PointLightInstance &pli = pointLights[i];
-				s.Read(pli.e.id);
+				s.Read(eid);
+				unsigned int idx = plMap[eid];
+
+				PointLightInstance &pli = pointLights[idx];
+				pli.e.id = eid;
 				pli.pl->Deserialize(s);
 			}
 		}

@@ -326,8 +326,19 @@ namespace Engine
 		return map.find(e.id) != map.end();
 	}
 
-	void ParticleManager::Serialize(Serializer &s)
+	void ParticleManager::Serialize(Serializer &s, bool playMode)
 	{
+		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
+		if (playMode)
+		{
+			s.Write((unsigned int)map.size());
+			for (auto it = map.begin(); it != map.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+		}
+
 		s.Write(usedParticleSystems);
 		s.Write(disabledParticleSystems);
 		for (unsigned int i = 0; i < usedParticleSystems; i++)
@@ -338,11 +349,11 @@ namespace Engine
 		}
 	}
 
-	void ParticleManager::Deserialize(Serializer &s, bool reload)
+	void ParticleManager::Deserialize(Serializer &s, bool playMode)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing particle manager\n");
 
-		if (!reload)
+		if (!playMode)
 		{
 			s.Read(usedParticleSystems);
 			s.Read(disabledParticleSystems);
@@ -365,15 +376,32 @@ namespace Engine
 		}
 		else
 		{
+			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
+			unsigned int mapSize = 0;
+			s.Read(mapSize);
+
+			unsigned int eid, idx;
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				map[eid] = idx;
+			}
+
 			s.Read(usedParticleSystems);
 			s.Read(disabledParticleSystems);
+
 			std::string matPath;
+
 			for (unsigned int i = 0; i < usedParticleSystems; i++)
 			{
-				ParticleInstance &pi = particleSystems[i];
-				s.Read(pi.e.id);
+				s.Read(eid);
+				unsigned int idx = map[eid];
+
+				ParticleInstance &pi = particleSystems[idx];
+				pi.e.id = eid;
 				pi.ps->Deserialize(s);
-			}
+			}		
 		}
 	}
 }

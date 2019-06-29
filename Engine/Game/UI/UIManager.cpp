@@ -576,8 +576,19 @@ namespace Engine
 		return { std::numeric_limits<unsigned int>::max() };
 	}
 
-	void UIManager::Serialize(Serializer &s) const
+	void UIManager::Serialize(Serializer &s, bool playMode) const
 	{
+		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
+		if (playMode)
+		{
+			s.Write((unsigned int)map.size());
+			for (auto it = map.begin(); it != map.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+		}
+
 		s.Write(usedWidgets);
 		s.Write(disabledWidgets);
 		for (unsigned int i = 0; i < usedWidgets; i++)
@@ -585,16 +596,16 @@ namespace Engine
 			const WidgetInstance &wi = widgets[i];
 			s.Write(wi.e.id);
 			widgets[i].w->Serialize(s);
-		}
+		}	
 	}
 
-	void UIManager::Deserialize(Serializer &s, bool reload)
+	void UIManager::Deserialize(Serializer &s, bool playMode)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing ui manager\n");
 
 		Renderer *renderer = game->GetRenderer();
 
-		if (!reload)
+		if (!playMode)
 		{
 			s.Read(usedWidgets);
 			s.Read(disabledWidgets);
@@ -645,12 +656,28 @@ namespace Engine
 		}
 		else
 		{
+			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
+			unsigned int mapSize = 0;
+			s.Read(mapSize);
+
+			unsigned int eid, idx;
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				map[eid] = idx;
+			}
+
 			s.Read(usedWidgets);
 			s.Read(disabledWidgets);
+
 			for (unsigned int i = 0; i < usedWidgets; i++)
-			{
-				WidgetInstance &wi = widgets[i];
-				s.Read(wi.e.id);
+			{	
+				s.Read(eid);
+				unsigned int idx = map[eid];
+
+				WidgetInstance &wi = widgets[idx];
+				wi.e.id = eid;
 
 				int type = 0;
 				s.Read(type);

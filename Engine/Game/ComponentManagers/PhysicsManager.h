@@ -136,8 +136,8 @@ namespace Engine
 		//btCollisionWorld::ClosestRayResultCallback PerformRaycast(const glm::vec3 &origin, const glm::vec3 &dir, float maxDistance = 50.0f);
 		bool CheckSphere(const btVector3 &center, float radius);
 
-		void Serialize(Serializer &s) const;
-		void Deserialize(Serializer &s, bool reload = false);
+		void Serialize(Serializer &s, bool playMode = false) const;
+		void Deserialize(Serializer &s, bool playMode = false);
 
 	private:
 		int RecreateTerrainShape(int shapeID, int newResolution, const void *newData, float newMaxHeight);

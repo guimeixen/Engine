@@ -62,8 +62,8 @@ namespace Engine
 		const std::map<unsigned int, Animation*> &GetAnimations() const { return animations; }
 		const std::vector<ModelInstance> &GetModels() const { return models; }
 
-		void Serialize(Serializer &s);
-		void Deserialize(Serializer &s, bool reload = false);
+		void Serialize(Serializer &s, bool playMode = false);
+		void Deserialize(Serializer &s, bool playMode = false);
 
 	private:
 		Model *LoadModel(const std::string &path, const std::vector<std::string> &matNames, bool isAnimated, bool isInstanced = false, bool loadVertexColors = false);

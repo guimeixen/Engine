@@ -53,8 +53,8 @@ namespace Engine
 
 		PointLight *CastToPointLight(Light *light) { if (!light) return nullptr; if (light->type == LightType::POINT) { return static_cast<PointLight*>(light); } else { return nullptr; } }
 
-		void Serialize(Serializer &s);
-		void Deserialize(Serializer &s, bool reload = false);
+		void Serialize(Serializer &s, bool playMode = false);
+		void Deserialize(Serializer &s, bool playMode = false);
 
 	private:
 		void InsertPointLightInstance(const PointLightInstance &pli);

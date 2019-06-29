@@ -568,13 +568,13 @@ namespace Engine
 
 		entityManager.Serialize(s);
 		transformManager.Serialize(s);
-		lightManager.Serialize(s);
-		modelManager.Serialize(s);
-		particleManager.Serialize(s);
-		soundManager.Serialize(s);
-		scriptManager.Serialize(s);
-		physicsManager.Serialize(s);
-		uiManager.Serialize(s);
+		lightManager.Serialize(s, true);
+		modelManager.Serialize(s, true);
+		particleManager.Serialize(s, true);
+		soundManager.Serialize(s, true);
+		scriptManager.Serialize(s, true);
+		physicsManager.Serialize(s, true);
+		uiManager.Serialize(s, true);
 
 		s.Save("Data/temp.bin");
 		s.Close();

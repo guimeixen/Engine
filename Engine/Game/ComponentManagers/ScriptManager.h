@@ -37,9 +37,10 @@ namespace Engine
 
 		bool HasScript(Entity e) const;
 		Script *GetScript(Entity e) const;
+		luabridge::LuaRef GetScriptEnvironment(Entity e) const;
 
-		void Serialize(Serializer &s) const;
-		void Deserialize(Serializer &s, bool reload = false);
+		void Serialize(Serializer &s, bool playMode = false) const;
+		void Deserialize(Serializer &s, bool playMode = false);
 
 		template <class T>
 		inline void Call(const std::string &tableName, const std::string &functionName, T t)

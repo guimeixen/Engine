@@ -1496,8 +1496,34 @@ namespace Engine
 		return overlaps;
 	}
 
-	void PhysicsManager::Serialize(Serializer &s) const
+	void PhysicsManager::Serialize(Serializer &s, bool playMode) const
 	{
+		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
+		if (playMode)
+		{
+			s.Write((unsigned int)rbMap.size());
+			for (auto it = rbMap.begin(); it != rbMap.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+
+			s.Write((unsigned int)colMap.size());
+			for (auto it = colMap.begin(); it != colMap.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+
+			s.Write((unsigned int)trMap.size());
+			for (auto it = trMap.begin(); it != trMap.end(); it++)
+			{
+				s.Write(it->first);
+				s.Write(it->second);
+			}
+		}
+
+
 		s.Write(usedRigidBodies);
 		s.Write(disabledRigidBodies);
 		for (unsigned int i = 0; i < usedRigidBodies; i++)
@@ -1524,15 +1550,16 @@ namespace Engine
 		}
 	}
 
-	void PhysicsManager::Deserialize(Serializer &s, bool reload)
+	void PhysicsManager::Deserialize(Serializer &s, bool playMode)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing physics manager\n");
 
-		if (!reload)
+		if (!playMode)
 		{
 			s.Read(usedRigidBodies);
 			s.Read(disabledRigidBodies);
 			rigidBodies.resize(usedRigidBodies);
+
 			for (unsigned int i = 0; i < usedRigidBodies; i++)
 			{
 				RigidBodyInstance rbi;
@@ -1558,6 +1585,7 @@ namespace Engine
 			s.Read(usedColliders);
 			s.Read(disabledColliders);
 			colliders.resize(usedColliders);
+
 			for (unsigned int i = 0; i < usedColliders; i++)
 			{
 				ColliderInstance ci;
@@ -1583,6 +1611,7 @@ namespace Engine
 			s.Read(usedTriggers);
 			s.Read(disabledTriggers);
 			triggers.resize(usedTriggers);
+
 			for (unsigned int i = 0; i < usedTriggers; i++)
 			{
 				TriggerInstance ti;
@@ -1610,12 +1639,46 @@ namespace Engine
 		}
 		else
 		{
+			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
+			unsigned int mapSize = 0;
+			s.Read(mapSize);
+
+			unsigned int eid, idx;
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				rbMap[eid] = idx;
+			}
+
+			s.Read(mapSize);
+
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				colMap[eid] = idx;
+			}
+
+			s.Read(mapSize);
+
+			for (unsigned int i = 0; i < mapSize; i++)
+			{
+				s.Read(eid);
+				s.Read(idx);
+				trMap[eid] = idx;
+			}
+
 			s.Read(usedRigidBodies);
 			s.Read(disabledRigidBodies);
+			
 			for (unsigned int i = 0; i < usedRigidBodies; i++)
 			{
-				RigidBodyInstance &rbi = rigidBodies[i];
-				s.Read(rbi.e.id);
+				s.Read(eid);
+				unsigned int idx = rbMap[eid];
+
+				RigidBodyInstance &rbi = rigidBodies[idx];
+				rbi.e.id = eid;
 				rbi.rb->Deserialize(*this, s);
 
 				glm::mat4 m = transformManager->GetLocalToWorld(rbi.e);
@@ -1626,20 +1689,30 @@ namespace Engine
 				rbi.rb->SetTransform(m);
 				//rbi.rb->SetTransform(transformManager->GetLocalToWorld(rbi.e));
 			}
+
 			s.Read(usedColliders);
 			s.Read(disabledColliders);
+
 			for (unsigned int i = 0; i < usedColliders; i++)
 			{
-				ColliderInstance &ci = colliders[i];
-				s.Read(ci.e.id);
+				s.Read(eid);
+				unsigned int idx = colMap[eid];
+
+				ColliderInstance &ci = colliders[idx];
+				ci.e.id = eid;
 				ci.col->Deserialize(*this, s);
 			}
+
 			s.Read(usedTriggers);
 			s.Read(disabledTriggers);
+
 			for (unsigned int i = 0; i < usedTriggers; i++)
 			{
-				TriggerInstance &ti = triggers[i];
-				s.Read(ti.e.id);
+				s.Read(eid);
+				unsigned int idx = trMap[eid];
+
+				TriggerInstance &ti = triggers[idx];
+				ti.e.id = eid;
 				ti.tr->Deserialize(*this, s);
 			}
 		}

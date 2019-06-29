@@ -57,8 +57,8 @@ namespace Engine
 		const glm::vec2 &GetCursorPos() const { return cursorPos; }
 		void SetCursorPos(const glm::vec2 &pos) { cursorPos = pos; }
 
-		void Serialize(Serializer &s) const;
-		void Deserialize(Serializer &s, bool reload = false);
+		void Serialize(Serializer &s, bool playMode = false) const;
+		void Deserialize(Serializer &s, bool playMode = false);
 
 	private:
 		void InsertWidgetInstance(const WidgetInstance &wi);
