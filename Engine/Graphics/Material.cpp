@@ -516,8 +516,13 @@ namespace Engine
 
 		Log::Print(LogLevel::LEVEL_INFO, "Loading material instance textures\n");
 
+		// TODO : instead of adding this limit load the textures for the texturePaths we have and for the missing one load the default white texture
+		// Make sure that we don't load more textures than we can
+		// We could have space for 2 texture but missing a texture path or we could have space for only 1 texture but have 2 texture paths
+		size_t texturesToLoad = mi->textures.size() > texturePaths.size() ? texturePaths.size() : mi->textures.size();
+
 		size_t textureIndex = 0;
-		for (size_t i = 0; i < mi->textures.size(); i++)
+		for (size_t i = 0; i < texturesToLoad; i++)
 		{
 			if (mi->baseMaterial->texturesInfo[i].type == TextureType::TEXTURE_CUBE)
 			{

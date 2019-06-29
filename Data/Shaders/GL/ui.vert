@@ -8,7 +8,7 @@ uniform mat4 toWorldSpace;
 
 #include include/ubos.glsl
 
-layout(std140, binding = 3) uniform ObjectUBO
+layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
 {
 	vec4 color;
 	float depth;

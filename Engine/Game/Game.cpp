@@ -67,7 +67,7 @@ namespace Engine
 		transformManager.Init(allocator, 50);
 		scriptManager.Init(this);
 		aiSystem.Init(this);
-		physicsManager.Init(&transformManager);
+		physicsManager.Init(this);
 		soundManager.Init(this, &transformManager);
 		modelManager.Init(this, 50);	
 		particleManager.Init(this);		

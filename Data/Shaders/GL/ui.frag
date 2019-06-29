@@ -7,7 +7,7 @@ layout(location = 0) in vec2 uv;
 
 layout(binding = FIRST_SLOT) uniform sampler2D tex;
 
-layout(std140, binding = 3) uniform ObjectUBO
+layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
 {
 	vec4 color;
 	float depth;

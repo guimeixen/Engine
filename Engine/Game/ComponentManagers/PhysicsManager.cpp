@@ -7,7 +7,7 @@
 #include "Physics/Trigger.h"
 #include "ScriptManager.h"
 #include "Graphics/Effects/DebugDrawManager.h"
-#include "TransformManager.h"
+#include "Game/Game.h"
 
 #include "include/bullet/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 
@@ -29,12 +29,13 @@ namespace Engine
 		disabledTriggers = 0;
 	}
 
-	void PhysicsManager::Init(TransformManager *transformManager)
+	void PhysicsManager::Init(Game *game)
 	{
 		if (isInit)
 			return;
 
-		this->transformManager = transformManager;
+		this->game = game;
+		this->transformManager = &game->GetTransformManager();
 
 		broadphase = new btDbvtBroadphase();
 		collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -546,7 +547,13 @@ namespace Engine
 		ti.tr = new Trigger();
 		ti.tr->Deserialize(*this, s);
 		ti.tr->GetHandle()->setUserIndex((int)ti.e.id);
-		ti.tr->SetTransform(transformManager->GetLocalToWorld(ti.e));			// Set the triggers transform otherwise it will cause all of them to call OnTriggerEnter,etc because they all get initialized at (0,0,0)
+
+		glm::mat4 m = transformManager->GetLocalToWorld(ti.e);
+		m[0] = glm::normalize(m[0]);				// Set scale to 1. Collider size is set through it's own size property and not by the entity's scale
+		m[1] = glm::normalize(m[1]);
+		m[2] = glm::normalize(m[2]);
+
+		ti.tr->SetTransform(m);			// Set the triggers transform otherwise it will cause all of them to call OnTriggerEnter,etc because they all get initialized at (0,0,0)
 
 		dynamicsWorld->addCollisionObject(ti.tr->GetHandle(), Layer::DEFAULT, Layer::DEFAULT | Layer::OBSTACLE | Layer::ENEMY);
 
@@ -1547,7 +1554,7 @@ namespace Engine
 				rigidBodies[i] = rbi;
 				rbMap[rbi.e.id] = i;
 			}
-
+			
 			s.Read(usedColliders);
 			s.Read(disabledColliders);
 			colliders.resize(usedColliders);
@@ -1583,10 +1590,19 @@ namespace Engine
 
 				ti.tr = new Trigger();
 				ti.tr->Deserialize(*this, s);
+				
+				glm::mat4 m = transformManager->GetLocalToWorld(ti.e);
+				m[0] = glm::normalize(m[0]);				// Set scale to 1. Collider size is set through it's own size property and not by the entity's scale
+				m[1] = glm::normalize(m[1]);
+				m[2] = glm::normalize(m[2]);
+
+				ti.tr->SetTransform(m);			// Set the triggers transform otherwise it will cause all of them to call OnTriggerEnter,etc because they all get initialized at (0,0,0)
 				ti.tr->GetHandle()->setUserIndex((int)ti.e.id);
-				ti.tr->SetTransform(transformManager->GetLocalToWorld(ti.e));			// Set the triggers transform otherwise it will cause all of them to call OnTriggerEnter,etc because they all get initialized at (0,0,0)
 
 				dynamicsWorld->addCollisionObject(ti.tr->GetHandle(), Layer::DEFAULT, Layer::DEFAULT | Layer::OBSTACLE | Layer::ENEMY);
+
+				if (game->GetScriptManager().HasScript(ti.e))
+					ti.tr->SetScript(game->GetScriptManager().GetScript(ti.e));
 
 				triggers[i] = ti;
 				trMap[ti.e.id] = i;
@@ -1601,7 +1617,14 @@ namespace Engine
 				RigidBodyInstance &rbi = rigidBodies[i];
 				s.Read(rbi.e.id);
 				rbi.rb->Deserialize(*this, s);
-				rbi.rb->SetTransform(transformManager->GetLocalToWorld(rbi.e));
+
+				glm::mat4 m = transformManager->GetLocalToWorld(rbi.e);
+				m[0] = glm::normalize(m[0]);				// Set scale to 1. Collider size is set through it's own size property and not by the entity's scale
+				m[1] = glm::normalize(m[1]);
+				m[2] = glm::normalize(m[2]);
+
+				rbi.rb->SetTransform(m);
+				//rbi.rb->SetTransform(transformManager->GetLocalToWorld(rbi.e));
 			}
 			s.Read(usedColliders);
 			s.Read(disabledColliders);

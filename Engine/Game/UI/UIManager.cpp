@@ -216,9 +216,9 @@ namespace Engine
 
 		TextureParams p = { TextureWrap::REPEAT, TextureFilter::LINEAR, TextureFormat::RGBA, TextureInternalFormat::SRGB8_ALPHA8, TextureDataType::UNSIGNED_BYTE, true, false };
 
-		button->SetIdleTexture(game->GetRenderer()->CreateTexture2D("Data/Resources/Textures/white.dds", p));
-		button->SetHoverTexture(game->GetRenderer()->CreateTexture2D("Data/Resources/Textures/light_gray.dds", p));
-		button->SetPressedTexture(game->GetRenderer()->CreateTexture2D("Data/Resources/Textures/gray.dds", p));
+		button->SetIdleTexture(game->GetRenderer()->CreateTexture2D("Data/Textures/white.png", p));
+		button->SetHoverTexture(game->GetRenderer()->CreateTexture2D("Data/Textures/light_gray.png", p));
+		button->SetPressedTexture(game->GetRenderer()->CreateTexture2D("Data/Textures/gray.png", p));
 
 		WidgetInstance wi;
 		wi.e = e;
@@ -259,7 +259,7 @@ namespace Engine
 		TextureParams p = { TextureWrap::REPEAT, TextureFilter::LINEAR, TextureFormat::RGBA, TextureInternalFormat::SRGB8_ALPHA8, TextureDataType::UNSIGNED_BYTE, true, false };	
 		image->SetRectSize(glm::vec2(100.0f, 100.0f));
 		image->SetMaterial(game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
-		image->SetTexture(game->GetRenderer()->CreateTexture2D("Data/Resources/Textures/white.dds", p));
+		image->SetTexture(game->GetRenderer()->CreateTexture2D("Data/Textures/white.png", p));
 	
 		WidgetInstance wi;
 		wi.e = e;
@@ -283,7 +283,7 @@ namespace Engine
 
 		TextureParams p = { TextureWrap::REPEAT, TextureFilter::LINEAR, TextureFormat::RGBA, TextureInternalFormat::SRGB8_ALPHA8, TextureDataType::UNSIGNED_BYTE, true, false };
 
-		editText->SetBackgroundTexture(game->GetRenderer()->CreateTexture2D("Data/Resources/Textures/white.dds", p));
+		editText->SetBackgroundTexture(game->GetRenderer()->CreateTexture2D("Data/Textures/white.png", p));
 
 		WidgetInstance wi;
 		wi.e = e;

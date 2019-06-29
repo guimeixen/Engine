@@ -17,6 +17,7 @@ namespace Engine
 	class Trigger;
 	class DebugDrawManager;
 	class TransformManager;
+	class Game;
 
 	struct RigidBodyInstance
 	{
@@ -64,7 +65,7 @@ namespace Engine
 	public:
 		PhysicsManager();
 
-		void Init(TransformManager *transformManager);
+		void Init(Game *game);
 		void Play();
 		void Stop();
 		void Simulate(float dt);
@@ -147,6 +148,7 @@ namespace Engine
 
 	private:
 		bool isInit;
+		Game *game;
 		btBroadphaseInterface* broadphase;
 		btDefaultCollisionConfiguration* collisionConfiguration;
 		btCollisionDispatcher* dispatcher;
