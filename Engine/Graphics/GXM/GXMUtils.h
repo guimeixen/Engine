@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Graphics\MaterialInfo.h"
+#include "Graphics/MaterialInfo.h"
+#include "Graphics/Texture.h"
 
 #include "psp2\gxm.h"
 #include "psp2\kernel\sysmem.h"
@@ -25,5 +26,6 @@ namespace Engine
 		unsigned int GetDepthFunc(const std::string &func);
 		unsigned int GetCullMode(const std::string &mode);
 		unsigned int GetFrontFace(const std::string &face);
+		bool IsDepthTexture(TextureInternalFormat format);
 	}
 }

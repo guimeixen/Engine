@@ -41,6 +41,7 @@ namespace Engine
 
 	struct alignas(16) DirLightUBOSimple
 	{
+		glm::mat4 lightSpaceMatrix;
 		glm::vec4 dirAndIntensity;
 		glm::vec4 dirLightColor;
 	};

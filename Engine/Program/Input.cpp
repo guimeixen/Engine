@@ -300,6 +300,7 @@ namespace Engine
 
 	void InputManager::UpdateVitaButtons(int buttons)
 	{
+		lastButtons = this->buttons;
 		this->buttons = buttons;
 	}
 
@@ -322,6 +323,14 @@ namespace Engine
 	bool InputManager::IsVitaButtonDown(int button)
 	{
 		return buttons & button;
+	}
+
+	bool InputManager::WasVitaButtonReleased(int button)
+	{
+		if ((lastButtons & button) == true && (buttons & button) == false)
+			return true;
+
+		return false;
 	}
 
 	float InputManager::GetAxis(const std::string &name)

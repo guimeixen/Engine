@@ -10,15 +10,15 @@ namespace Engine
 	{
 		SceGxmColorSurface surface;
 		SceUID uid;
-		void *addr;
-		SceGxmSyncObject *syncObj;
+		void *data;
+		//SceGxmSyncObject *syncObj;
 	};
 
 	struct DepthStencilSurface
 	{
 		SceGxmDepthStencilSurface surface;
 		SceUID uid;
-		void *addr;
+		void *data;
 	};
 
 	class GXMFramebuffer : public Framebuffer
@@ -33,8 +33,7 @@ namespace Engine
 
 		const ColorSurface &GetColorSurface(unsigned int index) const { return colorSurfaces[index]; }
 		const DepthStencilSurface &GetDepthStencilSurface() const { return depthStencilSurface; }
-
-		SceGxmRenderTarget *GetRTHandle() const { return renderTarget; }
+		SceGxmRenderTarget *GetRenderTarget() const { return renderTarget; }
 
 	private:
 		SceGxmRenderTarget *renderTarget;

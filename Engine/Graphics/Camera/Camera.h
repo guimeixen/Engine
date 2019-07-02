@@ -17,6 +17,7 @@ namespace Engine
 		void SetProjectionMatrix(float fov, int windowWidth, int windowHeight, float near, float far);
 		void SetProjectionMatrix(const glm::mat4 &proj);
 		void SetViewMatrix(const glm::mat4 &view);
+		void SetViewMatrix(const glm::vec3 &pos, const glm::vec3 &center, const glm::vec3 &up);
 		void SetNearPlane(float nearPlane);
 		void SetFarPlane(float farPlane);
 		void SetSensitivity(float sensitivity);

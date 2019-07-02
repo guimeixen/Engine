@@ -10,7 +10,37 @@ namespace Engine
 {
 	GXMTexture2D::GXMTexture2D()
 	{
-		
+	}
+
+	GXMTexture2D::GXMTexture2D(unsigned int width, unsigned int height, const TextureParams &params, const void *surfaceData)
+	{
+		AddReference();
+		this->data = nullptr;
+		this->params = params;
+		type = TextureType::TEXTURE2D;
+		storeTextureData = false;
+
+		if (gxmutils::IsDepthTexture(params.internalFormat))
+		{
+			sceGxmTextureInitTiled(&gxmTexture, surfaceData, SCE_GXM_TEXTURE_FORMAT_DF32M, width, height, 1);
+			Log::Print(LogLevel::LEVEL_INFO, "Init render target depth texture\n");
+		}
+		else
+		{
+			sceGxmTextureInitLinear(&gxmTexture, surfaceData, SCE_GXM_TEXTURE_FORMAT_A8R8G8B8, width, height, 1);
+			Log::Print(LogLevel::LEVEL_INFO, "Init render target color texture\n");
+		}
+
+		if (params.filter == TextureFilter::LINEAR)
+		{
+			sceGxmTextureSetMagFilter(&gxmTexture, SCE_GXM_TEXTURE_FILTER_LINEAR);
+			sceGxmTextureSetMinFilter(&gxmTexture, SCE_GXM_TEXTURE_FILTER_LINEAR);
+		}
+		else if (params.filter == TextureFilter::NEAREST)
+		{
+			sceGxmTextureSetMagFilter(&gxmTexture, SCE_GXM_TEXTURE_FILTER_POINT);
+			sceGxmTextureSetMinFilter(&gxmTexture, SCE_GXM_TEXTURE_FILTER_POINT);
+		}
 	}
 
 	GXMTexture2D::~GXMTexture2D()
@@ -19,7 +49,7 @@ namespace Engine
 		gxmutils::graphicsFree(paletteUID);
 	}
 
-	bool GXMTexture2D::Load(FileManager * fileManager, const std::string & path, const TextureParams & params, bool storeTextureData)
+	bool GXMTexture2D::Load(FileManager *fileManager, const std::string &path, const TextureParams &params, bool storeTextureData)
 	{
 		this->path = fileManager->GetAppPath();
 		this->path += path;

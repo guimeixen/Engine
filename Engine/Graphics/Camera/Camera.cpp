@@ -67,6 +67,11 @@ namespace Engine
 		viewMatrix = view;
 	}
 
+	void Camera::SetViewMatrix(const glm::vec3 &pos, const glm::vec3 &center, const glm::vec3 &up)
+	{
+		viewMatrix = glm::lookAt(pos, center, up);
+	}
+
 	void Camera::SetNearPlane(float nearPlane)
 	{
 		this->nearPlane = nearPlane;

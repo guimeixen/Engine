@@ -12,8 +12,6 @@
 #include "Program/Input.h"
 #include "Program/Log.h"
 
-#include "Data/Shaders/GL/include/common.glsl"
-
 #include "include/glm/gtc/matrix_transform.hpp"
 
 #include <iostream>

@@ -21,12 +21,12 @@ layout(binding = FIRST_SLOT) uniform sampler2D tex;
 //const float edgeWidth = 0.02;
 
 // Medium text
-//const float width = 0.485;
-//const float edgeWidth = 0.10;
+const float width = 0.485;
+const float edgeWidth = 0.10;
 
 // Small text
-const float width = 0.46;
-const float edgeWidth = 0.19;
+//const float width = 0.46;
+//const float edgeWidth = 0.19;
 
 void main()
 {

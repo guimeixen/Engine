@@ -1,7 +1,9 @@
+#include "include/common.cgh"
+
 in float2 inUv : TEXCOORD0;
 in float4 inColor : COLOR0;
 
-uniform sampler2D tex : TEXUNIT0;
+uniform sampler2D tex : register(index0);
 
 // Small text
 static const float width = 0.46;

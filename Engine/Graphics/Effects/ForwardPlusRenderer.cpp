@@ -419,7 +419,7 @@ namespace Engine
 		postPass.SetOnSetup([this](const Pass *thisPass)
 		{
 			postProcessFB = thisPass->GetFramebuffer();
-			postProcMatInstance = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/post_process_mat.lua", quadMesh.vao->GetVertexInputDescs());
+			postProcMatInstance = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Materials/post_process_mat.lua", quadMesh.vao->GetVertexInputDescs());
 			postProcMatInstance->textures[0] = hdrFB->GetColorTextureByIndex(0);
 			postProcMatInstance->textures[1] = hdrFB->GetDepthTexture();
 			postProcMatInstance->textures[2] = upsampleFB[1]->GetColorTexture();

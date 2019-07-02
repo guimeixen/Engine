@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Data/Shaders/GL/include/common.glsl"
 #include "Physics/BoundingVolumes.h"
 #include "Graphics/Camera/Camera.h"
+
+#include "Data/Shaders/GL/include/common.glsl"
 
 #include "include/glm/glm.hpp"
 

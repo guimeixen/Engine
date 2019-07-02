@@ -46,6 +46,7 @@ namespace Engine
 		}
 
 		Texture *GetDepthTexture() const { return depthAttachment.texture; }
+		unsigned int GetNumColorTextures() const { return (unsigned int)colorAttachments.size(); }	
 		unsigned int GetPassID() const { return passID; }
 
 		bool AreWritesDisabled() const { return writesDisabled; }

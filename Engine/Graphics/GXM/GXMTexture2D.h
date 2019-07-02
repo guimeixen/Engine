@@ -12,6 +12,7 @@ namespace Engine
 	{
 	public:
 		GXMTexture2D();
+		GXMTexture2D(unsigned int width, unsigned int height, const TextureParams &params, const void *surfaceData);
 		~GXMTexture2D();
 
 		bool Load(FileManager *fileManager, const std::string &path, const TextureParams &params, bool storeTextureData = false);

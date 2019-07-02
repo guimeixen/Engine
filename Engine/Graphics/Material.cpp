@@ -514,7 +514,7 @@ namespace Engine
 			}*/
 		}
 
-		Log::Print(LogLevel::LEVEL_INFO, "Loading material instance textures\n");
+		//Log::Print(LogLevel::LEVEL_INFO, "Loading material instance textures\n");
 
 		// TODO : instead of adding this limit load the textures for the texturePaths we have and for the missing one load the default white texture
 		// Make sure that we don't load more textures than we can

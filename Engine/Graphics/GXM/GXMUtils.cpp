@@ -111,37 +111,35 @@ namespace Engine
 
 		unsigned int GetBlendFactorValue(BlendFactor blendFactor)
 		{
-			/*switch (blendFactor)
+			switch (blendFactor)
 			{
 			case ZERO:
-				return VK_BLEND_FACTOR_ZERO;
+				return SCE_GXM_BLEND_FACTOR_ZERO;
 				break;
 			case ONE:
-				return VK_BLEND_FACTOR_ONE;
+				return 	SCE_GXM_BLEND_FACTOR_ONE;
 				break;
 			case SRC_ALPHA:
-				return VK_BLEND_FACTOR_SRC_ALPHA;
+				return SCE_GXM_BLEND_FACTOR_SRC_ALPHA;
 				break;
 			case DST_ALPHA:
-				return VK_BLEND_FACTOR_DST_ALPHA;
+				return SCE_GXM_BLEND_FACTOR_DST_ALPHA;
 				break;
 			case SRC_COLOR:
-				return VK_BLEND_FACTOR_SRC_COLOR;
+				return SCE_GXM_BLEND_FACTOR_SRC_COLOR;
 				break;
 			case DST_COLOR:
-				return VK_BLEND_FACTOR_DST_COLOR;
+				return SCE_GXM_BLEND_FACTOR_DST_COLOR;
 				break;
 			case ONE_MINUS_SRC_ALPHA:
-				return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				return SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 				break;
 			case ONE_MINUS_SRC_COLOR:
-				return VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+				return SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
 				break;
 			}
 
-			return VK_BLEND_FACTOR_ZERO;*/
-
-			return 0;
+			return SCE_GXM_BLEND_FACTOR_ZERO;
 		}
 
 		unsigned int GetTopology(Topology topology)
@@ -195,25 +193,35 @@ namespace Engine
 
 		unsigned int GetCullMode(const std::string &mode)
 		{
-			/*if (mode == "front")
-				return VK_CULL_MODE_FRONT_BIT;
+			// Front faces are CCW and back faces are CW
+			if (mode == "front")
+				return SCE_GXM_CULL_CCW;
 			else if (mode == "back")
-				return VK_CULL_MODE_BACK_BIT;
+				return SCE_GXM_CULL_CW;
 			else if (mode == "none")
 				return SCE_GXM_CULL_NONE;
 
-			return VK_CULL_MODE_BACK_BIT;*/
-			return 0;
+			return SCE_GXM_CULL_CCW;
 		}
 
 		unsigned int GetFrontFace(const std::string &face)
 		{
-			if (face == "ccw")
+			// Not used with gxm
+			/*if (face == "ccw")
 				return SCE_GXM_CULL_CCW;
 			else if (face == "cw")
 				return SCE_GXM_CULL_CW;
 
-			return SCE_GXM_CULL_CCW;
+			return SCE_GXM_CULL_CCW;*/
+			return 0;
+		}
+
+		bool IsDepthTexture(TextureInternalFormat format)
+		{
+			if (format == TextureInternalFormat::DEPTH_COMPONENT16 || format == TextureInternalFormat::DEPTH_COMPONENT24 || format == TextureInternalFormat::DEPTH_COMPONENT32)
+				return true;
+
+			return false;
 		}
 	}
 }

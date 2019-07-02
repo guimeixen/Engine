@@ -61,11 +61,13 @@ namespace Engine
 
 	void GLFramebuffer::Create(const FramebufferDesc &desc)
 	{
+		colorAttachments.resize(desc.colorTextures.size());
+
 		for (size_t i = 0; i < desc.colorTextures.size(); i++)
 		{
 			FramebufferAttachment attachment = {};
 			attachment.params = desc.colorTextures[i];
-			colorAttachments.push_back(attachment);
+			colorAttachments[i] = attachment;
 		}
 
 		depthAttachment = {};

@@ -54,7 +54,7 @@ namespace Engine
 		Texture *CreateTexture3DFromData(unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params, const void *data) override { return nullptr; }
 
 		void SetDefaultRenderTarget() override;
-		void SetRenderTarget(Framebuffer *rt) override;
+		void SetRenderTarget(Framebuffer *rt) override {}
 		void SetRenderTargetAndClear(Framebuffer *rt) override;
 		void EndRenderTarget(Framebuffer *rt) override;
 		void EndDefaultRenderTarget() override;
@@ -105,9 +105,13 @@ namespace Engine
 		SceUID shaderPatcherBufferFragmentUsseUID;
 		void *shaderPatcherBufferFragmentUsseAddr;
 
-		GXMFramebuffer *defaultFB;
-		unsigned int backBufferIndex = 0;
-		unsigned int frontBufferIndex = 0;
+		unsigned int backBufferIndex;
+		unsigned int frontBufferIndex;
+		unsigned int numVertexTextureBindings;
+		unsigned int numFragmentTextureBindings;
+
+		unsigned int depthBiasFactor;
+		unsigned int depthBiasUnits;
 
 		GXMShader *clearShader;
 		const SceGxmProgramParameter *paramColorUniform;
@@ -136,5 +140,14 @@ namespace Engine
 		SceGxmNotification fragmentNotif[2];
 		unsigned int vertexIndex = 0;
 		unsigned int fragmentIndex = 0;
+
+		void *clearColorSurfaceData[2];
+		void *clearDepthSurfaceData;
+		SceGxmColorSurface clearColorSurfaces[2];
+		SceGxmDepthStencilSurface clearDepthStencilSurface;
+		SceUID clearColorDataUIDs[2];
+		SceUID clearDepthDataUID;
+		SceGxmSyncObject *clearSyncObjs[2];
+		SceGxmRenderTarget *defaultRenderTarget;
 	};
 }

@@ -1,17 +1,18 @@
 #include "include/ubos.cgh"
 
+out float4 outPos : POSITION;
+out float2 outUv : TEXCOORD0;
+out float3 outNormal : TEXCOORD1;
+out float4 outLightSpacePos : TEXCOORD2;
+
 uniform float4x4 modelMatrix;
 
-void main(
-	float3 inPos,
-	float2 inUv,
-	float3 inNormal,
-	float4 out outPos : POSITION,
-	float2 out outUv : TEXCOORD0,
-	float3 out outNormal : TEXCOORD1)
+void main(float3 inPos, float2 inUv, float3 inNormal)
 {
-	outPos = mul(float4(inPos, 1.0f), modelMatrix);
-	outPos = mul(outPos, cam.projView);
+	float4 worldPos = mul(float4(inPos, 1.0f), modelMatrix);
+	outPos = mul(worldPos, cam.projView);
+	outLightSpacePos = mul(worldPos, mainLight.lightSpaceMatrix);
+	
 	outUv = inUv;
-	outNormal = inNormal;
+	outNormal = float3(mul(float4(inNormal, 0.0f), modelMatrix));
 }

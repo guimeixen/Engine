@@ -1,0 +1,13 @@
+#include "include/common.cgh"
+
+in float2 inUv : TEXCOORD0;
+
+uniform sampler2D tex : register(index0);
+
+float4 main() : COLOR
+{
+	float4 col = tex2D(tex, inUv);
+	//float depth = f1tex2D<float>(tex, inUv);
+	//col.rgb = 1.0 - col.rgb;
+	return col;
+}

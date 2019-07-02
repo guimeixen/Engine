@@ -12,6 +12,9 @@
 #include "Program/Log.h"
 #include "Program/StringID.h"
 #include "Graphics/Material.h"
+#include "Graphics/MeshDefaults.h"
+#include "Program/Input.h"
+#include "psp2/ctrl.h"
 
 #include "Data/Shaders/GXM/include/common.cgh"
 
@@ -35,6 +38,10 @@ namespace Engine
 	GXMRenderer::GXMRenderer(FileManager *fileManager)
 	{
 		this->fileManager = fileManager;
+		backBufferIndex = 0;
+		frontBufferIndex = 0;
+		numVertexTextureBindings = 0;
+		numFragmentTextureBindings = 0;
 	}
 
 	GXMRenderer::~GXMRenderer()
@@ -48,7 +55,8 @@ namespace Engine
 		height = DISPLAY_HEIGHT;
 
 		currentAPI = GraphicsAPI::GXM;
-
+		depthBiasFactor = 3;
+		depthBiasUnits = 2;
 		int err = 0;
 
 		// Init GXM
@@ -91,7 +99,35 @@ namespace Engine
 		sceGxmCreateContext(&contextParams, &context);
 		Log::Print(LogLevel::LEVEL_INFO, "Context created\n");
 
-		FramebufferDesc desc = {};
+		clearColorSurfaceData[0] = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, SCE_GXM_MEMORY_ATTRIB_RW, ALIGN(4 * DISPLAY_STRIDE_IN_PIXELS * height, 1 * 1024 * 1024), &clearColorDataUIDs[0]);
+		memset(clearColorSurfaceData[0], 0, DISPLAY_STRIDE_IN_PIXELS * height);
+		clearColorSurfaceData[1] = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, SCE_GXM_MEMORY_ATTRIB_RW, ALIGN(4 * DISPLAY_STRIDE_IN_PIXELS * height, 1 * 1024 * 1024), &clearColorDataUIDs[1]);
+		memset(clearColorSurfaceData[1], 0, DISPLAY_STRIDE_IN_PIXELS * height);
+
+		sceGxmColorSurfaceInit(&clearColorSurfaces[0], DISPLAY_COLOR_FORMAT, SCE_GXM_COLOR_SURFACE_LINEAR, SCE_GXM_COLOR_SURFACE_SCALE_NONE, SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT, width, height, DISPLAY_STRIDE_IN_PIXELS, clearColorSurfaceData[0]);
+		sceGxmSyncObjectCreate(&clearSyncObjs[0]);
+		sceGxmColorSurfaceInit(&clearColorSurfaces[1], DISPLAY_COLOR_FORMAT, SCE_GXM_COLOR_SURFACE_LINEAR, SCE_GXM_COLOR_SURFACE_SCALE_NONE, SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT, width, height, DISPLAY_STRIDE_IN_PIXELS, clearColorSurfaceData[1]);
+		sceGxmSyncObjectCreate(&clearSyncObjs[1]);
+
+		unsigned int depthStencilWidth = ALIGN(width, SCE_GXM_TILE_SIZEX);
+		unsigned int depthStencilHeight = ALIGN(height, SCE_GXM_TILE_SIZEY);
+		unsigned int depthStencilSamples = depthStencilWidth * depthStencilHeight;
+
+		clearDepthSurfaceData = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE, SCE_GXM_MEMORY_ATTRIB_RW, 4 * depthStencilSamples, &clearDepthDataUID);
+		sceGxmDepthStencilSurfaceInit(&clearDepthStencilSurface, SCE_GXM_DEPTH_STENCIL_FORMAT_S8D24, SCE_GXM_DEPTH_STENCIL_SURFACE_TILED, depthStencilWidth, clearDepthSurfaceData, nullptr);
+
+		SceGxmRenderTargetParams rtParams = {};
+		rtParams.flags = 0;
+		rtParams.width = (uint16_t)width;
+		rtParams.height = (uint16_t)height;
+		rtParams.scenesPerFrame = 1;
+		rtParams.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
+		rtParams.multisampleLocations = 0;
+		rtParams.driverMemBlock = -1;
+
+		sceGxmCreateRenderTarget(&rtParams, &defaultRenderTarget);
+
+		/*FramebufferDesc desc = {};
 		desc.width = DISPLAY_WIDTH;
 		desc.height = DISPLAY_HEIGHT;
 		desc.useDepth = true;
@@ -117,7 +153,7 @@ namespace Engine
 
 		desc.depthTexture = dp;
 
-		defaultFB = new GXMFramebuffer(desc);
+		defaultFB = new GXMFramebuffer(desc);*/
 
 		// Allocate memory for buffers and USSE code
 		size_t shaderPatcherBufferSize = 64 * 1024;
@@ -167,6 +203,8 @@ namespace Engine
 		inputDesc.stride = 2 * sizeof(float);
 
 		BlendState b = {};
+		b.enableColorWriting = true;
+		b.enableBlending = false;
 		clearShader = new GXMShader(shaderPatcher, fileManager, "color", "color", { inputDesc }, b);
 
 		paramColorUniform = clearShader->GetParameter(false, "color");
@@ -209,9 +247,8 @@ namespace Engine
 		depthStencilState.depthEnable = true;
 		//depthStencilState.depthFunc = ;
 		depthStencilState.depthWrite = true;
-		/*rasterizerState.enableCulling = true;
-		rasterizerState.frontFace = ;
-		rasterizerState.cullFace = ;*/
+		rasterizerState.enableCulling = true;
+		rasterizerState.cullFace = SCE_GXM_CULL_CW;
 
 		Log::Print(LogLevel::LEVEL_INFO, "Done!\n");
 
@@ -292,7 +329,7 @@ namespace Engine
 
 	Framebuffer *GXMRenderer::CreateFramebuffer(const FramebufferDesc &desc)
 	{
-		return nullptr;
+		return new GXMFramebuffer(desc);
 	}
 
 	Shader *GXMRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
@@ -380,8 +417,7 @@ namespace Engine
 
 		ubo[fragmentIndex]->Update(myubo, sizeof(myubo), 0);*/
 
-		const ColorSurface &cs = defaultFB->GetColorSurface(backBufferIndex);
-		sceGxmBeginScene(context, 0, defaultFB->GetRTHandle(), nullptr, nullptr, cs.syncObj, &cs.surface, &defaultFB->GetDepthStencilSurface().surface);
+		sceGxmBeginScene(context, 0, defaultRenderTarget, nullptr, nullptr, clearSyncObjs[backBufferIndex], &clearColorSurfaces[backBufferIndex], &clearDepthStencilSurface);
 
 		currentVertexProgram = clearShader->GetVertexProgram();
 		currentFragmentProgram = clearShader->GetFragmentProgram();
@@ -399,16 +435,38 @@ namespace Engine
 		sceGxmDraw(context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, clearIB->GetIndicesHandle(), 3);
 	}
 
-	void GXMRenderer::SetRenderTarget(Framebuffer *rt)
-	{
-	}
-
 	void GXMRenderer::SetRenderTargetAndClear(Framebuffer *rt)
 	{
+		GXMFramebuffer *fb = static_cast<GXMFramebuffer*>(rt);
+
+		if (fb->GetNumColorTextures() > 0)
+			sceGxmBeginScene(context, 0, fb->GetRenderTarget(), nullptr, nullptr, nullptr, &fb->GetColorSurface(0).surface, &fb->GetDepthStencilSurface().surface);
+		else
+			sceGxmBeginScene(context, 0, fb->GetRenderTarget(), nullptr, nullptr, nullptr, nullptr, &fb->GetDepthStencilSurface().surface);
+		
+		currentVertexProgram = clearShader->GetVertexProgram();
+		currentFragmentProgram = clearShader->GetFragmentProgram();
+
+		// Clear triangle
+		sceGxmSetVertexProgram(context, currentVertexProgram);
+		sceGxmSetFragmentProgram(context, currentFragmentProgram);
+
+		void *colorBuffer;
+		float clearColor[] = { 0.3f, 0.3f, 0.3f, 1.0f };
+		sceGxmReserveFragmentDefaultUniformBuffer(context, &colorBuffer);
+		sceGxmSetUniformDataF(colorBuffer, paramColorUniform, 0, 4, clearColor);
+
+		sceGxmSetVertexStream(context, 0, clearVB->GetVerticesHandle());
+		sceGxmDraw(context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, clearIB->GetIndicesHandle(), 3);
+
+		if (fb->GetNumColorTextures() == 0)
+			sceGxmSetFrontDepthBias(context, (int)depthBiasFactor, (int)depthBiasUnits);
 	}
 
 	void GXMRenderer::EndRenderTarget(Framebuffer *rt)
 	{
+		sceGxmEndScene(context, nullptr, nullptr);
+		sceGxmSetFrontDepthBias(context, 0, 0);
 	}
 
 	void GXMRenderer::EndDefaultRenderTarget()
@@ -463,11 +521,10 @@ namespace Engine
 				if (t)
 				{
 					GXMTexture2D *gt = static_cast<GXMTexture2D*>(t);
-					sceGxmSetFragmentTexture(context, (unsigned int)i, &gt->GetGxmTexture());
+					sceGxmSetFragmentTexture(context, (unsigned int)i + numFragmentTextureBindings, &gt->GetGxmTexture());
 				}				
 			}
 		}
-
 		//sceGxmSetFragmentUniformBuffer(context, 1, ubo[fragmentIndex]->GetData());
 		
 		const SceGxmProgramParameter *modelMatrixParam = shader->GetModelMatrixParam();
@@ -501,15 +558,30 @@ namespace Engine
 
 	void GXMRenderer::Present()
 	{
-		const ColorSurface &cs = defaultFB->GetColorSurface(backBufferIndex);
+		if (Input::IsVitaButtonDown(SCE_CTRL_CIRCLE))
+		{
+			depthBiasFactor++;
+		}
+		if (Input::IsVitaButtonDown(SCE_CTRL_SQUARE))
+		{
+			depthBiasFactor--;
+		}
+		if (Input::IsVitaButtonDown(SCE_CTRL_CROSS))
+		{
+			depthBiasUnits--;
+		}
+		if (Input::IsVitaButtonDown(SCE_CTRL_TRIANGLE))
+		{
+			depthBiasUnits++;
+		}
 
 		//Pad heartbeat to notify end of frame
-		sceGxmPadHeartbeat(&cs.surface, cs.syncObj);
+		sceGxmPadHeartbeat(&clearColorSurfaces[backBufferIndex], clearSyncObjs[backBufferIndex]);
 
 		// Queue the display swap for this frame
 		displayQueueCallbackData displayData;
-		displayData.addr = cs.addr;
-		sceGxmDisplayQueueAddEntry(defaultFB->GetColorSurface(frontBufferIndex).syncObj, cs.syncObj, &displayData);
+		displayData.addr = clearColorSurfaceData[backBufferIndex];
+		sceGxmDisplayQueueAddEntry(clearSyncObjs[frontBufferIndex], clearSyncObjs[backBufferIndex], &displayData);
 
 		frontBufferIndex = backBufferIndex;
 		backBufferIndex = (backBufferIndex + 1) % DISPLAY_BUFFER_COUNT;
@@ -517,6 +589,25 @@ namespace Engine
 
 	void GXMRenderer::AddResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
 	{
+		if (!texture)
+			return;
+
+		if (texture->GetType() == TextureType::TEXTURE2D)
+		{
+			GXMTexture2D *tex = static_cast<GXMTexture2D*>(texture);
+			if (stages & VERTEX)
+			{
+				sceGxmSetVertexTexture(context, binding, &tex->GetGxmTexture());
+				numVertexTextureBindings++;
+				Log::Print(LogLevel::LEVEL_INFO, "Added texture in binding %u to vertex\n", binding);
+			}
+			if (stages & FRAGMENT)
+			{
+				sceGxmSetFragmentTexture(context, binding, &tex->GetGxmTexture());
+				numFragmentTextureBindings++;
+				Log::Print(LogLevel::LEVEL_INFO, "Added texture in binding %u to fragment\n", binding);
+			}
+		}
 	}
 
 	void GXMRenderer::AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
@@ -592,14 +683,13 @@ namespace Engine
 		if (rasterizerState.cullFace != state.cullFace)
 		{
 			changed = true;
-			/*glCullFace(state.cullFace);
-			sceGxmSetCullMode(context, sce_gxm_cull)*/
+			sceGxmSetCullMode(context, (SceGxmCullMode)state.cullFace);
 		}
 		if (rasterizerState.enableCulling != state.enableCulling)
 		{
 			changed = true;
 			if (state.enableCulling)
-				sceGxmSetCullMode(context, SCE_GXM_CULL_CW);
+				sceGxmSetCullMode(context, SCE_GXM_CULL_CW);			// Cull back faces which are CW, front faces are CCW
 			else
 				sceGxmSetCullMode(context, SCE_GXM_CULL_NONE);
 		}
@@ -629,9 +719,21 @@ namespace Engine
 		delete clearShader;
 		delete clearVB;
 		delete clearIB;
-		delete defaultFB;
 		delete ubo[0];
 		delete ubo[1];
+
+		gxmutils::graphicsFree(clearDepthDataUID);
+		for (unsigned int i = 0; i < DISPLAY_BUFFER_COUNT; ++i)
+		{
+			// clear the buffer then deallocate
+			memset(clearColorSurfaceData[i], 0, height * DISPLAY_STRIDE_IN_PIXELS * 4);
+			gxmutils::graphicsFree(clearColorDataUIDs[i]);
+
+			// destroy the sync object
+			sceGxmSyncObjectDestroy(clearSyncObjs[i]);
+		}
+
+		sceGxmDestroyRenderTarget(defaultRenderTarget);
 
 		sceGxmShaderPatcherDestroy(shaderPatcher);
 		gxmutils::gpuFragmentUsseUnmapFree(shaderPatcherBufferFragmentUsseUID);

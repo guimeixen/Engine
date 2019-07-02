@@ -163,6 +163,7 @@ namespace Engine
 		float GetRightAnalogueStickX() const { return rightStickX; }
 		float GetRightAnalogueStickY() const { return rightStickY; }
 		bool IsVitaButtonDown(int button);
+		bool WasVitaButtonReleased(int button);
 		float GetAxis(const std::string &name);
 		bool GetAction(const std::string &name);
 
@@ -192,6 +193,7 @@ namespace Engine
 
 		// Vita
 		int buttons;
+		int lastButtons;
 		float leftStickX;			// Between -1 and 1
 		float leftStickY;
 		float rightStickX;
@@ -224,6 +226,7 @@ namespace Engine
 		static float GetRightAnalogueStickX() { return inputManager->GetRightAnalogueStickX(); }
 		static float GetRightAnalogueStickY() { return inputManager->GetRightAnalogueStickY(); }
 		static bool IsVitaButtonDown(int button) { return inputManager->IsVitaButtonDown(button); }
+		static bool WasVitaButtonReleased(int button) { return inputManager->WasVitaButtonReleased(button); }
 		static float GetAxis(const std::string &name) { return inputManager->GetAxis(name); }
 		static bool GetAction(const std::string &name) { return inputManager->GetAction(name); }
 

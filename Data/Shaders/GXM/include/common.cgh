@@ -1,3 +1,9 @@
+// UBOs
 #define CAMERA_UBO_SLOT			0
 #define FRAME_UBO_SLOT				1
 #define MAIN_LIGHT_UBO_SLOT		2
+
+// Textures
+#define SHADOW_MAP_SLOT			s0
+#define index0								s1
+#define index1								s2

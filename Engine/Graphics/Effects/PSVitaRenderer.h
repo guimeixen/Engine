@@ -14,5 +14,10 @@ namespace Engine
 		void Render();
 
 	private:
+		void SetupShadowMappingPass();
+		void SetupHDRPass();
+		void SetupPostProcessPass();
+
+	private:
 	};
 }

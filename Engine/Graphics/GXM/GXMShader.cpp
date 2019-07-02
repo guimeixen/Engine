@@ -118,18 +118,31 @@ namespace Engine
 		}
 
 		SceGxmBlendInfo blending = {};
-		blending.colorMask = SCE_GXM_COLOR_MASK_ALL;
-		blending.colorFunc = SCE_GXM_BLEND_FUNC_ADD;
-		blending.colorSrc = SCE_GXM_BLEND_FACTOR_SRC_ALPHA;
-		blending.colorDst = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		blending.alphaFunc = SCE_GXM_BLEND_FUNC_ADD;
-		blending.alphaSrc = SCE_GXM_BLEND_FACTOR_SRC_ALPHA;
-		blending.alphaDst = SCE_GXM_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		if (blendState.enableColorWriting)
+		{
+			blending.colorMask = SCE_GXM_COLOR_MASK_ALL;
+			blending.colorFunc = SCE_GXM_BLEND_FUNC_ADD;
+			blending.alphaFunc = SCE_GXM_BLEND_FUNC_ADD;
+		}
+		else
+		{
+			// Used for shadow mapping so libgxm disables the fragment shader
+			blending.colorMask = SCE_GXM_COLOR_MASK_NONE;
+			blending.colorFunc = SCE_GXM_BLEND_FUNC_NONE;
+			blending.alphaFunc = SCE_GXM_BLEND_FUNC_NONE;
+		}
+		
+		blending.colorSrc = (SceGxmBlendFactor)blendState.srcColorFactor;
+		blending.colorDst = (SceGxmBlendFactor)blendState.dstColorFactor;
+		
+		blending.alphaSrc = (SceGxmBlendFactor)blendState.srcAlphaFactor;
+		blending.alphaDst = (SceGxmBlendFactor)blendState.dstAlphaFactor;
 
 		sceGxmShaderPatcherCreateVertexProgram(shaderPatcher, vertexProgramID, vertexAttributes.data(), (unsigned int)vertexAttributes.size(), vertexStreams.data(), (unsigned int)vertexStreams.size(), &vertexProgram);
 		Log::Print(LogLevel::LEVEL_INFO, "Created vertex program\n");
 
-		if (blendState.enableBlending)
+		if (blendState.enableBlending || blendState.enableColorWriting == false)
 			sceGxmShaderPatcherCreateFragmentProgram(shaderPatcher, fragmentProgramID, SCE_GXM_OUTPUT_REGISTER_FORMAT_UCHAR4, SCE_GXM_MULTISAMPLE_NONE, &blending, vertexProgramGxp, &fragmentProgram);
 		else
 			sceGxmShaderPatcherCreateFragmentProgram(shaderPatcher, fragmentProgramID, SCE_GXM_OUTPUT_REGISTER_FORMAT_UCHAR4, SCE_GXM_MULTISAMPLE_NONE, nullptr, vertexProgramGxp, &fragmentProgram);

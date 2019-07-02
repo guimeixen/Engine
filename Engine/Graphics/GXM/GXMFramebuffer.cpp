@@ -1,11 +1,12 @@
 #include "GXMFramebuffer.h"
 
+#include "GXMTexture2D.h"
 #include "GXMUtils.h"
+#include "Program/Log.h"
 
 #include <cstring>	// for memset
 
-#define DISPLAY_COLOR_FORMAT SCE_GXM_COLOR_FORMAT_A8B8G8R8
-#define DISPLAY_STRIDE_IN_PIXELS	 1024
+#define MAX(a, b)					(((a) > (b)) ? (a) : (b))
 
 namespace Engine
 {
@@ -13,7 +14,70 @@ namespace Engine
 	{
 		this->width = desc.width;
 		this->height = desc.height;
-		useDepth = desc.useDepth;
+		useColor = desc.colorTextures.size() > 0;
+		useDepth = desc.useDepth;	
+		colorOnly = useColor && !useDepth;
+		writesDisabled = desc.writesDisabled;
+
+		colorSurfaces.resize(desc.colorTextures.size());
+		colorAttachments.resize(desc.colorTextures.size());
+
+		depthAttachment = {};
+		depthAttachment.params = desc.depthTexture;
+		depthAttachment.texture = nullptr;
+
+		for (size_t i = 0; i < desc.colorTextures.size(); i++)
+		{
+			// Check number of components instead of * 4
+			const unsigned int colorDataSize = ALIGN(width * height * 4, MAX(SCE_GXM_TEXTURE_ALIGNMENT, SCE_GXM_COLOR_SURFACE_ALIGNMENT));
+
+			ColorSurface cs = {};
+			cs.data = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, SCE_GXM_MEMORY_ATTRIB_RW, colorDataSize, &cs.uid);
+			Log::Print(LogLevel::LEVEL_INFO, "Allocated %.2f mb for color surface\n", colorDataSize / 1024.0f / 1024.0f);
+
+			sceGxmColorSurfaceInit(&cs.surface, SCE_GXM_COLOR_FORMAT_A8R8G8B8, SCE_GXM_COLOR_SURFACE_LINEAR, SCE_GXM_COLOR_SURFACE_SCALE_NONE, SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT, width, height, width, cs.data);
+			Log::Print(LogLevel::LEVEL_INFO, "Init color surface\n");
+
+			//sceGxmSyncObjectCreate(&cs.syncObj);
+
+			FramebufferAttachment attachment = {};
+			attachment.params = desc.colorTextures[i];
+			attachment.texture = new GXMTexture2D(width, height, attachment.params, cs.data);
+			
+			colorAttachments[i] = attachment;
+			colorSurfaces[i] = cs;
+		}
+
+		if (desc.sampleDepth)
+		{
+			const unsigned int depthStencilAlignedWidth = ALIGN(width, SCE_GXM_TILE_SIZEX);
+			const unsigned int depthStencilAlignedHeight = ALIGN(height, SCE_GXM_TILE_SIZEY);
+			//const unsigned int alignment = MAX(SCE_GXM_TEXTURE_ALIGNMENT, SCE_GXM_DEPTHSTENCIL_SURFACE_ALIGNMENT);		// Same
+
+			depthStencilSurface.data = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, SCE_GXM_MEMORY_ATTRIB_RW, depthStencilAlignedWidth * depthStencilAlignedHeight * 4, &depthStencilSurface.uid);
+			Log::Print(LogLevel::LEVEL_INFO, "Allocated %.2f mb for depth surface\n", depthStencilAlignedWidth * depthStencilAlignedHeight * 4 / 1024.0f / 1024.0f);
+
+			sceGxmDepthStencilSurfaceInit(&depthStencilSurface.surface, SCE_GXM_DEPTH_STENCIL_FORMAT_DF32, SCE_GXM_DEPTH_STENCIL_SURFACE_TILED, depthStencilAlignedWidth, depthStencilSurface.data, nullptr);
+			Log::Print(LogLevel::LEVEL_INFO, "Init depth surface\n");
+
+			// Force the surface to always write data to memory because we want to use it as a texture and sample it in the shader
+			sceGxmDepthStencilSurfaceSetForceStoreMode(&depthStencilSurface.surface, SCE_GXM_DEPTH_STENCIL_FORCE_STORE_ENABLED);
+
+			depthAttachment.texture = new GXMTexture2D(width, height, depthAttachment.params, depthStencilSurface.data);
+		}
+		else if (desc.useDepth)
+		{
+			const unsigned int depthStencilAlignedWidth = ALIGN(width, SCE_GXM_TILE_SIZEX);
+			const unsigned int depthStencilAlignedHeight = ALIGN(height, SCE_GXM_TILE_SIZEY);
+			const unsigned int depthStencilSamples = depthStencilAlignedWidth * depthStencilAlignedHeight;
+			const unsigned int depthStrideInSamples = depthStencilAlignedWidth;
+
+			depthStencilSurface.data = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE, SCE_GXM_MEMORY_ATTRIB_RW, 4 * depthStencilSamples, &depthStencilSurface.uid);
+			Log::Print(LogLevel::LEVEL_INFO, "Allocated %.2f mb for depth surface\n", 4 * depthStencilSamples / 1024.0f / 1024.0f);
+
+			sceGxmDepthStencilSurfaceInit(&depthStencilSurface.surface, SCE_GXM_DEPTH_STENCIL_FORMAT_S8D24, SCE_GXM_DEPTH_STENCIL_SURFACE_TILED, depthStrideInSamples, depthStencilSurface.data, nullptr);
+			Log::Print(LogLevel::LEVEL_INFO, "Init depth surface\n");
+		}
 
 		SceGxmRenderTargetParams rtParams = {};
 		rtParams.flags = 0;
@@ -26,28 +90,7 @@ namespace Engine
 
 		sceGxmCreateRenderTarget(&rtParams, &renderTarget);
 
-		for (size_t i = 0; i < desc.colorTextures.size(); i++)
-		{
-			ColorSurface cs = {};
-			cs.addr = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, (SceGxmMemoryAttribFlags)(SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE), ALIGN(4 * DISPLAY_STRIDE_IN_PIXELS * height, 1 * 1024 * 1024), &cs.uid);
-			memset(cs.addr, 0, DISPLAY_STRIDE_IN_PIXELS * height);
-
-			sceGxmColorSurfaceInit(&cs.surface, DISPLAY_COLOR_FORMAT, SCE_GXM_COLOR_SURFACE_LINEAR, SCE_GXM_COLOR_SURFACE_SCALE_NONE, SCE_GXM_OUTPUT_REGISTER_SIZE_32BIT, width, height, DISPLAY_STRIDE_IN_PIXELS, cs.addr);
-			sceGxmSyncObjectCreate(&cs.syncObj);
-
-			colorSurfaces.push_back(cs);
-		}
-
-		if (desc.useDepth)
-		{
-			unsigned int depthStencilWidth = ALIGN(width, SCE_GXM_TILE_SIZEX);
-			unsigned int depthStencilHeight = ALIGN(height, SCE_GXM_TILE_SIZEY);
-			unsigned int depthStencilSamples = depthStencilWidth * depthStencilHeight;
-
-			depthStencilSurface.addr = gxmutils::graphicsAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE, (SceGxmMemoryAttribFlags)(SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE), 4 * depthStencilSamples, &depthStencilSurface.uid);
-
-			sceGxmDepthStencilSurfaceInit(&depthStencilSurface.surface, SCE_GXM_DEPTH_STENCIL_FORMAT_S8D24, SCE_GXM_DEPTH_STENCIL_SURFACE_TILED, depthStencilWidth, depthStencilSurface.addr, nullptr);
-		}
+		Log::Print(LogLevel::LEVEL_INFO, "Created render target\n");
 	}
 
 	GXMFramebuffer::~GXMFramebuffer()
@@ -58,12 +101,18 @@ namespace Engine
 			ColorSurface &cs = colorSurfaces[i];
 
 			// clear the buffer then deallocate
-			memset(cs.addr, 0, height * DISPLAY_STRIDE_IN_PIXELS * 4);
+			//memset(cs.data, 0, height * DISPLAY_STRIDE_IN_PIXELS * 4);
 			gxmutils::graphicsFree(cs.uid);
 
 			// destroy the sync object
-			sceGxmSyncObjectDestroy(cs.syncObj);
+			//sceGxmSyncObjectDestroy(cs.syncObj);
 		}
+
+		for (size_t i = 0; i < colorAttachments.size(); i++)
+		{
+			colorAttachments[i].texture->RemoveReference();
+		}
+		colorAttachments.clear();
 
 		sceGxmDestroyRenderTarget(renderTarget);
 	}

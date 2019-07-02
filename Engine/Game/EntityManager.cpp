@@ -2,6 +2,8 @@
 
 #include "Program/Log.h"
 
+#include <algorithm>
+
 namespace Engine
 {
 	EntityManager::EntityManager()
