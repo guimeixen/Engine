@@ -3,9 +3,7 @@
 #include "Program/Input.h"
 #include "Program/Log.h"
 #include "Program/FileManager.h"
-#ifndef VITA
 #include "Program/Window.h"
-#endif
 
 #include "Game/UI/UIManager.h"
 #include "Game/UI/StaticText.h"
@@ -45,18 +43,15 @@ namespace Engine
 		L = luaL_newstate();
 		luaL_openlibs(L);
 
-#ifdef VITA
-		// Add app0 as path for searching modules
-		ExecuteString("package.path = package.path .. \";app0:Data/Resources/Scripts/?.lua\"");
-#else
 		ExecuteString("package.path = package.path .. \";Data/Resources/Scripts/?.lua\"");
-#endif
 
 		Log::Print(LogLevel::LEVEL_INFO, "Init Lua\n");
 
 		luabridge::getGlobalNamespace(L)
 
 			.beginClass<Entity>("Entity")
+			.addConstructor<void(*)()>()
+			.addData("id", &Entity::id, true)
 			.endClass()
 
 			.beginClass<glm::vec2>("vec2")
@@ -141,7 +136,6 @@ namespace Engine
 			.addStaticFunction("wasKeyReleased", &Input::WasKeyReleased)
 			.addStaticFunction("isMouseButtonDown", &Input::IsMouseButtonDown)
 			.addStaticFunction("wasMouseButtonReleased", &Input::WasMouseButtonReleased)
-			.addStaticFunction("isVitaButtonDown", &Input::IsVitaButtonDown)
 			.addStaticFunction("getAxis", &Input::GetAxis)
 			.addStaticFunction("getAction", &Input::GetAction)
 			.endClass()
@@ -191,6 +185,10 @@ namespace Engine
 
 			.beginClass<UIManager>("UI")
 			.addFunction("showCursor", &UIManager::ShowCursor)
+			.addFunction("getText", &UIManager::GetText)
+			.addFunction("getButton", &UIManager::GetButton)
+			.addFunction("getEditText", &UIManager::GetEditText)
+			.addFunction("getImage", &UIManager::GetImage)
 			.endClass()
 
 			.beginClass<Texture>("Texture")			// Required to be able to load a texture through Lua
@@ -301,7 +299,7 @@ namespace Engine
 		/*luabridge::push(L, &game->GetSoundManager());
 		lua_setglobal(L, "SoundManager");*/
 
-		luabridge::push(L, game->GetUIManager());
+		luabridge::push(L, &game->GetUIManager());
 		lua_setglobal(L, "UI");
 
 		Log::Print(LogLevel::LEVEL_INFO, "Added engine globals to Lua\n");
@@ -718,7 +716,7 @@ namespace Engine
 			{
 				s.Read(eid);
 				s.Read(idx);
-				map[eid] = idx;
+				//map[eid] = idx;
 			}
 
 			s.Read(usedScripts);
@@ -733,6 +731,8 @@ namespace Engine
 				si.e.id = eid;
 				std::string path;
 				s.Read(path);
+
+				map[eid] = i;
 
 				si.s->Deserialize(s);
 #ifdef EDITOR

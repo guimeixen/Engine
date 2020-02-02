@@ -11,6 +11,8 @@
 
 namespace Engine
 {
+	class Buffer;
+
 	class GLRenderer : public Renderer
 	{
 	public:
@@ -40,8 +42,6 @@ namespace Engine
 
 		MaterialInstance *CreateMaterialInstance(ScriptManager &scriptManager, const std::string &matInstPath, const std::vector<VertexInputDesc> &inputDescs) override;
 		MaterialInstance *CreateMaterialInstanceFromBaseMat(ScriptManager &scriptManager, const std::string &baseMatPath, const std::vector<VertexInputDesc> &inputDescs) override;
-
-		void ReloadMaterial(Material *baseMaterial) override;
 
 		Texture *CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData = false) override;
 		Texture *CreateTexture3D(const std::string &path, const void *data, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params) override;
@@ -104,5 +104,14 @@ namespace Engine
 
 		unsigned int currentBinding = 0;
 		unsigned int currentTextureBinding = 0;
+
+		Buffer* meshParamsUBO = nullptr;
+		std::vector<const void*> meshParamsData;
+		unsigned int meshParamsOffset = 0;
+		void* buffer[16000];
+
+		unsigned int instanceDataOffset = 0;
+		std::vector<const void*> instanceData;
+		void* instanceBuffer[16000];
 	};
 }

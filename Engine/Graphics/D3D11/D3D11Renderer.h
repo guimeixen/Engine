@@ -50,8 +50,6 @@ namespace Engine
 		MaterialInstance *CreateMaterialInstance(ScriptManager &scriptManager, const std::string &matInstPath, const std::vector<VertexInputDesc> &inputDescs) override;
 		MaterialInstance *CreateMaterialInstanceFromBaseMat(ScriptManager &scriptManager, const std::string &baseMatPath, const std::vector<VertexInputDesc> &inputDescs) override;
 
-		void ReloadMaterial(Material *baseMaterial) override;
-
 		Texture *CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData = false) override;
 		Texture *CreateTexture3D(const std::string &path, const void *data, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params) override;
 		Texture *CreateTextureCube(const std::vector<std::string> &faces, const TextureParams &params) override;

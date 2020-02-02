@@ -23,16 +23,80 @@
     <ClCompile Include="AI\AISystem.cpp" />
     <ClCompile Include="AI\AStarGrid.cpp" />
     <ClCompile Include="AI\AStarNodeHeap.cpp" />
-    <ClCompile Include="Program\Allocator.cpp" />
-    <ClCompile Include="Application.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMShader.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMTexture2D.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMUniformBuffer.cpp" />
-    <ClCompile Include="Program\FileManager.cpp" />
+    <ClCompile Include="Graphics\Animation\AnimatedModel.cpp" />
+    <ClCompile Include="Graphics\Animation\AnimationController.cpp" />
+    <ClCompile Include="Graphics\Camera\Camera.cpp" />
+    <ClCompile Include="Graphics\Camera\FPSCamera.cpp" />
+    <ClCompile Include="Graphics\Camera\Frustum.cpp" />
     <ClCompile Include="Graphics\D3D11\D3D11DrawIndirectBuffer.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11Framebuffer.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11IndexBuffer.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11Renderer.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11Shader.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11SSBO.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11Texture2D.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11Texture3D.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11UniformBuffer.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11Utils.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11VertexArray.cpp" />
+    <ClCompile Include="Graphics\D3D11\D3D11VertexBuffer.cpp" />
+    <ClCompile Include="Graphics\Effects\CascadedShadowMap.cpp" />
+    <ClCompile Include="Graphics\Effects\DebugDrawManager.cpp" />
     <ClCompile Include="Graphics\Effects\DeferredRenderer.cpp" />
     <ClCompile Include="Graphics\Effects\ForwardPlusRenderer.cpp" />
     <ClCompile Include="Graphics\Effects\ForwardRenderer.cpp" />
+    <ClCompile Include="Graphics\Effects\MainView.cpp" />
+    <ClCompile Include="Graphics\Effects\ProjectedGridWater.cpp" />
+    <ClCompile Include="Graphics\Effects\RenderingPath.cpp" />
+    <ClCompile Include="Graphics\Effects\TimeOfDayManager.cpp" />
+    <ClCompile Include="Graphics\Effects\VCTGI.cpp" />
+    <ClCompile Include="Graphics\Effects\VolumetricClouds.cpp" />
+    <ClCompile Include="Graphics\Font.cpp" />
+    <ClCompile Include="Graphics\FrameGraph.cpp" />
+    <ClCompile Include="Graphics\GL\GLDrawIndirectBuffer.cpp" />
+    <ClCompile Include="Graphics\GL\GLFramebuffer.cpp" />
+    <ClCompile Include="Graphics\GL\GLIndexBuffer.cpp" />
+    <ClCompile Include="Graphics\GL\GLRenderer.cpp" />
+    <ClCompile Include="Graphics\GL\GLShader.cpp" />
+    <ClCompile Include="Graphics\GL\GLSSBO.cpp" />
+    <ClCompile Include="Graphics\GL\GLTexture2D.cpp" />
+    <ClCompile Include="Graphics\GL\GLTexture3D.cpp" />
+    <ClCompile Include="Graphics\GL\GLTextureCube.cpp" />
+    <ClCompile Include="Graphics\GL\GLUniformBuffer.cpp" />
+    <ClCompile Include="Graphics\GL\GLUtils.cpp" />
+    <ClCompile Include="Graphics\GL\GLVertexArray.cpp" />
+    <ClCompile Include="Graphics\GL\GLVertexBuffer.cpp" />
+    <ClCompile Include="Graphics\Material.cpp" />
+    <ClCompile Include="Graphics\MeshDefaults.cpp" />
+    <ClCompile Include="Graphics\Model.cpp" />
+    <ClCompile Include="Graphics\ParticleSystem.cpp" />
+    <ClCompile Include="Graphics\Renderer.cpp" />
+    <ClCompile Include="Graphics\ResourcesLoader.cpp" />
+    <ClCompile Include="Graphics\Shader.cpp" />
+    <ClCompile Include="Graphics\Terrain\Terrain.cpp" />
+    <ClCompile Include="Graphics\Terrain\TerrainNode.cpp" />
+    <ClCompile Include="Graphics\Texture.cpp" />
+    <ClCompile Include="Graphics\VertexArray.cpp" />
+    <ClCompile Include="Graphics\VK\VKAllocator.cpp" />
+    <ClCompile Include="Graphics\VK\VKBase.cpp" />
+    <ClCompile Include="Graphics\VK\VKBuffer.cpp" />
+    <ClCompile Include="Graphics\VK\VKDebug.cpp" />
+    <ClCompile Include="Graphics\VK\VKDrawIndirectBuffer.cpp" />
+    <ClCompile Include="Graphics\VK\VKFramebuffer.cpp" />
+    <ClCompile Include="Graphics\VK\VKIndexBuffer.cpp" />
+    <ClCompile Include="Graphics\VK\VKRenderer.cpp" />
+    <ClCompile Include="Graphics\VK\VKShader.cpp" />
+    <ClCompile Include="Graphics\VK\VKSSBO.cpp" />
+    <ClCompile Include="Graphics\VK\VKSwapChain.cpp" />
+    <ClCompile Include="Graphics\VK\VKTexture2D.cpp" />
+    <ClCompile Include="Graphics\VK\VKTexture3D.cpp" />
+    <ClCompile Include="Graphics\VK\VKTextureCube.cpp" />
+    <ClCompile Include="Graphics\VK\VKUniformBuffer.cpp" />
+    <ClCompile Include="Graphics\VK\VKUtils.cpp" />
+    <ClCompile Include="Graphics\VK\VKVertexArray.cpp" />
+    <ClCompile Include="Program\Allocator.cpp" />
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Program\FileManager.cpp" />
     <ClCompile Include="Game\ComponentManagers\ModelManager.cpp" />
     <ClCompile Include="Game\ComponentManagers\ParticleManager.cpp" />
     <ClCompile Include="Game\ComponentManagers\ScriptManager.cpp" />
@@ -46,66 +110,7 @@
     <ClCompile Include="Game\UI\Button.cpp" />
     <ClCompile Include="Game\UI\UIManager.cpp" />
     <ClCompile Include="Game\UI\Widget.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11SSBO.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11Texture3D.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11UniformBuffer.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11Utils.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11Texture2D.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11Framebuffer.cpp" />
-    <ClCompile Include="Graphics\FrameGraph.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11Shader.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11IndexBuffer.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11VertexArray.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11VertexBuffer.cpp" />
-    <ClCompile Include="Graphics\D3D11\D3D11Renderer.cpp" />
-    <ClCompile Include="Graphics\GL\GLSSBO.cpp" />
-    <ClCompile Include="Graphics\GL\GLDrawIndirectBuffer.cpp" />
-    <ClCompile Include="Graphics\GL\GLTexture3D.cpp" />
-    <ClCompile Include="Graphics\Animation\AnimationController.cpp" />
-    <ClCompile Include="Graphics\Effects\DebugDrawManager.cpp" />
-    <ClCompile Include="Graphics\GL\GLUniformBuffer.cpp" />
-    <ClCompile Include="Graphics\Effects\CascadedShadowMap.cpp" />
-    <ClCompile Include="Graphics\GL\GLVertexArray.cpp" />
-    <ClCompile Include="Graphics\GL\GLIndexBuffer.cpp" />
-    <ClCompile Include="Graphics\Effects\MainView.cpp" />
-    <ClCompile Include="Graphics\MeshDefaults.cpp" />
     <ClCompile Include="Game\ComponentManagers\LightManager.cpp" />
-    <ClCompile Include="Graphics\Animation\AnimatedModel.cpp" />
-    <ClCompile Include="Graphics\Camera\Camera.cpp" />
-    <ClCompile Include="Graphics\Camera\FPSCamera.cpp" />
-    <ClCompile Include="Graphics\Camera\Frustum.cpp" />
-    <ClCompile Include="Graphics\Font.cpp" />
-    <ClCompile Include="Graphics\GL\GLFramebuffer.cpp" />
-    <ClCompile Include="Graphics\GL\GLRenderer.cpp" />
-    <ClCompile Include="Graphics\GL\GLShader.cpp" />
-    <ClCompile Include="Graphics\GL\GLTexture2D.cpp" />
-    <ClCompile Include="Graphics\GL\GLTextureCube.cpp" />
-    <ClCompile Include="Graphics\GL\GLUtils.cpp" />
-    <ClCompile Include="Graphics\GL\GLVertexBuffer.cpp" />
-    <ClCompile Include="Graphics\Material.cpp" />
-    <ClCompile Include="Graphics\Model.cpp" />
-    <ClCompile Include="Graphics\ParticleSystem.cpp" />
-    <ClCompile Include="Graphics\Renderer.cpp" />
-    <ClCompile Include="Graphics\ResourcesLoader.cpp" />
-    <ClCompile Include="Graphics\Shader.cpp" />
-    <ClCompile Include="Graphics\Terrain\Terrain.cpp" />
-    <ClCompile Include="Graphics\Terrain\TerrainNode.cpp" />
-    <ClCompile Include="Graphics\Texture.cpp" />
-    <ClCompile Include="Graphics\VK\VKBase.cpp" />
-    <ClCompile Include="Graphics\VK\VKBuffer.cpp" />
-    <ClCompile Include="Graphics\VK\VKDebug.cpp" />
-    <ClCompile Include="Graphics\VK\VKFramebuffer.cpp" />
-    <ClCompile Include="Graphics\VK\VKRenderer.cpp" />
-    <ClCompile Include="Graphics\VK\VKShader.cpp" />
-    <ClCompile Include="Graphics\VK\VKSwapChain.cpp" />
-    <ClCompile Include="Graphics\VK\VKTexture2D.cpp" />
-    <ClCompile Include="Graphics\VK\VKUtils.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMRenderer.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMUtils.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMFramebuffer.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMIndexBuffer.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMVertexArray.cpp" />
-    <ClCompile Include="Graphics\GXM\GXMVertexBuffer.cpp" />
     <ClCompile Include="Physics\Collider.cpp" />
     <ClCompile Include="Game\ComponentManagers\PhysicsManager.cpp" />
     <ClCompile Include="Physics\Ray.cpp" />
@@ -117,26 +122,9 @@
     <ClCompile Include="Program\Serializer.cpp" />
     <ClCompile Include="Program\Utils.cpp" />
     <ClCompile Include="Program\Window.cpp" />
-    <ClCompile Include="Graphics\VertexArray.cpp" />
-    <ClCompile Include="Graphics\Effects\ProjectedGridWater.cpp" />
     <ClCompile Include="Game\ComponentManagers\SoundManager.cpp" />
-    <ClCompile Include="Graphics\Effects\RenderingPath.cpp" />
-    <ClCompile Include="Program\PSVCompiler.cpp" />
-    <ClCompile Include="PSVitaApplication.cpp" />
-    <ClCompile Include="Graphics\Effects\PSVitaRenderer.cpp" />
     <ClCompile Include="Sound\SoundSource.cpp" />
-    <ClCompile Include="Graphics\VK\VKIndexBuffer.cpp" />
-    <ClCompile Include="Graphics\VK\VKVertexArray.cpp" />
-    <ClCompile Include="Graphics\VK\VKUniformBuffer.cpp" />
-    <ClCompile Include="Graphics\VK\VKTextureCube.cpp" />
     <ClCompile Include="stb.cpp" />
-    <ClCompile Include="Graphics\Effects\TimeOfDayManager.cpp" />
-    <ClCompile Include="Graphics\Effects\VCTGI.cpp" />
-    <ClCompile Include="Graphics\VK\VKAllocator.cpp" />
-    <ClCompile Include="Graphics\VK\VKTexture3D.cpp" />
-    <ClCompile Include="Graphics\VK\VKSSBO.cpp" />
-    <ClCompile Include="Graphics\Effects\VolumetricClouds.cpp" />
-    <ClCompile Include="Graphics\VK\VKDrawIndirectBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AI\AIObject.h" />
@@ -144,16 +132,89 @@
     <ClInclude Include="AI\AStarGrid.h" />
     <ClInclude Include="AI\AStarNode.h" />
     <ClInclude Include="AI\AStarNodeHeap.h" />
-    <ClInclude Include="Program\Allocator.h" />
-    <ClInclude Include="Application.h" />
-    <ClInclude Include="Graphics\GXM\GXMShader.h" />
-    <ClInclude Include="Graphics\GXM\GXMTexture2D.h" />
-    <ClInclude Include="Graphics\GXM\GXMUniformBuffer.h" />
-    <ClInclude Include="Program\FileManager.h" />
+    <ClInclude Include="Graphics\Animation\AnimatedModel.h" />
+    <ClInclude Include="Graphics\Animation\AnimationController.h" />
+    <ClInclude Include="Graphics\Buffers.h" />
+    <ClInclude Include="Graphics\Camera\Camera.h" />
+    <ClInclude Include="Graphics\Camera\FPSCamera.h" />
+    <ClInclude Include="Graphics\Camera\Frustum.h" />
     <ClInclude Include="Graphics\D3D11\D3D11DrawIndirectBuffer.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11Framebuffer.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11IndexBuffer.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11Renderer.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11Shader.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11SSBO.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11Texture2D.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11Texture3D.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11UniformBuffer.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11Utils.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11VertexArray.h" />
+    <ClInclude Include="Graphics\D3D11\D3D11VertexBuffer.h" />
+    <ClInclude Include="Graphics\Effects\CascadedShadowMap.h" />
+    <ClInclude Include="Graphics\Effects\DebugDrawManager.h" />
     <ClInclude Include="Graphics\Effects\DeferredRenderer.h" />
     <ClInclude Include="Graphics\Effects\ForwardPlusRenderer.h" />
     <ClInclude Include="Graphics\Effects\ForwardRenderer.h" />
+    <ClInclude Include="Graphics\Effects\MainView.h" />
+    <ClInclude Include="Graphics\Effects\ProjectedGridWater.h" />
+    <ClInclude Include="Graphics\Effects\RenderingPath.h" />
+    <ClInclude Include="Graphics\Effects\TimeOfDayManager.h" />
+    <ClInclude Include="Graphics\Effects\VCTGI.h" />
+    <ClInclude Include="Graphics\Effects\VolumetricClouds.h" />
+    <ClInclude Include="Graphics\Font.h" />
+    <ClInclude Include="Graphics\Framebuffer.h" />
+    <ClInclude Include="Graphics\FrameGraph.h" />
+    <ClInclude Include="Graphics\GL\GLDrawIndirectBuffer.h" />
+    <ClInclude Include="Graphics\GL\GLFramebuffer.h" />
+    <ClInclude Include="Graphics\GL\GLIndexBuffer.h" />
+    <ClInclude Include="Graphics\GL\GLRenderer.h" />
+    <ClInclude Include="Graphics\GL\GLShader.h" />
+    <ClInclude Include="Graphics\GL\GLSSBO.h" />
+    <ClInclude Include="Graphics\GL\GLTexture2D.h" />
+    <ClInclude Include="Graphics\GL\GLTexture3D.h" />
+    <ClInclude Include="Graphics\GL\GLTextureCube.h" />
+    <ClInclude Include="Graphics\GL\GLUniformBuffer.h" />
+    <ClInclude Include="Graphics\GL\GLUtils.h" />
+    <ClInclude Include="Graphics\GL\GLVertexArray.h" />
+    <ClInclude Include="Graphics\GL\GLVertexBuffer.h" />
+    <ClInclude Include="Graphics\Lights.h" />
+    <ClInclude Include="Graphics\Material.h" />
+    <ClInclude Include="Graphics\MaterialInfo.h" />
+    <ClInclude Include="Graphics\Mesh.h" />
+    <ClInclude Include="Graphics\MeshDefaults.h" />
+    <ClInclude Include="Graphics\Model.h" />
+    <ClInclude Include="Graphics\ParticleSystem.h" />
+    <ClInclude Include="Graphics\Renderer.h" />
+    <ClInclude Include="Graphics\RendererStructs.h" />
+    <ClInclude Include="Graphics\ResourcesLoader.h" />
+    <ClInclude Include="Graphics\Shader.h" />
+    <ClInclude Include="Graphics\Terrain\Terrain.h" />
+    <ClInclude Include="Graphics\Terrain\TerrainData.h" />
+    <ClInclude Include="Graphics\Terrain\TerrainNode.h" />
+    <ClInclude Include="Graphics\Texture.h" />
+    <ClInclude Include="Graphics\UniformBufferTypes.h" />
+    <ClInclude Include="Graphics\VertexArray.h" />
+    <ClInclude Include="Graphics\VertexTypes.h" />
+    <ClInclude Include="Graphics\VK\VKAllocator.h" />
+    <ClInclude Include="Graphics\VK\VKBase.h" />
+    <ClInclude Include="Graphics\VK\VKBuffer.h" />
+    <ClInclude Include="Graphics\VK\VKDebug.h" />
+    <ClInclude Include="Graphics\VK\VKDrawIndirectBuffer.h" />
+    <ClInclude Include="Graphics\VK\VKFramebuffer.h" />
+    <ClInclude Include="Graphics\VK\VKIndexBuffer.h" />
+    <ClInclude Include="Graphics\VK\VKRenderer.h" />
+    <ClInclude Include="Graphics\VK\VKShader.h" />
+    <ClInclude Include="Graphics\VK\VKSSBO.h" />
+    <ClInclude Include="Graphics\VK\VKSwapChain.h" />
+    <ClInclude Include="Graphics\VK\VKTexture2D.h" />
+    <ClInclude Include="Graphics\VK\VKTexture3D.h" />
+    <ClInclude Include="Graphics\VK\VKTextureCube.h" />
+    <ClInclude Include="Graphics\VK\VKUniformBuffer.h" />
+    <ClInclude Include="Graphics\VK\VKUtils.h" />
+    <ClInclude Include="Graphics\VK\VKVertexArray.h" />
+    <ClInclude Include="Program\Allocator.h" />
+    <ClInclude Include="Application.h" />
+    <ClInclude Include="Program\FileManager.h" />
     <ClInclude Include="Game\ComponentManagers\ModelManager.h" />
     <ClInclude Include="Game\ComponentManagers\ParticleManager.h" />
     <ClInclude Include="Game\ComponentManagers\ScriptManager.h" />
@@ -167,75 +228,7 @@
     <ClInclude Include="Game\UI\Button.h" />
     <ClInclude Include="Game\UI\UIManager.h" />
     <ClInclude Include="Game\UI\Widget.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11SSBO.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11Texture3D.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11UniformBuffer.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11Utils.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11Texture2D.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11Framebuffer.h" />
-    <ClInclude Include="Graphics\FrameGraph.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11Shader.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11IndexBuffer.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11VertexArray.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11VertexBuffer.h" />
-    <ClInclude Include="Graphics\D3D11\D3D11Renderer.h" />
-    <ClInclude Include="Graphics\Buffers.h" />
-    <ClInclude Include="Graphics\GL\GLSSBO.h" />
-    <ClInclude Include="Graphics\GL\GLDrawIndirectBuffer.h" />
-    <ClInclude Include="Graphics\GL\GLTexture3D.h" />
-    <ClInclude Include="Graphics\Animation\AnimationController.h" />
-    <ClInclude Include="Graphics\Effects\DebugDrawManager.h" />
-    <ClInclude Include="Graphics\GL\GLUniformBuffer.h" />
-    <ClInclude Include="Graphics\Effects\CascadedShadowMap.h" />
-    <ClInclude Include="Graphics\GL\GLVertexArray.h" />
-    <ClInclude Include="Graphics\GL\GLIndexBuffer.h" />
-    <ClInclude Include="Graphics\RendererStructs.h" />
-    <ClInclude Include="Graphics\Effects\MainView.h" />
-    <ClInclude Include="Graphics\MeshDefaults.h" />
     <ClInclude Include="Game\ComponentManagers\LightManager.h" />
-    <ClInclude Include="Graphics\Animation\AnimatedModel.h" />
-    <ClInclude Include="Graphics\Camera\Camera.h" />
-    <ClInclude Include="Graphics\Camera\FPSCamera.h" />
-    <ClInclude Include="Graphics\Camera\Frustum.h" />
-    <ClInclude Include="Graphics\Font.h" />
-    <ClInclude Include="Graphics\Framebuffer.h" />
-    <ClInclude Include="Graphics\GL\GLFramebuffer.h" />
-    <ClInclude Include="Graphics\GL\GLRenderer.h" />
-    <ClInclude Include="Graphics\GL\GLShader.h" />
-    <ClInclude Include="Graphics\GL\GLTexture2D.h" />
-    <ClInclude Include="Graphics\GL\GLTextureCube.h" />
-    <ClInclude Include="Graphics\GL\GLUtils.h" />
-    <ClInclude Include="Graphics\GL\GLVertexBuffer.h" />
-    <ClInclude Include="Graphics\Lights.h" />
-    <ClInclude Include="Graphics\Material.h" />
-    <ClInclude Include="Graphics\MaterialInfo.h" />
-    <ClInclude Include="Graphics\Mesh.h" />
-    <ClInclude Include="Graphics\Model.h" />
-    <ClInclude Include="Graphics\ParticleSystem.h" />
-    <ClInclude Include="Graphics\Renderer.h" />
-    <ClInclude Include="Graphics\ResourcesLoader.h" />
-    <ClInclude Include="Graphics\Shader.h" />
-    <ClInclude Include="Graphics\Terrain\Terrain.h" />
-    <ClInclude Include="Graphics\Terrain\TerrainData.h" />
-    <ClInclude Include="Graphics\Terrain\TerrainNode.h" />
-    <ClInclude Include="Graphics\Texture.h" />
-    <ClInclude Include="Graphics\UniformBufferTypes.h" />
-    <ClInclude Include="Graphics\VertexTypes.h" />
-    <ClInclude Include="Graphics\VK\VKBase.h" />
-    <ClInclude Include="Graphics\VK\VKBuffer.h" />
-    <ClInclude Include="Graphics\VK\VKDebug.h" />
-    <ClInclude Include="Graphics\VK\VKFramebuffer.h" />
-    <ClInclude Include="Graphics\VK\VKRenderer.h" />
-    <ClInclude Include="Graphics\VK\VKShader.h" />
-    <ClInclude Include="Graphics\VK\VKSwapChain.h" />
-    <ClInclude Include="Graphics\VK\VKTexture2D.h" />
-    <ClInclude Include="Graphics\VK\VKUtils.h" />
-    <ClInclude Include="Graphics\GXM\GXMRenderer.h" />
-    <ClInclude Include="Graphics\GXM\GXMUtils.h" />
-    <ClInclude Include="Graphics\GXM\GXMFramebuffer.h" />
-    <ClInclude Include="Graphics\GXM\GXMIndexBuffer.h" />
-    <ClInclude Include="Graphics\GXM\GXMVertexArray.h" />
-    <ClInclude Include="Graphics\GXM\GXMVertexBuffer.h" />
     <ClInclude Include="Physics\BoundingVolumes.h" />
     <ClInclude Include="Physics\Collider.h" />
     <ClInclude Include="Game\ComponentManagers\PhysicsManager.h" />
@@ -249,56 +242,39 @@
     <ClInclude Include="Program\StringID.h" />
     <ClInclude Include="Program\Utils.h" />
     <ClInclude Include="Program\Window.h" />
-    <ClInclude Include="Graphics\VertexArray.h" />
-    <ClInclude Include="Graphics\Effects\ProjectedGridWater.h" />
-    <ClInclude Include="Graphics\Effects\RenderingPath.h" />
-    <ClInclude Include="Program\PSVCompiler.h" />
-    <ClInclude Include="PSVitaApplication.h" />
-    <ClInclude Include="Graphics\Effects\PSVitaRenderer.h" />
     <ClInclude Include="Sound\SoundSource.h" />
     <ClInclude Include="Game\ComponentManagers\SoundManager.h" />
-    <ClInclude Include="Graphics\VK\VKIndexBuffer.h" />
-    <ClInclude Include="Graphics\VK\VKVertexArray.h" />
-    <ClInclude Include="Graphics\VK\VKUniformBuffer.h" />
-    <ClInclude Include="Graphics\VK\VKTextureCube.h" />
-    <ClInclude Include="Graphics\Effects\TimeOfDayManager.h" />
-    <ClInclude Include="Graphics\Effects\VCTGI.h" />
-    <ClInclude Include="Graphics\VK\VKAllocator.h" />
-    <ClInclude Include="Graphics\VK\VKTexture3D.h" />
-    <ClInclude Include="Graphics\VK\VKSSBO.h" />
-    <ClInclude Include="Graphics\Effects\VolumetricClouds.h" />
-    <ClInclude Include="Graphics\VK\VKDrawIndirectBuffer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7EA2B1D8-42E4-43A4-B80A-856E4419DB53}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Engine</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -322,7 +298,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)include;C:\VulkanSDK\1.1.77.0\Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Engine;$(SolutionDir)include;C:\VulkanSDK\1.1.77.0\Include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\VulkanSDK\1.1.77.0\Lib32;$(SolutionDir)lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -345,7 +321,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;NOMINMAX;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine;$(SolutionDir);$(VITASDK)\arm-vita-eabi\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine;$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

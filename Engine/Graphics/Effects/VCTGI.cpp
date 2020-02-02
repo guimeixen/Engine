@@ -167,7 +167,7 @@ namespace Engine
 		fillVoxelsVisBufferPass.AddBufferOutput("voxelPositionsBuffer", voxelsPositionsBuffer);
 		fillVoxelsVisBufferPass.AddBufferOutput("voxelsIndirectBuffer", indirectBuffer);
 
-		fillVoxelsVisBufferPass.SetOnBarriers([this]()
+		fillVoxelsVisBufferPass.OnBarriers([this]()
 		{
 			// Make sure the voxel texture has been written to and the two buffers have been read
 			BarrierImage bi = {};
@@ -193,7 +193,7 @@ namespace Engine
 			renderer->PerformBarrier(b);
 		});
 
-		fillVoxelsVisBufferPass.SetOnExecute([this]()
+		fillVoxelsVisBufferPass.OnExecute([this]()
 		{
 			static const unsigned int localSize = 4;
 
@@ -220,7 +220,7 @@ namespace Engine
 		mipMapsPass.AddImageInput("voxelTexture");
 		mipMapsPass.AddImageOutput("voxelTextureMipmapped", voxelTexture);		// So the framegraph adds this pass to the ordered pass list
 
-		mipMapsPass.SetOnBarriers([this]()
+		mipMapsPass.OnBarriers([this]()
 		{
 			BarrierImage bi = {};
 			bi.image = voxelTexture;
@@ -236,7 +236,7 @@ namespace Engine
 			renderer->PerformBarrier(b);
 		});
 
-		mipMapsPass.SetOnExecute([this]()
+		mipMapsPass.OnExecute([this]()
 		{
 			const unsigned int secondMipRes = VOXEL_RES >> 1;
 

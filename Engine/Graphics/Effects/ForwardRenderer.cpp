@@ -128,7 +128,7 @@ namespace Engine
 		hdrPass.AddDepthOutput("depth", depthAttachment);
 		
 
-		hdrPass.SetOnSetup([this](const Pass *thisPass)
+		hdrPass.OnSetup([this](const Pass *thisPass)
 		{
 			hdrFB = thisPass->GetFramebuffer();
 
@@ -139,7 +139,7 @@ namespace Engine
 		});
 
 
-		hdrPass.SetOnBarriers([this]()
+		hdrPass.OnBarriers([this]()
 		{
 			Barrier b = {};
 
@@ -165,7 +165,7 @@ namespace Engine
 			renderer->PerformBarrier(b);
 		});
 
-		hdrPass.SetOnExecute([this]() {PerformHDRPass(); });
+		hdrPass.OnExecute([this]() {PerformHDRPass(); });
 	}
 
 	void ForwardRenderer::SetupPostProcessPass()
@@ -178,7 +178,7 @@ namespace Engine
 		//postPass.AddTextureInput("computeImg", computeMat->textures[0]);
 		postPass.AddDepthInput("depth");
 
-		postPass.SetOnSetup([this](const Pass *thisPass)
+		postPass.OnSetup([this](const Pass *thisPass)
 		{
 			postProcessFB = thisPass->GetFramebuffer();
 			postProcMatInstance = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Materials/post_process_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -200,13 +200,13 @@ namespace Engine
 			//debugMatInstance->textures[0] = csmFB->GetDepthTexture();
 			//this->renderer->UpdateMaterialInstance(debugMatInstance);
 		});
-		postPass.SetOnResized([this](const Pass *thisPass)
+		postPass.OnResized([this](const Pass *thisPass)
 		{
 			postProcMatInstance->textures[0] = hdrFB->GetColorTextureByIndex(0);
 			postProcMatInstance->textures[1] = hdrFB->GetDepthTexture();
 			postProcMatInstance->textures[2] = upsampleFB[1]->GetColorTexture();
 		});
-		postPass.SetOnExecute([this]() { PerformPostProcessPass(); });
+		postPass.OnExecute([this]() { PerformPostProcessPass(); });
 
 #ifdef EDITOR
 		Engine::AttachmentInfo finalAttach = {};

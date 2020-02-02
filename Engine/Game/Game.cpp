@@ -24,14 +24,11 @@
 #include "Graphics/Animation/AnimatedModel.h"
 #include "Graphics/Effects/ForwardRenderer.h"
 #include "Graphics/Effects/ForwardPlusRenderer.h"
-#include "Graphics/Effects/PSVitaRenderer.h"
 
 #include "include/glm/gtx/quaternion.hpp"
 #include "include/glm/gtc/matrix_transform.hpp"
 
-#ifndef VITA
 #include <Windows.h>
-#endif
 
 #include <cstdio>
 
@@ -73,11 +70,7 @@ namespace Engine
 		particleManager.Init(this);		
 		uiManager.Init(this);
 
-#ifdef VITA
-		renderingPath = new PSVitaRenderer();
-#else
 		renderingPath = new ForwardPlusRenderer();
-#endif
 		renderingPath->Init(this);
 		lightManager.Init(this, &transformManager);
 
@@ -124,15 +117,12 @@ namespace Engine
 
 		editorCam.SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
 		
-#ifndef VITA
 		debugDrawManager = new DebugDrawManager(renderer, scriptManager);
-#endif
+
 		renderer->AddRenderQueueGenerator(&uiManager);
 		renderer->AddRenderQueueGenerator(&modelManager);
 		renderer->AddRenderQueueGenerator(&particleManager);
-#ifndef VITA
 		renderer->AddRenderQueueGenerator(debugDrawManager);
-#endif
 
 #ifdef EDITOR
 		renderingPath->SetMainCamera(&editorCam);
@@ -202,11 +192,9 @@ namespace Engine
 
 	void Game::Render(Renderer *renderer)
 	{
-#ifndef VITA
 		//aiSystem.PrepareDebugDraw();
 		physicsManager.PrepareDebugDraw(debugDrawManager);		
 		debugDrawManager->Update();
-#endif
 		lightManager.Update(mainCamera);
 
 		if (terrain)
@@ -219,9 +207,7 @@ namespace Engine
 		}
 
 		renderingPath->Render();
-#ifndef VITA
 		debugDrawManager->Clear();
-#endif
 	}
 
 	void Game::PartialDispose()
@@ -246,11 +232,9 @@ namespace Engine
 
 	void Game::Dispose()
 	{
-#ifndef VITA
 		// Delete the temp file create by play mode
 		std::remove("Data/temp.bin");
 		std::remove("Data/uitemp.bin");
-#endif
 
 		Log::Print(LogLevel::LEVEL_INFO, "Disposing game\n");
 
@@ -303,7 +287,6 @@ namespace Engine
 
 	bool Game::Save(const std::string &projectFolder, const std::string &projectName)
 	{
-#ifndef VITA
 		if (utils::CreateDir("Data/Levels"))
 		{
 			if (!SaveProjectFile(projectFolder, projectName))
@@ -330,7 +313,6 @@ namespace Engine
 
 			renderingPath->SaveRenderingSettings("Data/Levels/" + projectName + '/' + scenes[currentScene].name + ".rendersettings");
 		}
-#endif
 		return true;
 	}
 
@@ -666,10 +648,8 @@ namespace Engine
 
 		gameState = GameState::STOPPED;
 
-#ifndef VITA
 		std::remove("Data/temp.bin");
 		std::remove("Data/uitemp.bin");
-#endif
 	}
 
 	Entity Game::AddEntity()

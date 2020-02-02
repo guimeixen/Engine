@@ -1,9 +1,5 @@
 #include "Log.h"
 
-#ifdef VITA
-#include "psp2/io/fcntl.h"
-#endif
-
 #include <iostream>
 #include <chrono>
 #include <ctime>
@@ -22,29 +18,12 @@ namespace Engine
 	{
 		int charsWritten = 0;
 
-#ifdef VITA
-		const unsigned int MAX_CHARS = 1024;
-		static char buf[MAX_CHARS];
-
-		va_list argList;
-		va_start(argList, str);
-		charsWritten = vsnprintf(buf, MAX_CHARS, str, argList);
-		va_end(argList);
-
-		int f = sceIoOpen("ux0:data/vita3d_log.txt", SCE_O_CREAT | SCE_O_WRONLY | SCE_O_APPEND, 0777);
-		if (f < 0)
-			return 0;
-
-		sceIoWrite(f, buf, strlen(buf));
-		sceIoClose(f);
-#else
 		va_list argList;
 		va_start(argList, str);
 
 		charsWritten = VPrint(level, str, argList);
 
 		va_end(argList);
-#endif
 
 		return charsWritten;
 	}

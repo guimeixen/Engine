@@ -46,8 +46,6 @@ EditorManager::EditorManager()
 	gameViewSize = ImVec2();
 	availableSize = ImVec2();
 	memset(projectName, 0, 256);
-	memset(vitaAppName, 0, 128);
-	memset(vitaAppTitleID, 0, 10);
 
 	changingPositiveKey = false;
 	changingNegativeKey = false;
@@ -134,7 +132,7 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputMa
 	// Add another render pass to which we will render the post process quad so it can be displayed as an image in the editor
 	Engine::Pass &editorImguiPass = game->GetRenderingPath()->GetFrameGraph().AddPass("EditorImGUI");
 	editorImguiPass.AddTextureInput("final");
-	editorImguiPass.SetOnSetup([this](const Engine::Pass *thisPass)
+	editorImguiPass.OnSetup([this](const Engine::Pass *thisPass)
 	{ 
 		if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
 		{
@@ -142,8 +140,8 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputMa
 		}
 	});
 
-	editorImguiPass.SetOnResized([this](const Engine::Pass *thisPass){});
-	editorImguiPass.SetOnExecute([this]()
+	editorImguiPass.OnResized([this](const Engine::Pass *thisPass){});
+	editorImguiPass.OnExecute([this]()
 	{
 		//if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
 		//	ImGUI_ImplVulkan_CreateOrResizeBuffers(ImGui::GetDrawData()->TotalVtxCount, ImGui::GetDrawData()->TotalIdxCount);
@@ -500,7 +498,6 @@ void EditorManager::OnFocus()
 
 void EditorManager::ShowMainMenuBar()
 {
-	bool wasCompileForVitaSelected = false;
 	bool wasInputSettingsSelected = false;
 
 	ImGui::BeginMainMenuBar();
@@ -518,34 +515,6 @@ void EditorManager::ShowMainMenuBar()
 		if (ImGui::MenuItem("Save", "CTRL+S"))
 		{
 			SaveProject();
-		}
-		if (ImGui::MenuItem("Compile for PS Vita"))
-		{
-			wasCompileForVitaSelected = true;
-			std::ifstream settings(curLevelDir + "/PSVita_Build/settings.txt");
-			if (settings.is_open())
-			{
-				std::string line;
-				while (std::getline(settings, line))
-				{
-					if (line.substr(0, 8) == "appName=")
-					{
-						std::string name = line.substr(8);
-						if (name.length() < 128)
-						{
-							std::strcpy(vitaAppName, name.c_str());
-						}
-					}
-					else if (line.substr(0, 11) == "appTitleID=")
-					{
-						std::string id = line.substr(11);
-						if (id.length() == 9)
-						{
-							strcpy(vitaAppTitleID, id.c_str());
-						}
-					}
-				}
-			}
 		}
 		ImGui::EndMenu();
 	}
@@ -725,32 +694,6 @@ void EditorManager::ShowMainMenuBar()
 
 	ImGui::EndMainMenuBar();
 
-	if (wasCompileForVitaSelected)
-		ImGui::OpenPopup("Compile options");
-
-	bool openCompile = true;			// To show the X button
-	if (ImGui::BeginPopupModal("Compile options", &openCompile, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		ImGui::InputText("App name", vitaAppName, 128, ImGuiInputTextFlags_EnterReturnsTrue);
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Name that appears in LiveArea");
-
-		ImGui::InputText("Title ID", vitaAppTitleID, 10, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsUppercase | ImGuiInputTextFlags_CharsNoBlank);
-		if (ImGui::IsItemHovered())
-			ImGui::SetTooltip("Unique ID. XXXXYYYYY  where X -> unique string of the developer and Y -> unique number for this app");
-
-		ImGui::Text("After it's done, copy the VPK inside the\nfolder PSVita_Build in the project folder");
-
-		if (ImGui::Button("Compile"))
-		{
-			SaveProject();
-			psvCompiler.Compile(game, curLevelDir, projectName, vitaAppName, vitaAppTitleID);
-
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndPopup();
-	}
-
 	if (wasInputSettingsSelected)
 	{
 		ImGui::OpenPopup("Input Settings");
@@ -823,28 +766,6 @@ void EditorManager::ShowMainMenuBar()
 						changingInputMappingIndex = i;
 					}
 				}
-				
-
-				ImGui::Text("Positive Vita button:");
-				ImGui::SameLine();
-				if (ImGui::Selectable(inputManager->GetStringOfVitaButton(im.positiveVitaButton).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
-				{
-					changingPositiveVitaButton = true;
-					changingInputMappingIndex = i;
-				}
-
-				ImGui::Text("Negative Vita button:");
-				ImGui::SameLine();
-				if (ImGui::Selectable(inputManager->GetStringOfVitaButton(im.negativeVitaButton).c_str(), false, ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_DontClosePopups) && ImGui::IsMouseDoubleClicked(0))
-				{
-					changingNegativeVitaButton = true;
-					changingInputMappingIndex = i;
-				}
-
-				ImGui::Checkbox("Use Left Stick X", &im.useLeftAnalogueStickX);
-				ImGui::Checkbox("Use Left Stick Y", &im.useLeftAnalogueStickY);
-				ImGui::Checkbox("Use Right Stick X", &im.useRightAnalogueStickX);
-				ImGui::Checkbox("Use Right Stick Y", &im.useRightAnalogueStickY);
 			}
 			i++;
 		}

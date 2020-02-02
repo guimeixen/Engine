@@ -39,12 +39,11 @@ subject to the following restrictions:
 #include <new> //for placement new
 #endif //BT_USE_PLACEMENT_NEW
 
-// The register keyword is deprecated in C++11 so don't use it.
-#if __cplusplus > 199711L
+/*#if __cplusplus > 199711L*/
 #define BT_REGISTER
-#else
+/*#else
 #define BT_REGISTER register
-#endif
+#endif*/
 
 ///The btAlignedObjectArray template class uses a subset of the stl::vector interface for its methods
 ///It is developed to replace stl::vector to avoid portability issues, including STL alignment issues to add SIMD/SSE data

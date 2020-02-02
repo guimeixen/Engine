@@ -1350,6 +1350,10 @@ void ObjectWindow::HandleScript()
 				ImGui::OpenPopup("Choose:");
 				propertyIndex = i;
 			}
+			ImGui::SameLine();
+			ImGui::Text(": ");
+			ImGui::SameLine();
+			ImGui::Text(editorManager->GetEditorNameManager().GetName(properties[i].e));
 
 			/*if (ImGui::BeginDragDropTarget())
 			{

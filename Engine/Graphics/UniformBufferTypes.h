@@ -23,13 +23,6 @@ namespace Engine
 		glm::vec2 nearFarPlane;	
 	};
 
-	// Used on the Vita
-	struct alignas(16) CameraUBOSimple
-	{
-		glm::mat4 projView;
-		glm::vec4 camPos;
-	};
-
 	struct alignas(16) DirLightUBO
 	{
 		glm::mat4 lightSpaceMatrix[4];

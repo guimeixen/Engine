@@ -2,7 +2,6 @@
 
 #include "Physics/BoundingVolumes.h"
 #include "Physics/Ray.h"
-#include "Program/PSVCompiler.h"
 #include "Program/Input.h"
 
 #include "imgui/imgui.h"
@@ -106,8 +105,6 @@ private:
 	AssetsBrowserWindow assetsBrowserWindow;
 	Gizmo gizmo;
 
-	Engine::PSVCompiler psvCompiler;
-
 	EditorNameManager editorNameManager;
 
 	std::stack<EditorCommand*> undoStack;
@@ -145,16 +142,10 @@ private:
 	bool mousePressed[3] = { false, false, false };
 	float mouseWheel = 0.0f;
 
-	// Vita
-	char vitaAppName[128];
-	char vitaAppTitleID[10];
-
 	// Changing input mapping
 	int changingInputMappingIndex;
 	bool changingPositiveKey;
 	bool changingNegativeKey;
-	bool changingPositiveVitaButton;
-	bool changingNegativeVitaButton;
 	int currentPositiveKeyIndex = 0;
 };
 
