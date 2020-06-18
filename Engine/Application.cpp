@@ -21,6 +21,9 @@ namespace Engine
 
 		renderer = Renderer::Create(window.GetHandle(), api, &fileManager, width, height, window.GetMonitorWidth(), window.GetMonitorHeight());
 
+		if (renderer == nullptr)
+			return false;
+
 		game.Init(&allocator, renderer, &fileManager);
 
 #ifdef EDITOR

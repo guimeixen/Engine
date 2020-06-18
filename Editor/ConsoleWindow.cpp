@@ -4,6 +4,8 @@
 
 #include "Program\Input.h"
 
+#include <iostream>
+
 ConsoleWindow::ConsoleWindow()
 {
 	Engine::Log::SetCallbackFunc([this](Engine::LogLevel level, const char *str)
@@ -59,6 +61,7 @@ void ConsoleWindow::Render()
 
 void ConsoleWindow::AddOutput(Engine::LogLevel logLevel, const char *output)
 {
+	std::cout << outputsIndex << std::endl;
 	if (outputsIndex >= MAX_OUTPUTS)
 	{
 		outputsIndex = MAX_OUTPUTS - 1;
@@ -74,7 +77,9 @@ void ConsoleWindow::AddOutput(Engine::LogLevel logLevel, const char *output)
 
 	outputs[outputsIndex].logLevel = logLevel;
 	
-	outputsIndex++;
+	if (outputsIndex != MAX_OUTPUTS - 1)
+		outputsIndex++;
+	
 	numOutputs++;
 
 	if (numOutputs >= MAX_OUTPUTS)
