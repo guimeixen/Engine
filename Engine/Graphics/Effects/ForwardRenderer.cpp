@@ -7,8 +7,6 @@
 #include "Graphics/MeshDefaults.h"
 #include "Graphics/VertexArray.h"
 
-#include "Data/Shaders/bindings.glsl"
-
 namespace Engine
 {
 	ForwardRenderer::ForwardRenderer()
@@ -29,8 +27,8 @@ namespace Engine
 		frameGraph.Bake(renderer);
 		frameGraph.ExportGraphVizFile();
 	
-		renderer->AddResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
-		renderer->AddResourceToSlot(FORWARD_POINT_LIGHTS_UBO, pointLightsUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
+		renderer->AddResourceToSlot(4, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
+		renderer->AddResourceToSlot(5, pointLightsUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
 
 		renderer->SetupResources();	
 	}
@@ -55,8 +53,7 @@ namespace Engine
 		renderer->UpdateMaterialInstance(downsample16MatInstance);
 		renderer->UpdateMaterialInstance(upsample8MatInstance);
 		renderer->UpdateMaterialInstance(upsample4MatInstance);
-		if (fxaaMat)
-			renderer->UpdateMaterialInstance(fxaaMat);
+		renderer->UpdateMaterialInstance(fxaaMat);
 	}
 
 	void ForwardRenderer::Render()

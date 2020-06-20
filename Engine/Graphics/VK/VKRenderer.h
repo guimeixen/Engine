@@ -36,7 +36,7 @@ namespace Engine
 		std::vector<VkImageView> imageViews;
 		VkSampler sampler;
 		VkImageLayout layout;
-		unsigned int index;
+		unsigned int binding;
 		bool separateMipViews;
 		uint32_t mips;
 	};

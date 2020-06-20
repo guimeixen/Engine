@@ -70,7 +70,7 @@ namespace Engine
 		particleManager.Init(this);		
 		uiManager.Init(this);
 
-		renderingPath = new ForwardRenderer();
+		renderingPath = new ForwardPlusRenderer();
 		renderingPath->Init(this);
 		lightManager.Init(this, &transformManager);
 

@@ -190,23 +190,16 @@ namespace Engine
 					for (size_t j = 0; j < meshesAndMaterials.size(); j++)
 					{
 						const MeshMaterial &mm = meshesAndMaterials[j];
-						const std::vector<ShaderPass>& passes = mm.mat->baseMaterial->GetShaderPasses();
 
-						for (size_t k = 0; k < passCount; k++)
-						{
-							for (size_t l = 0; l < passes.size(); l++)
-							{
-								if (passIds[k] == passes[l].queueID)
-								{
-									RenderItem ri = {};
-									ri.mesh = &mm.mesh;
-									ri.matInstance = mm.mat;
-									ri.shaderPass = l;
-									ri.transform = &localToWorld;
-									outQueues.push_back(ri);
-								}
-							}
-						}
+						RenderItem ri = {};
+						ri.mesh = &mm.mesh;
+						ri.matInstance = mm.mat;
+						ri.transform = &localToWorld;
+						//ri.shaderPass = l;
+						//ri.transform = &localToWorld;
+						//ri.meshParams = &transforms[0][0].x;
+						//ri.meshParamsSize = transforms.size() * sizeof(glm::mat4);
+						outQueues.push_back(ri);
 					}
 				}
 			}

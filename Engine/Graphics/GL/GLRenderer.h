@@ -105,10 +105,10 @@ namespace Engine
 		unsigned int currentBinding = 0;
 		unsigned int currentTextureBinding = 0;
 
-		//Buffer* meshParamsUBO = nullptr;
-		//std::vector<const void*> meshParamsData;
-		//unsigned int meshParamsOffset = 0;
-		//void* buffer[16000];
+		Buffer* meshParamsUBO = nullptr;
+		std::vector<const void*> meshParamsData;
+		unsigned int meshParamsOffset = 0;
+		void* buffer[16000];
 
 		unsigned int instanceDataOffset = 0;
 		std::vector<const void*> instanceData;

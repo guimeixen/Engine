@@ -7,8 +7,6 @@
 #include "Program/Serializer.h"
 #include "Program/Log.h"
 
-#include "Data/Shaders/bindings.glsl"
-
 #include <iostream>
 
 namespace Engine
@@ -17,9 +15,6 @@ namespace Engine
 	{
 		quadMesh = {};
 		enableUI = true;
-
-		fxaaFB = nullptr;
-		fxaaMat = nullptr;
 
 		debugSettings = {};
 		debugSettings.enable = false;
@@ -95,8 +90,8 @@ namespace Engine
 		mainLightUBO = renderer->CreateUniformBuffer(nullptr, sizeof(DirLightUBO));
 
 		// Slot 0 is reserved for the camera ubo and slot 1 for the instance/transform data ssbo
-		renderer->AddResourceToSlot(FRAME_UBO, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
-		renderer->AddResourceToSlot(DIR_LIGHT_UBO, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
+		renderer->AddResourceToSlot(2, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
+		renderer->AddResourceToSlot(3, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
 		
 		renderer->AddResourceToSlot(6, vctgi.GetVoxelTexture(), true, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);	// use the voxel texture as a storage image here
 		renderer->AddResourceToSlot(7, vctgi.GetIndirectBuffer(), PipelineStage::COMPUTE);

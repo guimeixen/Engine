@@ -10,7 +10,7 @@ namespace Engine
 	{
 		VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Validation Layer: %s\n", msg);
+			std::cerr << "Validation Layer: " << msg << '\n';
 
 			return VK_FALSE;
 		}

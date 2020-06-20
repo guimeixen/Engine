@@ -30,7 +30,7 @@ namespace Engine
 
 	int Log::VPrint(LogLevel level, const char *str, va_list argList)
 	{
-		const unsigned int MAX_CHARS = 4096;
+		const unsigned int MAX_CHARS = 1024;
 		static char buffer[MAX_CHARS];
 
 		int charsWritten = vsnprintf(buffer, MAX_CHARS, str, argList);

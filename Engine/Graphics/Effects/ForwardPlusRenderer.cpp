@@ -8,8 +8,6 @@
 
 #include "include/glm/gtc/matrix_transform.hpp"
 
-#include "Data/Shaders/bindings.glsl"
-
 #include <iostream>
 
 namespace Engine
@@ -68,7 +66,7 @@ namespace Engine
 		frameGraph.Bake(renderer);
 		frameGraph.ExportGraphVizFile();
 
-		renderer->AddResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
+		renderer->AddResourceToSlot(4, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
 		renderer->AddResourceToSlot(11, frustumsSSBO, PipelineStage::COMPUTE);
 		renderer->AddResourceToSlot(12, lightListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
 		renderer->AddResourceToSlot(13, opaqueLightIndexListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);

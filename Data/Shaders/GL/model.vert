@@ -21,19 +21,18 @@ out float clipSpaceDepth;
 #ifndef INSTANCING
 uniform mat4 toWorldSpace;
 uniform int instanceDataOffset;
-uniform int startIndex;
+//uniform mat3 normalMatrix;
 #endif
 
 #include include/ubos.glsl
-#include include/utils.glsl
 
-/*#ifdef ANIMATED
+#ifdef ANIMATED
 layout(std140, binding = OBJECT_UBO_BINDING) uniform ObjectUBO
 {
 	mat4 boneTransforms[32];
 	//mat4 boneTransforms[41];		// for two fingers skeleton from mixamo
 };
-#endif*/
+#endif
 
 #ifdef INSTANCING
 const float bendScale = 0.015;
@@ -71,11 +70,11 @@ void main()
 	vec4 wPos;
 	
 #ifdef ANIMATED
-	/*mat4 boneTransform = boneTransforms[boneIDs[0]] * weights[0];
+	mat4 boneTransform = boneTransforms[boneIDs[0]] * weights[0];
 	boneTransform += boneTransforms[boneIDs[1]] * weights[1];
 	boneTransform += boneTransforms[boneIDs[2]] * weights[2];
-	boneTransform += boneTransforms[boneIDs[3]] * weights[3];*/
-	mat4 boneTransform = GetBoneTransform(startIndex);
+	boneTransform += boneTransforms[boneIDs[3]] * weights[3];
+
 	vec4 pos = boneTransform * vec4(inPos, 1.0);		// Transform from bone space to local space
 	vec4 N = boneTransform * vec4(inNormal, 0.0);
 #else

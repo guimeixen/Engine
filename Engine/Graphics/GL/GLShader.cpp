@@ -238,26 +238,7 @@ namespace Engine
 		{
 			if (line.substr(0, 8) == "#include")
 			{
-				std::string pathInShader = line.substr(9);
-				std::string includePath = dir;
-
-				// Check ../
-				// The file still needs to be inside the Data folder
-				// Only goes as far as the Data folder
-				int i = 1;
-				while (pathInShader.substr(3 * i - 3, 3) == "../")
-				{
-					size_t len = includePath.length();
-					includePath.erase(len - (len - includePath.find_last_of("/\\")));		// Like this we also remove the last /, because we add it below
-					i++;
-				}
-
-				if (i > 1)
-					pathInShader = pathInShader.substr(3 * i - 3);			// Remove the ../
-
-				includePath += '/' + pathInShader;		
-
-
+				std::string includePath = dir + "/" + line.substr(9);
 				std::ifstream includeFile(includePath);
 
 				if (includeFile.is_open())
@@ -336,7 +317,6 @@ namespace Engine
 
 		modelMatrixLoc = glGetUniformLocation(program, "toWorldSpace");
 		instanceDataOffsetLoc = glGetUniformLocation(program, "instanceDataOffset");
-		startIndexLoc = glGetUniformLocation(program, "startIndexLoc");
 	}
 
 	void GLShader::Use() const
@@ -358,11 +338,6 @@ namespace Engine
 	void GLShader::SetInstanceDataOffset(int offset)
 	{
 		glUniform1i(instanceDataOffsetLoc, offset);
-	}
-
-	void GLShader::SetStartIndex(int index)
-	{
-		glUniform1i(startIndexLoc, index);
 	}
 
 	void GLShader::SetMat4(const std::string &name, const glm::mat4 &matrix)

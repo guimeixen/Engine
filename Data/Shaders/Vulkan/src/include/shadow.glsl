@@ -1,6 +1,6 @@
 #include "common.glsl"
 
-layout(set = 0, binding = CSM_TEXTURE) uniform sampler2DShadow shadowMap;
+layout(set = 0, binding = 4) uniform sampler2DShadow shadowMap;
 
 float calcShadow(float clipSpaceDepth, float NdotL)
 {

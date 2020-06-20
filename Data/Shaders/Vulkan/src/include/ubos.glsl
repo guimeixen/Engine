@@ -1,7 +1,6 @@
 #include "common.glsl"
-#include "../../bindings.glsl"
 
-layout(std140, set = 0, binding = CAMERA_UBO) uniform ViewUniforms
+layout(std140, set = 0, binding = 0) uniform ViewUniforms
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
@@ -13,12 +12,12 @@ layout(std140, set = 0, binding = CAMERA_UBO) uniform ViewUniforms
 	vec2 nearFarPlane;
 };
 
-layout(std140, set = 0, binding = INSTANCE_DATA_SSBO) readonly buffer InstanceBuffer
+layout(std140, set = 0, binding = 1) readonly buffer InstanceBuffer
 {
 	mat4 instanceData[];
 };
 
-layout(std140, set = 0, binding = FRAME_UBO) uniform FrameUniforms
+layout(std140, set = 0, binding = 2) uniform FrameUniforms
 {
 	mat4 orthoProjX;
 	mat4 orthoProjY;
@@ -92,7 +91,7 @@ layout(std140, set = 0, binding = FRAME_UBO) uniform FrameUniforms
 	float padding;
 };
 
-layout(std140, set = 0, binding = DIR_LIGHT_UBO) uniform DirLight
+layout(std140, set = 0, binding = 3) uniform DirLight
 {
 	mat4 lightSpaceMatrix[4];
 	vec4 dirAndIntensity;			// xyz - direction, w - intensity
@@ -107,7 +106,7 @@ struct PointLight
 	vec4 colorAndRadius;			// xyz - color, w - radius
 };
 
-layout(std140, set = 0, binding = FORWARD_POINT_LIGHTS_UBO) uniform PointLights
+layout(std140, set = 0, binding = 5) uniform PointLights
 {
 	PointLight pointLights[MAX_POINT_LIGHTS];
 	int currentPointLights;

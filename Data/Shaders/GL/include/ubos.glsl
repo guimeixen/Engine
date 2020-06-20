@@ -1,7 +1,6 @@
 #include include/common.glsl
-#include ../bindings.glsl
 
-layout(std140, binding = CAMERA_UBO) uniform ViewUniforms
+layout(std140, binding = 0) uniform ViewUniforms
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
@@ -13,12 +12,12 @@ layout(std140, binding = CAMERA_UBO) uniform ViewUniforms
 	vec2 nearFarPlane;
 };
 
-layout(std140, binding = INSTANCE_DATA_SSBO) readonly buffer InstanceBuffer
+layout(std140, binding = 1) readonly buffer InstanceBuffer
 {
 	mat4 transforms[];
 };
 
-layout(std140, binding = FRAME_UBO) uniform FrameUniforms
+layout(std140, binding = 4) uniform FrameUniforms
 {
 	mat4 orthoProjX;
 	mat4 orthoProjY;
@@ -87,7 +86,7 @@ layout(std140, binding = FRAME_UBO) uniform FrameUniforms
 	uint cloudUpdateBlockSize;
 };
 
-layout(std140, binding = DIR_LIGHT_UBO) uniform DirLight
+layout(std140, binding = 5) uniform DirLight
 {
 	mat4 lightSpaceMatrix[4];
 	vec4 dirAndIntensity;			// xyz - direction, w - intensity
@@ -102,7 +101,7 @@ struct PointLight
 	vec4 colorAndRadius;			// xyz - color, w - radius
 };
 
-layout(std140, binding = 4) uniform PointLights
+layout(std140, binding = 6) uniform PointLights
 {
 	PointLight pointLights[MAX_POINT_LIGHTS];
 	int currentPointLights;

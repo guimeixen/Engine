@@ -6,7 +6,7 @@
 
 struct ConsoleOutput
 {
-	char output[2048];
+	char output[512];
 	Engine::LogLevel logLevel;
 };
 
