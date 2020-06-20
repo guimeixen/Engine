@@ -1,5 +1,11 @@
 #include "FileManager.h"
 
+#ifdef VITA
+#include "Program/Log.h"
+#include "psp2/appmgr.h"
+#include "psp2/kernel/processmgr.h"
+#endif
+
 namespace Engine
 {
 	FileManager::FileManager()
@@ -12,6 +18,19 @@ namespace Engine
 		if (isInit)
 			return;
 
+#ifdef VITA
+		/*SceUID id = sceKernelGetProcessId();
+		char titleID[10] = {};
+		sceAppMgrAppParamGetString(id, 12, titleID, 10);
+		Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "%s\n", titleID);
+
+		vitaAppPath = "ux0:app/";
+		vitaAppPath += titleID;
+		vitaAppPath += '/';*/
+
+		vitaAppPath = "app0:";
+#endif
+
 		isInit = true;
 	}
 
@@ -19,15 +38,33 @@ namespace Engine
 
 	std::ifstream FileManager::OpenForReading(const std::string &path, std::ios_base::openmode mode)
 	{
+#ifdef VITA
+		std::string completePath = vitaAppPath + path;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Opening file: %s\n", completePath.c_str());
+
+		//FILE *f = fopen(completePath.c_str(), mode);
+		std::ifstream f(completePath.c_str(), mode);
+#else
 		//FILE *f = fopen(path.c_str(), mode);
 		std::ifstream f(path.c_str(), mode);
+#endif
 		return f;
 	}
 
 	std::ofstream FileManager::OpenForWriting(const std::string &path, std::ios_base::openmode mode)
 	{
+#ifdef VITA
+		std::string completePath = vitaAppPath + path;
+
+		Log::Print(LogLevel::LEVEL_INFO, "Opening file: %s\n", completePath.c_str());
+
+		//FILE *f = fopen(completePath.c_str(), mode);
+		std::ofstream f(completePath.c_str(), mode);
+#else
 		//FILE *f = fopen(path.c_str(), mode);
 		std::ofstream f(path.c_str(), mode);
+#endif
 		return f;
 	}
 

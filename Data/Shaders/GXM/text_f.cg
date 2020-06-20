@@ -1,0 +1,21 @@
+#include "include/common.cgh"
+
+in float2 inUv : TEXCOORD0;
+in float4 inColor : COLOR0;
+
+uniform sampler2D tex : register(index0);
+
+// Small text
+static const float width = 0.46;
+static const float edgeWidth = 0.19;
+
+float4 main() : COLOR
+{
+	// The further a pixel is the higher the distance from the center. The alpha is the opposite, it decreases the further from the center.
+	// For the correct distance we need to invert the alpha
+	float dist = 1.0 - tex2D(tex, inUv).a;
+	
+	float alpha = 1.0 - smoothstep(width, width + edgeWidth, dist);
+	
+	return float4(inColor.rgb, alpha * inColor.a);
+}

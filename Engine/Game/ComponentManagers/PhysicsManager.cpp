@@ -1639,8 +1639,6 @@ namespace Engine
 		}
 		else
 		{
-			trMap.clear();
-
 			// Read the map to prevent bugs when entities are enabled/disabled with play/stop
 			unsigned int mapSize = 0;
 			s.Read(mapSize);
@@ -1668,7 +1666,7 @@ namespace Engine
 			{
 				s.Read(eid);
 				s.Read(idx);
-				//trMap[eid] = idx;
+				trMap[eid] = idx;
 			}
 
 			s.Read(usedRigidBodies);
@@ -1711,14 +1709,11 @@ namespace Engine
 			for (unsigned int i = 0; i < usedTriggers; i++)
 			{
 				s.Read(eid);
-				//unsigned int idx = trMap[eid];
+				unsigned int idx = trMap[eid];
 
-				TriggerInstance &ti = triggers[i];
+				TriggerInstance &ti = triggers[idx];
 				ti.e.id = eid;
 				ti.tr->Deserialize(*this, s);
-				ti.tr->GetHandle()->setUserIndex((int)ti.e.id);
-
-				trMap[eid] = i;
 			}
 		}
 	}

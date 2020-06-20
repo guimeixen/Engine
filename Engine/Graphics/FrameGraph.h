@@ -119,10 +119,10 @@ namespace Engine
 		void AddBufferOutput(const std::string &name, Buffer *buffer);
 		void AddBufferInput(const std::string &name, Buffer *buffer);
 
-		void OnBarriers(std::function<void()> func) { onBarriers = std::move(func); }
-		void OnExecute(std::function<void()> func) { onExecute = std::move(func); }
-		void OnResized(std::function<void(const Pass *thisPass)> func) { onResized = std::move(func); }
-		void OnSetup(std::function<void(const Pass *thisPass)> func) { onSetup = std::move(func); }
+		void SetOnBarriers(std::function<void()> func) { onBarriers = std::move(func); }
+		void SetOnExecute(std::function<void()> func) { onExecute = std::move(func); }
+		void SetOnResized(std::function<void(const Pass *thisPass)> func) { onResized = std::move(func); }
+		void SetOnSetup(std::function<void(const Pass *thisPass)> func) { onSetup = std::move(func); }
 
 		void OnBarriers() const { onBarriers(); }
 		void Execute() const { onExecute(); }

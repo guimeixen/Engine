@@ -279,6 +279,10 @@ namespace Engine
 		return m;
 	}
 
+	void GLRenderer::ReloadMaterial(Material * baseMaterial)
+	{
+	}
+
 	Texture *GLRenderer::CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData)
 	{
 		unsigned int id = SID(path);
@@ -710,6 +714,8 @@ namespace Engine
 				currentTextureBinding++;
 			}
 		}
+
+		
 	}
 
 	void GLRenderer::AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)

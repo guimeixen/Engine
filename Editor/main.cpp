@@ -29,7 +29,7 @@ int main()
 	const unsigned int HEIGHT = 720;
 
 	MyApplication app;
-	if (!app.Init(Engine::GraphicsAPI::Vulkan, WIDTH, HEIGHT))
+	if (!app.Init(Engine::GraphicsAPI::OpenGL, WIDTH, HEIGHT))
 		return 1;
 
 	return app.Run();

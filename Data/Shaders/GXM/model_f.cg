@@ -1,0 +1,24 @@
+#include "include/ubos.cgh"
+
+in float2 inUv : TEXCOORD0;
+in float3 inNormal : TEXCOORD1;
+in float4 inLightSpacePos : TEXCOORD2;
+
+uniform sampler2D shadowMap : register(SHADOW_MAP_SLOT);
+uniform sampler2D diffuseTex : register(index0);
+
+float4 main()
+{ 
+	float4 tex = tex2D(diffuseTex, inUv);
+	
+	//inLightSpacePos.z -= 0.0015;
+	
+	float shadow = f1tex2Dproj<float>(shadowMap, inLightSpacePos);
+	
+	float3 lighting = max(dot(inNormal, mainLight.dirAndIntensity.xyz), 0.0) * mainLight.dirLightColor.xyz * mainLight.dirAndIntensity.w;
+	lighting *= shadow;
+	lighting += float3(mainLight.dirLightColor.w);
+	tex.rgb *= lighting;
+	
+	return tex;
+}

@@ -10,7 +10,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#ifndef VITA
 #include <filesystem>
+#endif
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -254,7 +256,11 @@ namespace Engine
 
 		bool DirectoryExists(const std::string &path)
 		{
-			return std::filesystem::exists(path);
+#ifndef VITA
+			return std::experimental::filesystem::exists(path);
+#else
+			return false;
+#endif
 		}
 
 		std::string RemoveExtensionFromFilePath(const std::string &path)

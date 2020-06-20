@@ -1,5 +1,6 @@
 #include "Renderer.h"
 
+#ifndef VITA
 #include "GL/GLUtils.h"
 #include "VK/VKUtils.h"
 #include "GL/GLRenderer.h"
@@ -8,6 +9,11 @@
 #include "D3D11/D3D11Utils.h"
 
 #include "include/GLFW/glfw3.h"
+
+#else
+#include "GXM/GXMRenderer.h"
+#include "GXM/GXMUtils.h"
+#endif
 
 #include "Material.h"
 
@@ -24,6 +30,7 @@ namespace Engine
 	{
 		Renderer *renderer = nullptr;
 
+#ifndef VITA
 		if (api == GraphicsAPI::OpenGL)
 		{
 			renderer = new GLRenderer(fileManager, static_cast<GLuint>(width), static_cast<GLuint>(height));
@@ -49,6 +56,16 @@ namespace Engine
 
 			return renderer;
 		}
+#else
+		if (api == GraphicsAPI::GXM)
+		{
+			renderer = new GXMRenderer(fileManager);
+			if (!renderer->Init())
+				return nullptr;
+
+			return renderer;
+		}
+#endif
 
 #ifdef _WIN32
 		else if (api == GraphicsAPI::D3D11)
@@ -68,6 +85,7 @@ namespace Engine
 
 	unsigned int Renderer::GetBlendFactorValue(BlendFactor blendFactor)
 	{
+#ifndef VITA
 		switch (currentAPI)
 		{
 		case GraphicsAPI::OpenGL:
@@ -79,13 +97,19 @@ namespace Engine
 		case GraphicsAPI::D3D11:
 			return d3d11utils::GetBlendFactor(blendFactor);
 			break;
+		case GraphicsAPI::GXM:
+			break;
 		}
 
 		return 0;
+#else
+		return gxmutils::GetBlendFactorValue(blendFactor);
+#endif
 	}
 
 	unsigned int Renderer::GetTopologyValue(Topology topology)
 	{
+#ifndef VITA
 		switch (currentAPI)
 		{
 		case GraphicsAPI::OpenGL:
@@ -97,13 +121,19 @@ namespace Engine
 		case GraphicsAPI::D3D11:
 			return d3d11utils::GetTopology(topology);
 			break;
+		case GraphicsAPI::GXM:
+			break;
 		}
 
 		return 0;
+#else
+		return gxmutils::GetTopology(topology);
+#endif
 	}
 
 	unsigned int Renderer::GetDepthFunc(const std::string &func)
 	{
+#ifndef VITA
 		switch (currentAPI)
 		{
 		case GraphicsAPI::OpenGL:
@@ -115,13 +145,19 @@ namespace Engine
 		case GraphicsAPI::D3D11:
 			return d3d11utils::GetDepthFunc(func);
 			break;
+		case GraphicsAPI::GXM:
+			break;
 		}
 
 		return 0;
+#else
+		return gxmutils::GetDepthFunc(func);
+#endif
 	}
 
 	unsigned int Renderer::GetCullMode(const std::string &mode)
 	{
+#ifndef VITA
 		switch (currentAPI)
 		{
 		case GraphicsAPI::OpenGL:
@@ -133,13 +169,19 @@ namespace Engine
 		case GraphicsAPI::D3D11:
 			return d3d11utils::GetCullMode(mode);
 			break;
+		case GraphicsAPI::GXM:
+			break;
 		}
 
 		return 0;
+#else
+		return gxmutils::GetCullMode(mode);
+#endif
 	}
 
 	unsigned int Renderer::GetFrontFace(const std::string &face)
 	{
+#ifndef VITA
 		switch (currentAPI)
 		{
 		case GraphicsAPI::OpenGL:
@@ -151,9 +193,14 @@ namespace Engine
 		case GraphicsAPI::D3D11:
 			return d3d11utils::GetFrontFace(face);
 			break;
+		case GraphicsAPI::GXM:
+			break;
 		}
 
 		return 0;
+#else
+		return gxmutils::GetFrontFace(face);
+#endif
 	}
 
 	std::vector<VisibilityIndices> Renderer::Cull(unsigned int queueAndFrustumCount, unsigned int *queueIDs, const Frustum *frustums)

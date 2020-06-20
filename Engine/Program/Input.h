@@ -72,6 +72,34 @@ namespace Engine
 		KEY_LEFT_CONTROL = 341,
 	};
 
+	enum VitaButtons
+	{
+		VITA_SELECT				= 0x00000001,
+		VITA_L3					= 0x00000002,
+		VITA_R3					= 0x00000004,
+		VITA_START				= 0x00000008,
+		VITA_UP					= 0x00000010,
+		VITA_RIGHT				= 0x00000020,
+		VITA_DOWN				= 0x00000040,
+		VITA_LEFT				= 0x00000080,
+		VITA_LTRIGGER			= 0x00000100,
+		VITA_L2					= VITA_LTRIGGER,
+		VITA_RTRIGGER			= 0x00000200,
+		VITA_R2					= VITA_RTRIGGER,
+		VITA_L1					= 0x00000400,
+		VITA_R1					= 0x00000800,
+		VITA_TRIANGLE			= 0x00001000,
+		VITA_CIRCLE				= 0x00002000,
+		VITA_CROSS				= 0x00004000,
+		VITA_SQUARE				= 0x00008000,
+		VITA_INTERCEPTED		= 0x00010000,            //!< Input not available because intercepted by another application
+		VITA_PSBUTTON			= VITA_INTERCEPTED,
+		VITA_HEADPHONE			= 0x00080000,            //!< Headphone plugged in.
+		VITA_VOLUP				= 0x00100000,
+		VITA_VOLDOWN			= 0x00200000,
+		VITA_POWER				= 0x40000000
+	};
+
 	struct Key
 	{
 		bool state;
@@ -97,7 +125,13 @@ namespace Engine
 		//unsigned int id;
 		Keys positiveKey;
 		Keys negativeKey;
+		VitaButtons positiveVitaButton;
+		VitaButtons negativeVitaButton;
 		MouseButtonType mouseButton;
+		bool useLeftAnalogueStickX;
+		bool useLeftAnalogueStickY;
+		bool useRightAnalogueStickX;
+		bool useRightAnalogueStickY;
 	};
 
 	class FileManager;
@@ -124,11 +158,18 @@ namespace Engine
 		bool IsMousePressed(int button) const;
 		bool IsMouseButtonDown(int button) const;
 		float GetScrollWheelY() const { return scrollWheelY; }
+		float GetLeftAnalogueStickX() const { return leftStickX; }
+		float GetLeftAnalogueStickY() const { return leftStickY; }
+		float GetRightAnalogueStickX() const { return rightStickX; }
+		float GetRightAnalogueStickY() const { return rightStickY; }
+		bool IsVitaButtonDown(int button);
+		bool WasVitaButtonReleased(int button);
 		float GetAxis(const std::string &name);
 		bool GetAction(const std::string &name);
 
 		std::unordered_map<std::string, InputMapping> &GetInputMappings() { return inputMappings; }
 		const std::string &GetStringOfKey(Keys key) { return keysToString[key]; }
+		const std::string &GetStringOfVitaButton(VitaButtons button) { return vitaButtonsToString[button]; }
 
 		void SetMousePosition(const glm::vec2 &pos);
 		const glm::vec2 &GetMousePosition() const { return mousePosition; }
@@ -137,6 +178,8 @@ namespace Engine
 		void UpdateChar(unsigned char c);
 		void SetMouseButtonState(int button, int action);
 		void SetScrollWheelYOffset(float yoffset);
+		void UpdateVitaButtons(int buttons);
+		void UpdateVitaSticks(unsigned char leftStickX, unsigned char leftStickY, unsigned char rightStickX, unsigned char rightStickY);
 
 	private:
 		Key keys[512];
@@ -148,7 +191,16 @@ namespace Engine
 		bool charUpdated;
 		float scrollWheelY;
 
+		// Vita
+		int buttons;
+		int lastButtons;
+		float leftStickX;			// Between -1 and 1
+		float leftStickY;
+		float rightStickX;
+		float rightStickY;
+
 		std::unordered_map<unsigned short, std::string> keysToString;
+		std::unordered_map<unsigned int, std::string> vitaButtonsToString;
 		std::unordered_map<std::string, InputMapping> inputMappings;
 	};
 
@@ -169,6 +221,12 @@ namespace Engine
 		static bool MouseMoved() { return inputManager->MouseMoved(); }
 		static const glm::vec2 &GetMousePosition() { return inputManager->GetMousePosition(); }
 		static float GetScrollWheelY() { return inputManager->GetScrollWheelY(); }
+		static float GetLeftAnalogueStickX() { return inputManager->GetLeftAnalogueStickX(); }
+		static float GetLeftAnalogueStickY() { return inputManager->GetLeftAnalogueStickY(); }
+		static float GetRightAnalogueStickX() { return inputManager->GetRightAnalogueStickX(); }
+		static float GetRightAnalogueStickY() { return inputManager->GetRightAnalogueStickY(); }
+		static bool IsVitaButtonDown(int button) { return inputManager->IsVitaButtonDown(button); }
+		static bool WasVitaButtonReleased(int button) { return inputManager->WasVitaButtonReleased(button); }
 		static float GetAxis(const std::string &name) { return inputManager->GetAxis(name); }
 		static bool GetAction(const std::string &name) { return inputManager->GetAction(name); }
 

@@ -433,6 +433,10 @@ namespace Engine
 		return m;
 	}
 
+	void D3D11Renderer::ReloadMaterial(Material * baseMaterial)
+	{
+	}
+
 	Texture *D3D11Renderer::CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData)
 	{
 		unsigned int id = SID(path);

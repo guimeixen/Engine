@@ -32,6 +32,12 @@ namespace Engine
 
 		lastKeyPressed = Keys::KEY_SPACE;
 
+		buttons = 0;
+		leftStickX = 0.0f;
+		leftStickY = 0.0f;
+		rightStickX = 0.0f;
+		rightStickY = 0.0f;
+
 		keysToString[Keys::KEY_0] = "0";
 		keysToString[Keys::KEY_1] = "1";
 		keysToString[Keys::KEY_2] = "2";
@@ -87,6 +93,20 @@ namespace Engine
 		keysToString[Keys::KEY_F12] = "F12";
 		keysToString[Keys::KEY_LEFT_SHIFT] = "Left shift";
 		keysToString[Keys::KEY_LEFT_CONTROL] = "Left control";
+
+		vitaButtonsToString[VitaButtons::VITA_SELECT] = "Select";
+		vitaButtonsToString[VitaButtons::VITA_START] = "Start";
+		vitaButtonsToString[VitaButtons::VITA_UP] = "Up";
+		vitaButtonsToString[VitaButtons::VITA_RIGHT] = "Right";
+		vitaButtonsToString[VitaButtons::VITA_DOWN] = "Down";
+		vitaButtonsToString[VitaButtons::VITA_LEFT] = "Left";
+		vitaButtonsToString[VitaButtons::VITA_LTRIGGER] = "Left trigger";
+		vitaButtonsToString[VitaButtons::VITA_RTRIGGER] = "Right trigger";
+		vitaButtonsToString[VitaButtons::VITA_TRIANGLE] = "Triangle";
+		vitaButtonsToString[VitaButtons::VITA_CIRCLE] = "Circle";
+		vitaButtonsToString[VitaButtons::VITA_CROSS] = "Cross";
+		vitaButtonsToString[VitaButtons::VITA_SQUARE] = "Square";
+		vitaButtonsToString[VitaButtons::VITA_PSBUTTON] = "PS button";
 	}
 
 	void InputManager::Update()
@@ -125,13 +145,16 @@ namespace Engine
 			InputMapping horizontal = {};
 			horizontal.positiveKey = Keys::KEY_D;
 			horizontal.negativeKey = Keys::KEY_A;
+			horizontal.useLeftAnalogueStickX = true;
 
 			InputMapping vertical = {};
 			vertical.positiveKey = Keys::KEY_W;
 			vertical.negativeKey = Keys::KEY_S;
+			vertical.useLeftAnalogueStickY = true;
 
 			InputMapping fire = {};
 			fire.mouseButton = MouseButtonType::Left;
+			fire.positiveVitaButton = VitaButtons::VITA_RTRIGGER;
 
 			inputMappings["Horizontal"] = horizontal;
 			inputMappings["Vertical"] = vertical;
@@ -275,6 +298,41 @@ namespace Engine
 		scrollWheelY += yoffset;
 	}
 
+	void InputManager::UpdateVitaButtons(int buttons)
+	{
+		lastButtons = this->buttons;
+		this->buttons = buttons;
+	}
+
+	void InputManager::UpdateVitaSticks(unsigned char leftStickX, unsigned char leftStickY, unsigned char rightStickX, unsigned char rightStickY)
+	{
+		this->leftStickX = (float)leftStickX;
+		this->leftStickX = (this->leftStickX - 128.0f) / 128.0f;
+		
+		this->leftStickY = (float)leftStickY;
+		this->leftStickY = (this->leftStickY - 128.0f) / 128.0f;
+		this->leftStickY *= -1.0f;			// Flip the Y to -1 on the bottom and 1 on the top because the analogue stick is -1 on the top and 1 on the bottom
+
+		this->rightStickX = (float)rightStickX;
+		this->rightStickX = (this->rightStickX - 128.0f) / 128.0f;
+
+		this->rightStickY = (float)rightStickY;
+		this->rightStickY = (this->rightStickY - 128.0f) / 128.0f;
+	}
+
+	bool InputManager::IsVitaButtonDown(int button)
+	{
+		return buttons & button;
+	}
+
+	bool InputManager::WasVitaButtonReleased(int button)
+	{
+		if ((lastButtons & button) == true && (buttons & button) == false)
+			return true;
+
+		return false;
+	}
+
 	float InputManager::GetAxis(const std::string &name)
 	{
 		// If using strings as the key becomes slows, then we could try ints
@@ -282,12 +340,19 @@ namespace Engine
 		
 		const InputMapping &im = inputMappings[name];
 
+#ifdef VITA
+		if (im.useLeftAnalogueStickX && (leftStickX > 0.1f || leftStickX < -0.1f))
+			return leftStickX;
+
+		if (im.useLeftAnalogueStickY && (leftStickY > 0.1f || leftStickY < -0.1f))
+			return leftStickY;
+#else
 		if (IsKeyPressed(im.positiveKey))
 			return 1.0f;
 
 		if (IsKeyPressed(im.negativeKey))
 			return -1.0f;
-
+#endif	
 		return 0.0f;
 	}
 
@@ -295,9 +360,13 @@ namespace Engine
 	{
 		const InputMapping &im = inputMappings[name];
 
+#ifdef VITA
+		if (buttons & im.positiveVitaButton)
+			return true;
+#else
 		if (IsKeyPressed(im.positiveKey))
 			return true;
-
+#endif
 		return false;
 	}
 }

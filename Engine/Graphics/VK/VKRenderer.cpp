@@ -530,6 +530,17 @@ namespace Engine
 		return m;
 	}
 
+	void VKRenderer::ReloadMaterial(Material *baseMaterial)
+	{
+		/*const std::map<unsigned int, MaterialRefInfo> &materials = ResourcesLoader::GetMaterials();
+		auto it = std::find(materials.begin(), materials.end(), baseMaterial);
+
+		if (it != materials.end())
+		{
+
+		}*/
+	}
+
 	Texture *VKRenderer::CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData)
 	{
 		unsigned int id = SID(path);
@@ -1688,7 +1699,8 @@ namespace Engine
 
 			// TODO: Warning because of GENERAL layout, transition to TRANSFER_DST_OPTIMAL ? test
 			vkCmdClearColorImage(frameResources[currentFrame].frameCmdBuffer, tex3d->GetImage(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
-		}	
+		}
+		
 	}
 
 	void VKRenderer::BeginFrame()

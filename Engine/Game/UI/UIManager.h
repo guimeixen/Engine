@@ -17,9 +17,6 @@ namespace Engine
 	class Renderer;
 	class Texture;
 	class Image;
-	class EditText;
-	class StaticText;
-
 	struct MaterialInstance;
 
 	struct WidgetInstance
@@ -55,11 +52,6 @@ namespace Engine
 
 		Entity PerformRaycast(const glm::vec2 &point);
 
-		StaticText *GetText(Entity e) const;
-		Button *GetButton(Entity e) const;
-		EditText *GetEditText(Entity e) const;
-		Image *GetImage(Entity e) const;
-
 		void ShowCursor(bool show) { showCursor = show; }
 		bool IsCursorVisible() const { return showCursor; }
 		const glm::vec2 &GetCursorPos() const { return cursorPos; }
@@ -78,7 +70,6 @@ namespace Engine
 		std::unordered_map<unsigned int, unsigned int> map;
 		unsigned int usedWidgets;
 		unsigned int disabledWidgets;
-		Material *baseUIMat;
 
 		Image *cursor;
 		bool showCursor;

@@ -75,6 +75,27 @@ namespace Engine
 	{
 		float velocity = moveSpeed * dt;
 
+#ifdef VITA
+		float leftX = Input::GetLeftAnalogueStickX();
+		if (leftX > 0.1f)
+		{
+			position += right * velocity;
+		}
+		else if (leftX < -0.1f)
+		{
+			position -= right * velocity;
+		}
+
+		float leftY = Input::GetLeftAnalogueStickY();
+		if (leftY > 0.1f)
+		{
+			position -= front * velocity;
+		}
+		else if (leftY < -0.1f)
+		{
+			position += front * velocity;
+		}
+#else
 		if (Input::IsKeyPressed(KEY_W))		// w
 		{
 			position += front * velocity;
@@ -99,10 +120,12 @@ namespace Engine
 		{
 			position -= worldUp * velocity;
 		}
+#endif
 	}
 
 	void FPSCamera::DoLook()
 	{
+#ifndef VITA
 		glm::vec2 mousePos = Input::GetMousePosition();
 
 		if (firstMove == true)
@@ -125,6 +148,23 @@ namespace Engine
 			pitch = 89.0f;
 		if (pitch < -89.0f)
 			pitch = -89.0f;
+#else
+		glm::vec2 rightXY = glm::vec2(Input::GetRightAnalogueStickX(), Input::GetRightAnalogueStickY());
+
+		if (rightXY.x > 0.1f || rightXY.x < -0.1f)
+		{
+			yaw -= rightXY.x * sensitivity * 5.0f;
+		}
+		if (rightXY.y > 0.1f || rightXY.y < -0.1f)
+		{
+			pitch += rightXY.y * sensitivity * 5.0f;
+		}
+
+		if (pitch > 89.0f)
+			pitch = 89.0f;
+		if (pitch < -89.0f)
+			pitch = -89.0f;
+#endif
 
 		UpdateCameraVectors();
 	}

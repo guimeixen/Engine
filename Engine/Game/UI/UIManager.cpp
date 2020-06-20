@@ -34,8 +34,6 @@ namespace Engine
 		usedWidgets = 0;
 		disabledWidgets = 0;
 
-		baseUIMat = nullptr;
-
 		showCursor = true;
 		cursor = nullptr;
 		//FIX IDS
@@ -155,14 +153,11 @@ namespace Engine
 
 	void UIManager::GetRenderItems(unsigned int passCount, unsigned int *passIds, const VisibilityIndices &visibility, RenderQueue &outQueues)
 	{
-		if (!baseUIMat)
-			return;
-
-		const ShaderPass &pass = baseUIMat->GetShaderPass(0);
+		const ShaderPass &pass = widgets[0].w->matInstance->baseMaterial->GetShaderPass(0);			// We can use the first widget's shader pass because all widgets use the same material
 
 		unsigned int numEnabledWidgets = usedWidgets - disabledWidgets;
 
-		for (unsigned int i = 0; i < passCount; i++)
+		for (size_t i = 0; i < passCount; i++)
 		{
 			if (passIds[i] == pass.queueID)
 			{
@@ -231,9 +226,6 @@ namespace Engine
 
 		InsertWidgetInstance(wi);
 
-		if (baseUIMat == nullptr)
-			baseUIMat = button->matInstance->baseMaterial;
-
 		return button;
 	}
 
@@ -246,8 +238,7 @@ namespace Engine
 		text->SetRectPosPercent(glm::vec2(50.0f, 50.0f));
 		text->SetText("Text");
 		text->SetRectSize(game->GetRenderingPath()->GetFont().CalculateTextSize("Text", glm::vec2(1.0f)));
-		// No need to add material to text, because they are handled seperately by the font
-		//text->SetMaterial(game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
+		text->SetMaterial(game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
 		
 		WidgetInstance wi;
 		wi.e = e;
@@ -276,9 +267,6 @@ namespace Engine
 
 		InsertWidgetInstance(wi);
 
-		if (baseUIMat == nullptr)
-			baseUIMat = image->matInstance->baseMaterial;
-
 		return image;
 	}
 
@@ -302,9 +290,6 @@ namespace Engine
 		wi.w = editText;
 
 		InsertWidgetInstance(wi);
-
-		if (baseUIMat == nullptr)
-			baseUIMat = editText->matInstance->baseMaterial;
 
 		return editText;
 	}
@@ -591,58 +576,6 @@ namespace Engine
 		return { std::numeric_limits<unsigned int>::max() };
 	}
 
-	StaticText *UIManager::GetText(Entity e) const
-	{
-		if (HasWidget(e))
-		{
-			Widget *w = GetWidget(e);
-
-			if (w->GetType() == WidgetType::TEXT)
-				return static_cast<StaticText*>(w);
-		}
-	
-		return nullptr;
-	}
-
-	Button *UIManager::GetButton(Entity e) const
-	{
-		if (HasWidget(e))
-		{
-			Widget *w = GetWidget(e);
-
-			if (w->GetType() == WidgetType::BUTTON)
-				return static_cast<Button*>(w);
-		}
-
-		return nullptr;
-	}
-
-	EditText *UIManager::GetEditText(Entity e) const
-	{
-		if (HasWidget(e))
-		{
-			Widget *w = GetWidget(e);
-
-			if (w->GetType() == WidgetType::EDIT_TEXT)
-				return static_cast<EditText*>(w);
-		}
-
-		return nullptr;
-	}
-
-	Image *UIManager::GetImage(Entity e) const
-	{
-		if (HasWidget(e))
-		{
-			Widget *w = GetWidget(e);
-
-			if (w->GetType() == WidgetType::IMAGE)
-				return static_cast<Image*>(w);
-		}
-
-		return nullptr;
-	}
-
 	void UIManager::Serialize(Serializer &s, bool playMode) const
 	{
 		// Store the map, otherwise we have problems with play/stop when we enable/disable entities
@@ -687,7 +620,7 @@ namespace Engine
 				if (type == 0)
 				{
 					StaticText *text = new StaticText(game);
-					//text->SetMaterial(renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Materials/text_mat.lua", mesh.vao->GetVertexInputDescs()));
+					text->SetMaterial(renderer->CreateMaterialInstance(game->GetScriptManager(), "Data/Resources/Materials/ui.mat", mesh.vao->GetVertexInputDescs()));
 					text->Deserialize(s);
 
 					wi.w = text;
@@ -719,19 +652,6 @@ namespace Engine
 
 				widgets[i] = wi;
 				map[wi.e.id] = i;
-			}
-
-			if (baseUIMat == nullptr)
-			{
-				// Find the first non-text widget and get the base ui material. We can do this because right now every widget uses the same ui material
-				for (size_t i = 0; i < widgets.size(); i++)
-				{
-					if (widgets[i].w->GetType() != WidgetType::TEXT)
-					{
-						baseUIMat = widgets[i].w->matInstance->baseMaterial;
-						break;
-					}
-				}
 			}
 		}
 		else

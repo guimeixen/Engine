@@ -19,6 +19,7 @@ namespace Engine
 		OpenGL,
 		Vulkan,
 		D3D11,
+		GXM
 	};
 
 	struct RenderStats
@@ -101,6 +102,8 @@ namespace Engine
 
 		virtual MaterialInstance *CreateMaterialInstance(ScriptManager &scriptManager, const std::string &matInstPath, const std::vector<VertexInputDesc> &inputDescs) = 0;
 		virtual MaterialInstance *CreateMaterialInstanceFromBaseMat(ScriptManager &scriptManager, const std::string &baseMatPath, const std::vector<VertexInputDesc> &inputDescs) = 0;
+
+		virtual void ReloadMaterial(Material *baseMaterial) = 0;
 
 		virtual Texture *CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData = false) = 0;
 		virtual Texture *CreateTexture3D(const std::string &path, const void *data, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params) = 0;
@@ -188,6 +191,17 @@ namespace Engine
 		std::map<unsigned int, Shader*> shaders;
 		std::map<unsigned int, Texture*> textures;
 
-		std::string globalDefines;	
+		std::string globalDefines;
+
+#ifndef VITA
+		Buffer *meshParamsUBO = nullptr;
+		std::vector<const void*> meshParamsData;
+		unsigned int meshParamsOffset = 0;
+		void *buffer[16000];
+
+		unsigned int instanceDataOffset = 0;
+		std::vector<const void*> instanceData;
+		void *instanceBuffer[16000];
+#endif
 	};
 }

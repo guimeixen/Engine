@@ -626,7 +626,7 @@ namespace Engine
 				for (size_t i = 0; i < meshesAndMaterials.size(); i++)
 				{
 					AddVegInstanceBufferToMesh(meshesAndMaterials[i].mesh, 1);
-					v.modelLOD1->SetMeshMaterial((unsigned short)i, v.model->GetMaterialInstanceOfMesh((unsigned short)i));
+					v.modelLOD1->SetMeshMaterial((unsigned short)i, v.model->GetMaterialInstanceOfMesh(i));
 				}
 			}
 		}
@@ -645,7 +645,7 @@ namespace Engine
 				for (size_t i = 0; i < meshesAndMaterials.size(); i++)
 				{
 					AddVegInstanceBufferToMesh(meshesAndMaterials[i].mesh, 2);
-					v.modelLOD2->SetMeshMaterial((unsigned short)i, v.model->GetMaterialInstanceOfMesh((unsigned short)i));
+					v.modelLOD2->SetMeshMaterial((unsigned short)i, v.model->GetMaterialInstanceOfMesh(i));
 				}
 			}
 		}
