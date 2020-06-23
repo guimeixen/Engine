@@ -436,15 +436,19 @@ namespace Engine
 		{
 		case Engine::ShaderType::VERTEX:
 			command += "_vert.spv";
+			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.vert\n", vertexName.c_str());
 			break;
 		case Engine::ShaderType::GEOMETRY:
 			command += "_geom.spv";
+			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.geom\n", geometryName.c_str());
 			break;
 		case Engine::ShaderType::FRAGMENT:
 			command += "_frag.spv";
+			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.frag\n", fragmentName.c_str());
 			break;	
 		case Engine::ShaderType::COMPUTE:
 			command += "_comp.spv";
+			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.comp\n", computeName.c_str());
 			break;
 		}
 
@@ -471,7 +475,7 @@ namespace Engine
 
 			if (!computeFile.is_open())
 			{
-				std::cout << "Error -> Failed to open file : " << computePath.c_str() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", computeName, computePath.c_str());
 			}
 
 			size_t compFileSize = (size_t)computeFile.tellg();
@@ -503,12 +507,12 @@ namespace Engine
 
 			if (!vertexFile.is_open())
 			{
-				std::cout << "Error -> Failed to open file : " << vertexPath.c_str() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", vertexName, vertexPath.c_str());
 			}
 
 			if (!fragmentFile.is_open())
 			{
-				std::cout << "Error -> Failed to open file : " << fragmentPath.c_str() << "\n";
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", fragmentName, fragmentPath.c_str());
 			}
 
 			size_t vertFileSize = (size_t)vertexFile.tellg();
