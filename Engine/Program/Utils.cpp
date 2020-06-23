@@ -257,7 +257,7 @@ namespace Engine
 		bool DirectoryExists(const std::string &path)
 		{
 #ifndef VITA
-			return std::experimental::filesystem::exists(path);
+			return std::filesystem::exists(path);
 #else
 			return false;
 #endif

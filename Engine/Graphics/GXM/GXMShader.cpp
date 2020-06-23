@@ -90,7 +90,8 @@ namespace Engine
 						else
 						{
 							Log::Print(LogLevel::LEVEL_ERROR, "Unable to find program parameter! The second vertex attribute must be named inUv on shader %s\n", vertexName.c_str());
-							return;
+							//return;
+							continue;		// There are cases where the attribs could be pos, uv, normal, but we only use pos (eg shadow mapping)
 						}
 					}
 					else if (j == 2)
@@ -103,7 +104,8 @@ namespace Engine
 						else
 						{
 							Log::Print(LogLevel::LEVEL_ERROR, "Unable to find program parameter! The third vertex attribute must be named inNormal on shader %s\n", vertexName.c_str());
-							return;
+							//return;
+							continue;
 						}
 					}
 

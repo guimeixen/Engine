@@ -17,14 +17,14 @@ namespace Engine
 		// File must have been opened with std::ios::ate
 		char *ReadEntireFile(std::ifstream &file, bool isBinary);
 
-#ifdef VITA
+//#ifdef VITA
 		const std::string &GetAppPath() const { return vitaAppPath; }
-#endif
+//endif
 
 	private:
 		bool isInit;
-#ifdef VITA
+//#ifdef VITA
 		std::string vitaAppPath;
-#endif
+//#endif
 	};
 }

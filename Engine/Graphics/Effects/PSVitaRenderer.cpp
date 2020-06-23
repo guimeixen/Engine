@@ -29,7 +29,6 @@ namespace Engine
 		csmQueueID = SID("csm");
 		opaqueQueueID = SID("opaque");
 
-
 		quadMesh = MeshDefaults::CreateQuad(renderer);
 
 		// UI
@@ -113,13 +112,13 @@ namespace Engine
 		shadowMap.params = { TextureWrap::CLAMP_TO_BORDER, TextureFilter::LINEAR, TextureFormat::DEPTH_COMPONENT, TextureInternalFormat::DEPTH_COMPONENT32, TextureDataType::FLOAT };
 		csmPass.AddDepthOutput("shadowMap", shadowMap);
 
-		csmPass.SetOnSetup([this](const Pass *thisPass)
+		csmPass.OnSetup([this](const Pass *thisPass)
 		{
 			//debugMatInstance->textures[0] = thisPass->GetFramebuffer()->GetDepthTexture();
 			csmFB = thisPass->GetFramebuffer();
 		});
 
-		csmPass.SetOnExecute([this]()
+		csmPass.OnExecute([this]()
 		{
 			Camera cam;
 			cam.SetProjectionMatrix(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 20.0f);
@@ -148,12 +147,12 @@ namespace Engine
 		hdrPass.AddDepthOutput("hdrDepth", depthAttachment);
 		hdrPass.AddDepthInput("shadowMap");
 
-		hdrPass.SetOnSetup([this](const Pass *thisPass)
+		hdrPass.OnSetup([this](const Pass *thisPass)
 		{
 			hdrFB = thisPass->GetFramebuffer();
 		});
 
-		hdrPass.SetOnExecute([this]()
+		hdrPass.OnExecute([this]()
 		{
 			renderer->SetCamera(mainCamera);
 			renderer->Submit(renderQueues[1]);
@@ -165,7 +164,7 @@ namespace Engine
 		Pass &postProcessPass = frameGraph.AddPass("postProcessPass");
 		postProcessPass.AddTextureInput("hdrTexture");
 
-		postProcessPass.SetOnSetup([this](const Pass *thisPass)
+		postProcessPass.OnSetup([this](const Pass *thisPass)
 		{
 			postProcessFB = thisPass->GetFramebuffer();
 			postProcMatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Materials/post_process_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -174,7 +173,7 @@ namespace Engine
 			font.Init(renderer, this->game->GetScriptManager(), "Data/Resources/Textures/jorvik.fnt", "Data/Resources/Textures/jorvik.png");
 		});
 
-		postProcessPass.SetOnExecute([this]()
+		postProcessPass.OnExecute([this]()
 		{
 			RenderItem ri = {};
 			ri.mesh = &quadMesh;

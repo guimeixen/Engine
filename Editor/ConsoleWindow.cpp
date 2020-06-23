@@ -74,7 +74,9 @@ void ConsoleWindow::AddOutput(Engine::LogLevel logLevel, const char *output)
 
 	outputs[outputsIndex].logLevel = logLevel;
 	
-	outputsIndex++;
+	if (outputsIndex != MAX_OUTPUTS - 1)
+		outputsIndex++;
+
 	numOutputs++;
 
 	if (numOutputs >= MAX_OUTPUTS)

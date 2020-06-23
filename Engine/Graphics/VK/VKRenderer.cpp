@@ -1,28 +1,29 @@
 #include "VKRenderer.h"
 
-#include "Program\Log.h"
+#include "Program/Log.h"
 #include "VKTexture2D.h"
 #include "VKTexture3D.h"
 #include "VKTextureCube.h"
-#include "Graphics\ResourcesLoader.h"
+#include "Graphics/ResourcesLoader.h"
 #include "VKShader.h"
 #include "VKIndexBuffer.h"
-#include "Graphics\Mesh.h"
-#include "Graphics\Material.h"
-#include "Graphics\VertexArray.h"
+#include "Graphics/Mesh.h"
+#include "Graphics/Material.h"
+#include "Graphics/VertexArray.h"
 #include "VKBuffer.h"
 #include "VKUniformBuffer.h"
 #include "VKVertexArray.h"
 #include "VKSSBO.h"
 #include "VKDrawIndirectBuffer.h"
 
-#include "Program\Utils.h"
-#include "Program\StringID.h"
+#include "Program/Utils.h"
+#include "Program/StringID.h"
 
-#include "Data\Shaders\GL\include\common.glsl"
+#include "Data/Shaders/GL/include/common.glsl"
+#include "Data/Shaders/bindings.glsl"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\gtc\type_ptr.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/gtc/type_ptr.hpp"
 
 #include <array>
 #include <iostream>
@@ -162,7 +163,7 @@ namespace Engine
 		poolSize[0].descriptorCount = 5;
 
 		poolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSize[1].descriptorCount = 280;									// Good value? How to choose ? Right now is a random value
+		poolSize[1].descriptorCount = 300;									// Good value? How to choose ? Right now is a random value
 
 		poolSize[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		poolSize[2].descriptorCount = 1;
@@ -201,11 +202,11 @@ namespace Engine
 		instanceDataWrite.dstBinding = 1;
 
 		VKBufferInfo camInfo = {};
-		camInfo.binding = 0;
+		camInfo.binding = CAMERA_UBO;
 		camInfo.buffer = camDynamicUBO->GetBuffer();
 
 		VKBufferInfo instanceBufInfo = {};
-		instanceBufInfo.binding = 1;
+		instanceBufInfo.binding = INSTANCE_DATA_SSBO;
 		instanceBufInfo.buffer = instanceDataSSBO->GetBuffer();
 
 		globalSetWrites.push_back(camWrite);
@@ -219,86 +220,6 @@ namespace Engine
 
 	void VKRenderer::PostLoad()
 	{
-		/*VKTexture3D *voxelTex = static_cast<VKTexture3D*>(voxelTexture);
-		if (!voxelTex)
-			Log::Print(LogLevel::LEVEL_WARNING, "Voxel texture not set!\n");
-
-		VkDescriptorImageInfo voxelImageInfo = {};
-		voxelImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-		voxelImageInfo.imageView = voxelTex->GetImageView();
-		voxelImageInfo.sampler = VK_NULL_HANDLE;
-
-		VKDrawIndirectBuffer *indBuffer = static_cast<VKDrawIndirectBuffer*>(indirectBuffer);
-		VkDescriptorBufferInfo indInfo = {};
-		indInfo.buffer = indBuffer->GetBuffer();
-		indInfo.offset = 0;
-		indInfo.range = VK_WHOLE_SIZE;
-
-		VKDrawIndirectBuffer *voxelVisBuffer = static_cast<VKDrawIndirectBuffer*>(voxelPosSSBO);
-		VkDescriptorBufferInfo visBufferInfo = {};
-		visBufferInfo.buffer = voxelVisBuffer->GetBuffer();
-		visBufferInfo.offset = 0;
-		visBufferInfo.range = VK_WHOLE_SIZE;*/
-
-		/*VkWriteDescriptorSet voxelTextureWrite = {};
-		voxelTextureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		voxelTextureWrite.descriptorCount = 1;
-		voxelTextureWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-		voxelTextureWrite.dstArrayElement = 0;
-		voxelTextureWrite.dstBinding = 6;
-		voxelTextureWrite.dstSet = globalSet;
-		voxelTextureWrite.pImageInfo = &voxelImageInfo;
-
-		VkWriteDescriptorSet indWrite = {};
-		indWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		indWrite.descriptorCount = 1;
-		indWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		indWrite.dstArrayElement = 0;
-		indWrite.dstBinding = 7;
-		indWrite.dstSet = globalSet;
-		indWrite.pBufferInfo = &indInfo;
-
-		VkWriteDescriptorSet visWrite = {};
-		visWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		visWrite.descriptorCount = 1;
-		visWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		visWrite.dstArrayElement = 0;
-		visWrite.dstBinding = 8;
-		visWrite.dstSet = globalSet;
-		visWrite.pBufferInfo = &visBufferInfo;*/
-	
-		
-		/*writes.push_back(frameWrite);
-		writes.push_back(mainLightWrite);
-		writes.push_back(csmWrite);
-		writes.push_back(instanceDataWrite);
-		writes.push_back(voxelTextureWrite);
-		writes.push_back(indWrite);
-		writes.push_back(visWrite);
-
-		// Check if for the create uniform buffers there's any for the current binding
-		VkWriteDescriptorSet write = {};
-		VkDescriptorBufferInfo info = {};
-		for (size_t i = 0; i < ubos.size(); i++)
-		{		
-			info.buffer = ubos[i]->GetBuffer();
-			info.offset = 0;
-			info.range = VK_WHOLE_SIZE;
-
-			VkWriteDescriptorSet write = {};
-			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			write.descriptorCount = 1;
-			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			write.dstArrayElement = 0;
-			write.dstBinding = ubos[i]->GetBindingIndex();
-			write.dstSet = globalSet;
-			write.pBufferInfo = &info;
-
-			writes.push_back(write);
-		}*/
-
-		//vkUpdateDescriptorSets(device, static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
-
 		base.GetAllocator()->PrintStats();
 	}
 
@@ -324,7 +245,7 @@ namespace Engine
 			VkBufferCopy copyRegion = {};
 			copyRegion.srcOffset = 0;
 			copyRegion.dstOffset = 0;
-			copyRegion.size = vb->GetSize();
+			copyRegion.size = size;					// Size must be the actual used size, not the aligned size which is what vb->GetSize() returns
 			vkCmdCopyBuffer(transferCommandBuffer, vb->GetStagingBuffer(), vb->GetBuffer(), 1, &copyRegion);
 		}
 
@@ -345,7 +266,7 @@ namespace Engine
 			VkBufferCopy copyRegion = {};
 			copyRegion.srcOffset = 0;
 			copyRegion.dstOffset = 0;
-			copyRegion.size = ib->GetSize();
+			copyRegion.size = size;
 			vkCmdCopyBuffer(transferCommandBuffer, ib->GetStagingBuffer(), ib->GetBuffer(), 1, &copyRegion);
 		}
 
@@ -528,17 +449,6 @@ namespace Engine
 		}
 
 		return m;
-	}
-
-	void VKRenderer::ReloadMaterial(Material *baseMaterial)
-	{
-		/*const std::map<unsigned int, MaterialRefInfo> &materials = ResourcesLoader::GetMaterials();
-		auto it = std::find(materials.begin(), materials.end(), baseMaterial);
-
-		if (it != materials.end())
-		{
-
-		}*/
 	}
 
 	Texture *VKRenderer::CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData)
@@ -1077,7 +987,7 @@ namespace Engine
 			VKImageInfo info = {};
 			info.layout = layout;
 			info.imageViews.push_back(tex->GetImageView());
-			info.binding = static_cast<unsigned int>(globalSetWrites.size() - 1);
+			info.index = static_cast<unsigned int>(globalSetWrites.size() - 1);
 
 			if (useStorage)
 				info.sampler = VK_NULL_HANDLE;
@@ -1154,7 +1064,7 @@ namespace Engine
 			setLayoutBindings.push_back(b);
 			globalSetWrites.push_back(write);
 
-			info.binding = static_cast<unsigned int>(globalSetWrites.size() - 1);
+			info.index = static_cast<unsigned int>(globalSetWrites.size() - 1);
 
 			imagesInfo.push_back(info);
 		}
@@ -1370,9 +1280,9 @@ namespace Engine
 					infos[j].imageView = ii.imageViews[j];
 				}
 
-				globalSetWrites[ii.binding].pImageInfo = infos.data();
+				globalSetWrites[ii.index].pImageInfo = infos.data();
 
-				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalSetWrites[ii.binding], 0, nullptr);
+				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalSetWrites[ii.index], 0, nullptr);
 			}
 			else
 			{
@@ -1384,9 +1294,9 @@ namespace Engine
 				//imgInfos[i] = info;
 
 				//globalSetWrites[ii.binding].pImageInfo = &imgInfos[i];
-				globalSetWrites[ii.binding].pImageInfo = &info;
+				globalSetWrites[ii.index].pImageInfo = &info;
 
-				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalSetWrites[ii.binding], 0, nullptr);
+				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalSetWrites[ii.index], 0, nullptr);
 			}
 		}
 

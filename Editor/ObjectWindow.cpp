@@ -836,6 +836,14 @@ void ObjectWindow::HandleModel()
 
 		ImGui::Text(selectedModel->GetPath().c_str());
 
+		// If the model is missing then the meshes and materials will be 0
+		if (meshesAndMaterials.size() == 0)
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.25f, 1.0f), "Model is missing!");
+			ImGui::Unindent();
+			return;
+		}
+
 		if (ImGui::Checkbox("Cast shadows", &castShadows))
 			selectedModel->SetCastShadows(castShadows);
 
@@ -1350,6 +1358,11 @@ void ObjectWindow::HandleScript()
 				ImGui::OpenPopup("Choose:");
 				propertyIndex = i;
 			}
+			ImGui::SameLine();
+			ImGui::Text(": ");
+			ImGui::SameLine();
+			ImGui::Text(editorManager->GetEditorNameManager().GetName(properties[i].e));
+
 
 			/*if (ImGui::BeginDragDropTarget())
 			{

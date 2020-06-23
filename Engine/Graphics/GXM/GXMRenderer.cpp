@@ -450,7 +450,7 @@ namespace Engine
 		// Clear triangle
 		sceGxmSetVertexProgram(context, currentVertexProgram);
 		sceGxmSetFragmentProgram(context, currentFragmentProgram);
-
+		
 		void *colorBuffer;
 		float clearColor[] = { 0.3f, 0.3f, 0.3f, 1.0f };
 		sceGxmReserveFragmentDefaultUniformBuffer(context, &colorBuffer);
@@ -459,14 +459,14 @@ namespace Engine
 		sceGxmSetVertexStream(context, 0, clearVB->GetVerticesHandle());
 		sceGxmDraw(context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, clearIB->GetIndicesHandle(), 3);
 
-		if (fb->GetNumColorTextures() == 0)
-			sceGxmSetFrontDepthBias(context, (int)depthBiasFactor, (int)depthBiasUnits);
+		//if (fb->GetNumColorTextures() == 0)
+		//	sceGxmSetFrontDepthBias(context, (int)depthBiasFactor, (int)depthBiasUnits);
 	}
 
 	void GXMRenderer::EndRenderTarget(Framebuffer *rt)
 	{
 		sceGxmEndScene(context, nullptr, nullptr);
-		sceGxmSetFrontDepthBias(context, 0, 0);
+		//sceGxmSetFrontDepthBias(context, 0, 0);
 	}
 
 	void GXMRenderer::EndDefaultRenderTarget()
@@ -500,17 +500,23 @@ namespace Engine
 		SceGxmVertexProgram *newVertexProgram = shader->GetVertexProgram();
 		SceGxmFragmentProgram *newFragmentProgram = shader->GetFragmentProgram();
 
+		//Log::Print(LogLevel::LEVEL_INFO, "4.1\n");
+		
 		if (currentVertexProgram != newVertexProgram)
 		{
 			sceGxmSetVertexProgram(context, newVertexProgram);
 			currentVertexProgram = newVertexProgram;
 		}
+		
+		//Log::Print(LogLevel::LEVEL_INFO, "4.2\n");
 
 		if (currentFragmentProgram != newFragmentProgram)
 		{
 			sceGxmSetFragmentProgram(context, newFragmentProgram);
 			currentFragmentProgram = newFragmentProgram;
 		}
+
+		//Log::Print(LogLevel::LEVEL_INFO, "4.3\n");
 
 		for (size_t i = 0; i < renderItem.matInstance->textures.size(); i++)
 		{
@@ -525,6 +531,10 @@ namespace Engine
 				}				
 			}
 		}
+
+		//Log::Print(LogLevel::LEVEL_INFO, "4.4\n");
+
+
 		//sceGxmSetFragmentUniformBuffer(context, 1, ubo[fragmentIndex]->GetData());
 		
 		const SceGxmProgramParameter *modelMatrixParam = shader->GetModelMatrixParam();
@@ -537,14 +547,18 @@ namespace Engine
 			sceGxmSetUniformDataF(buf, modelMatrixParam, 0, 16, &m[0].x);
 		}
 		
+		//Log::Print(LogLevel::LEVEL_INFO, "4.5\n");
 
 		SetDepthStencilState(p.depthStencilState);
 
+		//Log::Print(LogLevel::LEVEL_INFO, "4.6\n");
 
 		GXMVertexBuffer *vb = static_cast<GXMVertexBuffer*>(renderItem.mesh->vao->GetVertexBuffers()[0]);
 		GXMIndexBuffer *ib = static_cast<GXMIndexBuffer*>(renderItem.mesh->vao->GetIndexBuffer());
 		
 		sceGxmSetVertexStream(context, 0, vb->GetVerticesHandle());
+
+		//Log::Print(LogLevel::LEVEL_INFO, "4.7\n");
 
 		if (renderItem.mesh->instanceCount > 0)
 		{
@@ -554,6 +568,8 @@ namespace Engine
 		{
 			sceGxmDraw(context, SCE_GXM_PRIMITIVE_TRIANGLES, SCE_GXM_INDEX_FORMAT_U16, ib->GetIndicesHandle(), renderItem.mesh->indexCount);
 		}
+
+		//Log::Print(LogLevel::LEVEL_INFO, "4.8\n");
 	}
 
 	void GXMRenderer::Present()

@@ -1,0 +1,21 @@
+#include "include/ubos.cgh"
+
+out float2 outUv : TEXCOORD0;
+
+/*layout(push_constant) uniform PushConsts
+{
+	vec4 color;
+	float depth;
+};*/
+
+uniform float4x4 modelMatrix;
+
+void main(float4 inPos)				// Has 2d pos and uv
+{
+	outUv = inPos.zw;
+	//uv = vec2(posuv.z, 1.0 - posuv.w);
+	//gl_Position = projView * GetModelMatrix(startIndex) * vec4(posuv.xy, depth, 1.0);
+	
+	float4 worldPos = mul(float4(inPos.xy, 0.0f, 1.0f), modelMatrix);
+	outPos = mul(worldPos, cam.projView);
+}

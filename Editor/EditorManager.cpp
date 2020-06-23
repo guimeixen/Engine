@@ -134,7 +134,7 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputMa
 	// Add another render pass to which we will render the post process quad so it can be displayed as an image in the editor
 	Engine::Pass &editorImguiPass = game->GetRenderingPath()->GetFrameGraph().AddPass("EditorImGUI");
 	editorImguiPass.AddTextureInput("final");
-	editorImguiPass.SetOnSetup([this](const Engine::Pass *thisPass)
+	editorImguiPass.OnSetup([this](const Engine::Pass *thisPass)
 	{ 
 		if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
 		{
@@ -142,8 +142,8 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputMa
 		}
 	});
 
-	editorImguiPass.SetOnResized([this](const Engine::Pass *thisPass){});
-	editorImguiPass.SetOnExecute([this]()
+	editorImguiPass.OnResized([this](const Engine::Pass *thisPass){});
+	editorImguiPass.OnExecute([this]()
 	{
 		//if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
 		//	ImGUI_ImplVulkan_CreateOrResizeBuffers(ImGui::GetDrawData()->TotalVtxCount, ImGui::GetDrawData()->TotalIdxCount);

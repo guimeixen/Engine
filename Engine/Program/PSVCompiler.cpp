@@ -59,13 +59,18 @@ namespace Engine
 		{
 			Model *m = it->second;
 
+			const std::vector<MeshMaterial>& meshesAndMaterials = m->GetMeshesAndMaterials();
+
+			// If meshes and materials is 0 then the model is missing, so skip it
+			if (meshesAndMaterials.size() == 0)
+				continue;
+
 			const std::string &p = m->GetPath();
 
 			// Add the model's path
 			cmakelists += "FILE ../../../../" + p + ' ' + p + '\n';
 
-			// Add the materials path
-			const std::vector<MeshMaterial> &meshesAndMaterials = m->GetMeshesAndMaterials();
+			// Add the materials path		
 			for (size_t i = 0; i < meshesAndMaterials.size(); i++)
 			{
 				const MeshMaterial &mm = meshesAndMaterials[i];
@@ -114,11 +119,14 @@ namespace Engine
 			cmakelists += "FILE ../../../../" + p + ' ' + p + '\n';
 		}
 
+		// Compile shaders if they have been modified
+		// Check when the shader files have been written and if the date is more recent then the compiled one, then compile again
+
 		const std::map<unsigned int, MaterialRefInfo> &uniqueMaterials = ResourcesLoader::GetMaterials();
 
 		// Materials for the Vita are in Data/Materials/Vita for now
 		cmakelists += "FILE ../../../Materials/Vita Data/Materials\n";
-		// We also add the whole Shaders/GXM folder
+		// We also add the whole Shaders/GXM/compiled folder
 		cmakelists += "FILE ../../../Shaders/GXM/compiled Data/Shaders/GXM\n";
 		cmakelists += ")\n";
 

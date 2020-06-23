@@ -7,6 +7,8 @@
 #include "Program/Serializer.h"
 #include "Program/Log.h"
 
+#include "Data/Shaders/bindings.glsl"
+
 #include <iostream>
 
 namespace Engine
@@ -15,6 +17,9 @@ namespace Engine
 	{
 		quadMesh = {};
 		enableUI = true;
+
+		fxaaFB = nullptr;
+		fxaaMat = nullptr;
 
 		debugSettings = {};
 		debugSettings.enable = false;
@@ -90,8 +95,8 @@ namespace Engine
 		mainLightUBO = renderer->CreateUniformBuffer(nullptr, sizeof(DirLightUBO));
 
 		// Slot 0 is reserved for the camera ubo and slot 1 for the instance/transform data ssbo
-		renderer->AddResourceToSlot(2, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
-		renderer->AddResourceToSlot(3, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
+		renderer->AddResourceToSlot(FRAME_UBO, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
+		renderer->AddResourceToSlot(DIR_LIGHT_UBO, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
 		
 		renderer->AddResourceToSlot(6, vctgi.GetVoxelTexture(), true, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);	// use the voxel texture as a storage image here
 		renderer->AddResourceToSlot(7, vctgi.GetIndirectBuffer(), PipelineStage::COMPUTE);
@@ -437,13 +442,13 @@ namespace Engine
 		shadowMap.params = { TextureWrap::CLAMP_TO_BORDER, TextureFilter::LINEAR, TextureFormat::DEPTH_COMPONENT, TextureInternalFormat::DEPTH_COMPONENT24, TextureDataType::FLOAT, false, true };
 		csmPass.AddDepthOutput("shadowMap", shadowMap);
 
-		csmPass.SetOnSetup([this](const Pass *thisPass)
+		csmPass.OnSetup([this](const Pass *thisPass)
 		{
 			//debugMatInstance->textures[0] = thisPass->GetFramebuffer()->GetDepthTexture();
 			csmFB = thisPass->GetFramebuffer();
 		});
 
-		csmPass.SetOnExecute([this]() {PerformCSMPass(); });
+		csmPass.OnExecute([this]() {PerformCSMPass(); });
 	}
 
 	void RenderingPath::SetupBloomPasses()
@@ -460,7 +465,7 @@ namespace Engine
 		brightPass.AddTextureInput("color");
 		brightPass.AddTextureOutput("brightPass", brightPassAttachment);
 
-		brightPass.SetOnSetup([this](const Pass *thisPass)
+		brightPass.OnSetup([this](const Pass *thisPass)
 		{
 			brightPassFB = thisPass->GetFramebuffer();
 			brightPassMatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/brightpass_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -468,12 +473,12 @@ namespace Engine
 			renderer->UpdateMaterialInstance(brightPassMatInstance);
 		});
 
-		brightPass.SetOnResized([this](const Pass *thisPass)
+		brightPass.OnResized([this](const Pass *thisPass)
 		{
 			brightPassMatInstance->textures[0] = hdrFB->GetColorTextureByIndex(0);
 		});
 
-		brightPass.SetOnExecute([this]() { PerformBrightPass(); });
+		brightPass.OnExecute([this]() { PerformBrightPass(); });
 
 		Pass &downsample4Pass = frameGraph.AddPass("DownsamplePass4");
 		// Downsample 4 is done at quarter res
@@ -486,7 +491,7 @@ namespace Engine
 		downsample4Pass.AddTextureInput("brightPass");
 		downsample4Pass.AddTextureOutput("downsample4", downsample4Attach);
 
-		downsample4Pass.SetOnSetup([this](const Pass *thisPass)
+		downsample4Pass.OnSetup([this](const Pass *thisPass)
 		{
 			downsampleFB[0] = thisPass->GetFramebuffer();
 			downsample4MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -495,12 +500,12 @@ namespace Engine
 			renderer->UpdateMaterialInstance(downsample4MatInstance);
 		});
 
-		downsample4Pass.SetOnResized([this](const Pass *thisPass)
+		downsample4Pass.OnResized([this](const Pass *thisPass)
 		{
 			downsample4MatInstance->textures[0] = brightPassFB->GetColorTexture();
 		});
 
-		downsample4Pass.SetOnExecute([this]() { PerformDownsample4Pass(); });
+		downsample4Pass.OnExecute([this]() { PerformDownsample4Pass(); });
 
 		Pass &downsample8Pass = frameGraph.AddPass("DownsamplePass8");
 		// Downsample 8 is done at 1/8 res
@@ -513,7 +518,7 @@ namespace Engine
 		downsample8Pass.AddTextureInput("downsample4");
 		downsample8Pass.AddTextureOutput("downsample8", downsample8Attach);
 
-		downsample8Pass.SetOnSetup([this](const Pass *thisPass)
+		downsample8Pass.OnSetup([this](const Pass *thisPass)
 		{
 			downsampleFB[1] = thisPass->GetFramebuffer();
 			downsample8MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -522,12 +527,12 @@ namespace Engine
 			renderer->UpdateMaterialInstance(downsample8MatInstance);
 		});
 
-		downsample8Pass.SetOnResized([this](const Pass *thisPass)
+		downsample8Pass.OnResized([this](const Pass *thisPass)
 		{
 			downsample8MatInstance->textures[0] = downsampleFB[0]->GetColorTexture();
 		});
 
-		downsample8Pass.SetOnExecute([this]() { PerformDownsample8Pass(); });
+		downsample8Pass.OnExecute([this]() { PerformDownsample8Pass(); });
 
 		// Downsample 16 is done at 1/16 res
 		Pass &downsample16Pass = frameGraph.AddPass("DownsamplePass16");
@@ -541,7 +546,7 @@ namespace Engine
 		downsample16Pass.AddTextureInput("downsample8");
 		downsample16Pass.AddTextureOutput("downsample16", downsample16Attach);
 
-		downsample16Pass.SetOnSetup([this](const Pass *thisPass)
+		downsample16Pass.OnSetup([this](const Pass *thisPass)
 		{
 			downsampleFB[2] = thisPass->GetFramebuffer();
 			downsample16MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -550,12 +555,12 @@ namespace Engine
 			renderer->UpdateMaterialInstance(downsample16MatInstance);
 		});
 
-		downsample16Pass.SetOnResized([this](const Pass *thisPass)
+		downsample16Pass.OnResized([this](const Pass *thisPass)
 		{
 			downsample16MatInstance->textures[0] = downsampleFB[1]->GetColorTexture();
 		});
 
-		downsample16Pass.SetOnExecute([this]() { PerformDownsample16Pass(); });
+		downsample16Pass.OnExecute([this]() { PerformDownsample16Pass(); });
 
 		// Upsample from 1/16 to 1/8
 		Pass &upsample8Pass = frameGraph.AddPass("Upsample8");
@@ -570,7 +575,7 @@ namespace Engine
 		upsample8Pass.AddTextureInput("downsample8");
 		upsample8Pass.AddTextureOutput("upsample8", upsample8Attach);
 
-		upsample8Pass.SetOnSetup([this](const Pass *thisPass)
+		upsample8Pass.OnSetup([this](const Pass *thisPass)
 		{
 			upsampleFB[0] = thisPass->GetFramebuffer();
 			upsample8MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/upsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -580,13 +585,13 @@ namespace Engine
 			renderer->UpdateMaterialInstance(upsample8MatInstance);
 		});
 
-		upsample8Pass.SetOnResized([this](const Pass *thisPass)
+		upsample8Pass.OnResized([this](const Pass *thisPass)
 		{
 			upsample8MatInstance->textures[0] = downsampleFB[2]->GetColorTexture();
 			upsample8MatInstance->textures[1] = downsampleFB[1]->GetColorTexture();
 		});
 
-		upsample8Pass.SetOnExecute([this]() { PerformUpsample8Pass(); });
+		upsample8Pass.OnExecute([this]() { PerformUpsample8Pass(); });
 
 		// Upsample from 1/8 to 1/4
 		Pass &upsample4Pass = frameGraph.AddPass("Upsample4");
@@ -601,7 +606,7 @@ namespace Engine
 		upsample4Pass.AddTextureInput("downsample4");
 		upsample4Pass.AddTextureOutput("upsample4", upsample4Attach);
 
-		upsample4Pass.SetOnSetup([this](const Pass *thisPass)
+		upsample4Pass.OnSetup([this](const Pass *thisPass)
 		{
 			upsampleFB[1] = thisPass->GetFramebuffer();
 			upsample4MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/upsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -611,13 +616,13 @@ namespace Engine
 			renderer->UpdateMaterialInstance(upsample4MatInstance);
 		});
 
-		upsample4Pass.SetOnResized([this](const Pass *thisPass)
+		upsample4Pass.OnResized([this](const Pass *thisPass)
 		{
 			upsample4MatInstance->textures[0] = upsampleFB[0]->GetColorTexture();
 			upsample4MatInstance->textures[1] = downsampleFB[0]->GetColorTexture();
 		});
 
-		upsample4Pass.SetOnExecute([this]() { PerformUpsample4Pass(); });
+		upsample4Pass.OnExecute([this]() { PerformUpsample4Pass(); });
 	}
 
 	void RenderingPath::SetupReflectionPass()
@@ -639,17 +644,17 @@ namespace Engine
 		reflectionPass.AddTextureOutput("reflectionTex", reflectionAttach);
 		reflectionPass.AddDepthOutput("reflectionDepth", depthAttachment);
 
-		reflectionPass.SetOnSetup([this](const Pass *thisPass)
+		reflectionPass.OnSetup([this](const Pass *thisPass)
 		{
 			reflectionFB = thisPass->GetFramebuffer();
 			projectedGridWater.GetMaterialInstance()->textures[0] = thisPass->GetFramebuffer()->GetColorTexture();
 		});
-		reflectionPass.SetOnResized([this](const Pass *thisPass)
+		reflectionPass.OnResized([this](const Pass *thisPass)
 		{
 			projectedGridWater.GetMaterialInstance()->textures[0] = thisPass->GetFramebuffer()->GetColorTexture();
 			renderer->UpdateMaterialInstance(projectedGridWater.GetMaterialInstance());
 		});
-		reflectionPass.SetOnExecute([this]() {PerformReflectionPass(); });
+		reflectionPass.OnExecute([this]() {PerformReflectionPass(); });
 	}
 
 	void RenderingPath::SetupRefractionPass()
@@ -669,7 +674,7 @@ namespace Engine
 		refractionPass.AddTextureOutput("refractionTex", refractionColorAttach);
 		refractionPass.AddDepthOutput("refractionDepth", refractionDepthAttachment);
 
-		refractionPass.SetOnSetup([this](const Pass *thisPass)
+		refractionPass.OnSetup([this](const Pass *thisPass)
 		{
 			refractionFB = thisPass->GetFramebuffer();
 			// Projected grid water
@@ -678,13 +683,13 @@ namespace Engine
 			projectedGridWater.GetMaterialInstance()->textures[3] = thisPass->GetFramebuffer()->GetDepthTexture();
 			renderer->UpdateMaterialInstance(projectedGridWater.GetMaterialInstance());
 		});
-		refractionPass.SetOnResized([this](const Pass *thisPass)
+		refractionPass.OnResized([this](const Pass *thisPass)
 		{
 			projectedGridWater.GetMaterialInstance()->textures[2] = thisPass->GetFramebuffer()->GetColorTexture();
 			projectedGridWater.GetMaterialInstance()->textures[3] = thisPass->GetFramebuffer()->GetDepthTexture();
 			renderer->UpdateMaterialInstance(projectedGridWater.GetMaterialInstance());
 		});
-		refractionPass.SetOnExecute([this]() {PerformRefractionPass(); });
+		refractionPass.OnExecute([this]() {PerformRefractionPass(); });
 	}
 
 	void RenderingPath::SetupVoxelizationPass()
@@ -694,7 +699,7 @@ namespace Engine
 		voxelizationPass.AddImageOutput("voxelTexture", vctgi.GetVoxelTexture(), true);
 		voxelizationPass.AddDepthInput("shadowMap");
 
-		voxelizationPass.SetOnBarriers([this]()
+		voxelizationPass.OnBarriers([this]()
 		{
 			// Make sure the reads to the voxel texture are finished and transition it from read to write
 			BarrierImage bi = {};
@@ -712,7 +717,7 @@ namespace Engine
 			renderer->PerformBarrier(b);
 		});
 
-		voxelizationPass.SetOnExecute([this]()
+		voxelizationPass.OnExecute([this]()
 		{
 			vctgi.Voxelize(renderQueues[3]);
 		});
@@ -732,20 +737,20 @@ namespace Engine
 		p.AddTextureOutput("final", finalAttach);
 #endif
 
-		p.SetOnSetup([this](const Pass *thisPass)
+		p.OnSetup([this](const Pass *thisPass)
 		{
 			fxaaFB = thisPass->GetFramebuffer();
 			fxaaMat = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/fxaa_mat.lua", quadMesh.vao->GetVertexInputDescs());
 			fxaaMat->textures[0] = postProcessFB->GetColorTexture();
 			renderer->UpdateMaterialInstance(fxaaMat);
 		});
-		p.SetOnResized([this](const Pass *thisPass)
+		p.OnResized([this](const Pass *thisPass)
 		{
 			fxaaMat->textures[0] = postProcessFB->GetColorTexture();
 			renderer->UpdateMaterialInstance(fxaaMat);
 		});
 
-		p.SetOnExecute([this]()
+		p.OnExecute([this]()
 		{
 			RenderItem ri = {};
 			ri.mesh = &quadMesh;
@@ -761,14 +766,14 @@ namespace Engine
 		p.SetIsCompute(true);
 		p.AddImageOutput("terrainImg", game->GetTerrain()->GetMaterialInstance()->textures[0]);
 
-		p.SetOnSetup([this](const Pass *thisPass)
+		p.OnSetup([this](const Pass *thisPass)
 		{
 			terrainEditMat = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/terrain_edit_mat.lua", {});
 			terrainEditMat->textures[0] = game->GetTerrain()->GetMaterialInstance()->textures[0];
 			renderer->UpdateMaterialInstance(terrainEditMat);
 		});
 
-		p.SetOnBarriers([this]()
+		p.OnBarriers([this]()
 		{
 			// Make sure the image has been read
 			BarrierImage bi = {};
@@ -785,7 +790,7 @@ namespace Engine
 			renderer->PerformBarrier(b);
 		});
 
-		p.SetOnExecute([this]()
+		p.OnExecute([this]()
 		{
 			Texture *t = game->GetTerrain()->GetMaterialInstance()->textures[0];
 

@@ -1,13 +1,13 @@
 #include "GLRenderer.h"
 
-#include "Graphics\Shader.h"
-#include "Program\Log.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Material.h"
-#include "Graphics\Mesh.h"
-#include "Graphics\Buffers.h"
+#include "Graphics/Shader.h"
+#include "Program/Log.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
+#include "Graphics/Mesh.h"
+#include "Graphics/Buffers.h"
 #include "GLVertexArray.h"
-#include "Program\Input.h"
+#include "Program/Input.h"
 #include "GLVertexBuffer.h"
 #include "GLIndexBuffer.h"
 #include "GLShader.h"
@@ -17,13 +17,14 @@
 #include "GLTexture3D.h"
 #include "GLTextureCube.h"
 
-#include "Program\Utils.h"
-#include "Program\StringID.h"
+#include "Program/Utils.h"
+#include "Program/StringID.h"
 
-#include "Data\Shaders\GL\include\common.glsl"
+#include "Data/Shaders/GL/include/common.glsl"
+#include "Data/Shaders/bindings.glsl"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\gtc\type_ptr.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/gtc/type_ptr.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -91,35 +92,38 @@ namespace Engine
 
 		unsigned int initialSize = 256000;		// bytes
 
-		meshParamsUBO = new GLUniformBuffer(nullptr, initialSize);
-		meshParamsUBO->BindTo(OBJECT_UBO_BINDING);	
-
-		meshParamsData.resize(2048 * 6);
+		/*meshParamsUBO = new GLUniformBuffer(nullptr, initialSize);
+		meshParamsUBO->BindTo(OBJECT_UBO_BINDING);
+		meshParamsData.resize(2048 * 6);*/
 
 		uboMinOffsetAlignment = 0;
 		GLint alignment = 0;
 		GLint size = 0;
+		GLint m = 0;
 		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &alignment);
 		glGetIntegerv(GL_UNIFORM_BUFFER_START, &size);
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &m);
+
+		Log::Print(LogLevel::LEVEL_INFO, "max tex units:  %d\n", m);
 
 		uboMinOffsetAlignment = (unsigned int)alignment;
 		//std::cout << "Min UBO offset alignment: " << alignment << '\n';
 		//std::cout << "Min block data size: " << size << '\n';
 
 		// Instance buffer
-		initialSize = 8192*4;
+		initialSize = 1024 * 512; // 512 kib
 		glGenBuffers(1, &instanceDataSSBO);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, instanceDataSSBO);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, initialSize, nullptr, GL_DYNAMIC_COPY);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, instanceDataSSBO);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INSTANCE_DATA_SSBO, instanceDataSSBO);
 
 		instanceData.resize(2048 * 4);
 
 		viewUniformBuffer = new GLUniformBuffer(nullptr, sizeof(CameraUBO));
-		viewUniformBuffer->BindTo(0);
+		viewUniformBuffer->BindTo(CAMERA_UBO);
 
-		currentBinding = 4;
+		currentBinding = 2;
 
 		materialUBO = new GLUniformBuffer(nullptr, 128);
 		materialUBO->BindTo(2);
@@ -279,10 +283,6 @@ namespace Engine
 		return m;
 	}
 
-	void GLRenderer::ReloadMaterial(Material * baseMaterial)
-	{
-	}
-
 	Texture *GLRenderer::CreateTexture2D(const std::string &path, const TextureParams &params, bool storeTextureData)
 	{
 		unsigned int id = SID(path);
@@ -413,13 +413,13 @@ namespace Engine
 
 	void GLRenderer::Submit(const RenderQueue &renderQueue)
 	{
-		meshParamsOffset = 0;
+		//meshParamsOffset = 0;
 		instanceDataOffset = 0;
 		for (size_t i = 0; i < renderQueue.size(); i++)
 		{
 			const RenderItem &ri = renderQueue[i];
 
-			if (ri.meshParams != nullptr)
+			/*if (ri.meshParams != nullptr)
 			{
 				if (meshParamsOffset > meshParamsData.size())
 					meshParamsData.resize(meshParamsData.size() * 2);
@@ -427,21 +427,27 @@ namespace Engine
 				std::memcpy(buffer + meshParamsOffset / 4, ri.meshParams, ri.meshParamsSize);			// Size must be in bytes
 				meshParamsOffset += ri.meshParamsSize;		// Offset must be in elements
 				meshParamsOffset += (uboMinOffsetAlignment - (meshParamsOffset % uboMinOffsetAlignment));
-			}
+			}*/
 
-			if (ri.instanceData != nullptr)
+			if (ri.instanceData)
 			{
 				if (instanceDataOffset > instanceData.size())
 					instanceData.resize(instanceData.size() * 2);
 
-				std::memcpy(instanceBuffer + instanceDataOffset / 4, ri.instanceData, ri.instanceDataSize);
+				memcpy(instanceBuffer + instanceDataOffset / 4, ri.instanceData, ri.instanceDataSize);
 				instanceDataOffset += ri.instanceDataSize;
+			}
+			if (ri.meshParams)
+			{
+				// handle resize
+				memcpy(instanceBuffer + instanceDataOffset / 4, ri.meshParams, ri.meshParamsSize);
+				instanceDataOffset += ri.meshParamsSize;
 			}
 		}
 
 		// TODO: Check if the data won't fit in the buffer and resize it
-		if (meshParamsOffset > 0)
-			meshParamsUBO->Update(buffer, meshParamsOffset * 4, 0);			// Size must be in bytes
+		//if (meshParamsOffset > 0)
+		//	meshParamsUBO->Update(buffer, meshParamsOffset * 4, 0);			// Size must be in bytes
 
 		if (instanceDataOffset > 0)
 		{
@@ -449,14 +455,14 @@ namespace Engine
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, instanceDataOffset, instanceBuffer);
 		}
 
-		meshParamsOffset = 0;
+		//meshParamsOffset = 0;
 		instanceDataOffset = 0;
 
 		for (size_t i = 0; i < renderQueue.size(); i++)
 		{
 			Submit(renderQueue[i]);
 		}
-		meshParamsOffset = 0;
+		//meshParamsOffset = 0;
 		instanceDataOffset = 0;
 	}
 
@@ -466,13 +472,13 @@ namespace Engine
 		if (renderItem.materialData)
 			materialUBO->Update(renderItem.materialData, renderItem.materialDataSize, 0);		// TODO: Check what's faster - Update the UBO for every ri or use one BIG UBO and use glBindBufferRange()
 
-		if (renderItem.meshParams != nullptr)
+		/*if (renderItem.meshParams != nullptr)
 		{
 			// Offset must be a multiple of GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT
 			glBindBufferRange(GL_UNIFORM_BUFFER, OBJECT_UBO_BINDING, static_cast<GLUniformBuffer*>(meshParamsUBO)->GetID(), meshParamsOffset, renderItem.meshParamsSize);		// Everything in bytes
 			meshParamsOffset += renderItem.meshParamsSize;		// bytes
 			meshParamsOffset += (uboMinOffsetAlignment - (meshParamsOffset % uboMinOffsetAlignment));
-		}
+		}*/
 
 		const ShaderPass &pass = renderItem.matInstance->baseMaterial->GetShaderPass(renderItem.shaderPass);
 
@@ -482,7 +488,13 @@ namespace Engine
 		if (renderItem.transform)
 			s->SetModelMatrix(*renderItem.transform);
 
-		if (renderItem.instanceData != nullptr)
+		if (renderItem.meshParams)
+		{
+			s->SetStartIndex(instanceDataOffset);
+			instanceDataOffset += renderItem.meshParamsSize;
+		}
+
+		if (renderItem.instanceData)
 		{
 			s->SetInstanceDataOffset((int)instanceDataOffset / sizeof(glm::mat4));
 			instanceDataOffset += renderItem.instanceDataSize;
@@ -538,13 +550,13 @@ namespace Engine
 		if (renderItem.materialData)
 			materialUBO->Update(renderItem.materialData, renderItem.materialDataSize, 0);
 
-		if (renderItem.meshParams != nullptr)
+		/*if (renderItem.meshParams != nullptr)
 		{
 			// Offset must be a multiple of GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT
 			glBindBufferRange(GL_UNIFORM_BUFFER, OBJECT_UBO_BINDING, static_cast<GLUniformBuffer*>(meshParamsUBO)->GetID(), meshParamsOffset, renderItem.meshParamsSize);		// Everything in bytes
 			meshParamsOffset += renderItem.meshParamsSize;		// bytes
 			meshParamsOffset += (uboMinOffsetAlignment - (meshParamsOffset % uboMinOffsetAlignment));
-		}
+		}*/
 
 		const ShaderPass &pass = renderItem.matInstance->baseMaterial->GetShaderPass(renderItem.shaderPass);
 
@@ -746,7 +758,7 @@ namespace Engine
 	{
 	}
 
-	void GLRenderer::UpdateResourceOnSlot(unsigned int binding, Texture * texture, bool useStorage, bool separateMipViews)
+	void GLRenderer::UpdateResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews)
 	{
 	}
 
@@ -847,25 +859,15 @@ namespace Engine
 			delete viewUniformBuffer;
 			viewUniformBuffer = nullptr;
 		}
-		/*if (frameUBO)
-		{
-			delete frameUBO;
-			frameUBO = nullptr;
-		}*/
 		if (materialUBO)
 		{
 			delete materialUBO;
 		}
 
-		if (meshParamsUBO)
+		/*if (meshParamsUBO)
 		{
 			delete meshParamsUBO;
 			meshParamsUBO = nullptr;
-		}
-		/*if (mainLightUBO)
-		{
-			delete mainLightUBO;
-			mainLightUBO = nullptr;
 		}*/
 
 		Log::Print(LogLevel::LEVEL_INFO, "GL renderer exiting\n");

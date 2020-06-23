@@ -8,6 +8,8 @@
 
 #include "include/glm/gtc/matrix_transform.hpp"
 
+#include "Data/Shaders/bindings.glsl"
+
 #include <iostream>
 
 namespace Engine
@@ -66,7 +68,7 @@ namespace Engine
 		frameGraph.Bake(renderer);
 		frameGraph.ExportGraphVizFile();
 
-		renderer->AddResourceToSlot(4, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
+		renderer->AddResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
 		renderer->AddResourceToSlot(11, frustumsSSBO, PipelineStage::COMPUTE);
 		renderer->AddResourceToSlot(12, lightListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
 		renderer->AddResourceToSlot(13, opaqueLightIndexListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
@@ -183,7 +185,7 @@ namespace Engine
 		pass.SetIsCompute(true);
 		pass.AddBufferOutput("frustumsBuffer", frustumsSSBO);
 
-		pass.SetOnBarriers([this]()
+		pass.OnBarriers([this]()
 		{
 			// Make sure the buffer has been read
 			BarrierBuffer bb = {};
@@ -197,7 +199,7 @@ namespace Engine
 
 			renderer->PerformBarrier(b);
 		});
-		pass.SetOnExecute([this]()
+		pass.OnExecute([this]()
 		{
 			DispatchItem item = {};
 			item.matInstance = frustumsMat;
@@ -224,20 +226,20 @@ namespace Engine
 
 		p.AddDepthOutput("depthPrepassOutput", info);
 
-		p.SetOnSetup([this](const Pass *thisPass)
+		p.OnSetup([this](const Pass *thisPass)
 		{
 			depthPrepassFB = thisPass->GetFramebuffer();
 			lightCullingMat->textures[0] = depthPrepassFB->GetDepthTexture();
 			renderer->UpdateMaterialInstance(lightCullingMat);
 		});
 
-		p.SetOnResized([this](const Pass *thisPass)
+		p.OnResized([this](const Pass *thisPass)
 		{
 			lightCullingMat->textures[0] = depthPrepassFB->GetDepthTexture();
 			renderer->UpdateMaterialInstance(lightCullingMat);
 		});
 
-		p.SetOnBarriers([this]()
+		p.OnBarriers([this]()
 		{
 			// Make sure reads to the depth attachment from light culling pass is done
 			/*BarrierImage bi = {};
@@ -254,7 +256,7 @@ namespace Engine
 			renderer->PerformBarrier(b);*/
 		});
 
-		p.SetOnExecute([this]()
+		p.OnExecute([this]()
 		{
 			renderer->Submit(renderQueues[7]);
 			//std::cout << renderQueues[7].size() << '\n';
@@ -270,7 +272,7 @@ namespace Engine
 		p.AddBufferInput("frustumsBuffer", frustumsSSBO);
 		//p.AddImageOutput("");
 
-		p.SetOnBarriers([this]()
+		p.OnBarriers([this]()
 		{
 			// Wait for the writes to the depth attachment from the depth prepass to be completed
 			/*BarrierImage bi = {};
@@ -294,7 +296,7 @@ namespace Engine
 			renderer->PerformBarrier(b);
 		});
 
-		p.SetOnExecute([this]()
+		p.OnExecute([this]()
 		{
 			DispatchItem item = {};
 			item.matInstance = lightCullingMat;
@@ -342,7 +344,7 @@ namespace Engine
 		hdrPass.AddTextureOutput("color", colorAttachment);
 		hdrPass.AddDepthOutput("depth", depthAttachment);	
 
-		hdrPass.SetOnSetup([this](const Pass *thisPass)
+		hdrPass.OnSetup([this](const Pass *thisPass)
 		{
 			hdrFB = thisPass->GetFramebuffer();
 
@@ -352,7 +354,7 @@ namespace Engine
 			vctgi.CreateMat(game->GetScriptManager());
 		});
 
-		hdrPass.SetOnBarriers([this]()
+		hdrPass.OnBarriers([this]()
 		{
 			Barrier b = {};
 
@@ -394,7 +396,7 @@ namespace Engine
 			renderer->PerformBarrier(b);
 		});
 
-		hdrPass.SetOnExecute([this]() {PerformHDRPass(); });
+		hdrPass.OnExecute([this]() {PerformHDRPass(); });
 	}
 
 	void ForwardPlusRenderer::SetupPostProcessPass()
@@ -416,7 +418,7 @@ namespace Engine
 		postPass.AddTextureOutput("final", postOutput);
 #endif
 
-		postPass.SetOnSetup([this](const Pass *thisPass)
+		postPass.OnSetup([this](const Pass *thisPass)
 		{
 			postProcessFB = thisPass->GetFramebuffer();
 			postProcMatInstance = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Materials/post_process_mat.lua", quadMesh.vao->GetVertexInputDescs());
@@ -438,13 +440,13 @@ namespace Engine
 			//debugMatInstance->textures[0] = csmFB->GetDepthTexture();
 			//this->renderer->UpdateMaterialInstance(debugMatInstance);
 		});
-		postPass.SetOnResized([this](const Pass *thisPass)
+		postPass.OnResized([this](const Pass *thisPass)
 		{
 			postProcMatInstance->textures[0] = hdrFB->GetColorTextureByIndex(0);
 			postProcMatInstance->textures[1] = hdrFB->GetDepthTexture();
 			postProcMatInstance->textures[2] = upsampleFB[1]->GetColorTexture();
 		});
-		postPass.SetOnExecute([this]() { PerformPostProcessPass(); });
+		postPass.OnExecute([this]() { PerformPostProcessPass(); });
 	}
 
 	void ForwardPlusRenderer::PerformHDRPass()

@@ -29,8 +29,8 @@ namespace Engine
 
 		std::string dir = vertexPath.substr(0, vertexPath.find_last_of("/\\"));
 
-		std::string vertexCode = ReadFile(vertexFile, dir);
-		std::string fragmentCode = ReadFile(fragmentFile, dir);
+		std::string vertexCode = ReadFile(vertexFile, dir, vertexPath);
+		std::string fragmentCode = ReadFile(fragmentFile, dir, fragmentPath);
 
 		vertexCode.insert(13, defines);
 		fragmentCode.insert(13, defines);
@@ -102,9 +102,9 @@ namespace Engine
 
 		std::string dir = vertexPath.substr(0, vertexPath.find_last_of("/\\"));
 
-		std::string vertexCode = ReadFile(vertexFile, dir);
-		std::string geometryCode = ReadFile(geometryFile, dir);
-		std::string fragmentCode = ReadFile(fragmentFile, dir);
+		std::string vertexCode = ReadFile(vertexFile, dir, vertexPath);
+		std::string geometryCode = ReadFile(geometryFile, dir, geometryPath);
+		std::string fragmentCode = ReadFile(fragmentFile, dir, fragmentPath);
 
 		// Insert the defines after the  #version ###
 		vertexCode.insert(13, defines);
@@ -186,7 +186,7 @@ namespace Engine
 		}
 
 		std::string dir = path.substr(0, path.find_last_of("/\\"));
-		std::string computeCode = ReadFile(computeFile, dir);
+		std::string computeCode = ReadFile(computeFile, dir, computePath);
 
 		// Insert the defines after the  #version ### core
 		computeCode.insert(13, defines);
@@ -230,7 +230,7 @@ namespace Engine
 		glDeleteProgram(program);
 	}
 
-	std::string GLShader::ReadFile(std::ifstream &file, const std::string &dir)
+	std::string GLShader::ReadFile(std::ifstream &file, const std::string &dir, const std::string& mainShaderPath)
 	{
 		std::string src, line;
 
@@ -238,17 +238,36 @@ namespace Engine
 		{
 			if (line.substr(0, 8) == "#include")
 			{
-				std::string includePath = dir + "/" + line.substr(9);
+				std::string pathInShader = line.substr(9);
+				std::string includePath = dir;
+
+				// Check ../
+				// The file still needs to be inside the Data folder
+				// Only goes as far as the Data folder
+				int i = 1;
+				while (pathInShader.substr(3 * i - 3, 3) == "../")
+				{
+					size_t len = includePath.length();
+					includePath.erase(len - (len - includePath.find_last_of("/\\")));		// Like this we also remove the last /, because we add it below
+					i++;
+				}
+
+				if (i > 1)
+					pathInShader = pathInShader.substr(3 * i - 3);			// Remove the ../
+
+				includePath += '/' + pathInShader;
+
+
 				std::ifstream includeFile(includePath);
 
 				if (includeFile.is_open())
 				{
-					src += ReadFile(includeFile, dir);
+					src += ReadFile(includeFile, dir, mainShaderPath);
 					includeFile.close();
 				}
 				else
 				{
-					std::cout << "Failed to include shader:\n\t" + includePath << "\n";
+					std::cout << "Failed to include shader:\n\t" + includePath << "\nin shader:\n" << mainShaderPath << '\n';
 				}
 			}
 			else
@@ -317,6 +336,7 @@ namespace Engine
 
 		modelMatrixLoc = glGetUniformLocation(program, "toWorldSpace");
 		instanceDataOffsetLoc = glGetUniformLocation(program, "instanceDataOffset");
+		startIndexLoc = glGetUniformLocation(program, "startIndexLoc");
 	}
 
 	void GLShader::Use() const
@@ -338,6 +358,11 @@ namespace Engine
 	void GLShader::SetInstanceDataOffset(int offset)
 	{
 		glUniform1i(instanceDataOffsetLoc, offset);
+	}
+
+	void GLShader::SetStartIndex(int index)
+	{
+		glUniform1i(startIndexLoc, index);
 	}
 
 	void GLShader::SetMat4(const std::string &name, const glm::mat4 &matrix)

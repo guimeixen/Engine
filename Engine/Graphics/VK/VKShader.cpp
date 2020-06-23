@@ -46,13 +46,13 @@ namespace Engine
 		std::string compiledVertexPath = "Data/Shaders/Vulkan/spirv/" + idStr + "_vert.spv";
 		std::string compiledFragmentPath = "Data/Shaders/Vulkan/spirv/" + idStr + "_frag.spv";
 
-		vertexExists = std::experimental::filesystem::exists(compiledVertexPath);
-		fragmentExists = std::experimental::filesystem::exists(compiledFragmentPath);
+		vertexExists = std::filesystem::exists(compiledVertexPath);
+		fragmentExists = std::filesystem::exists(compiledFragmentPath);
 
 		if (vertexExists)
 		{
-			auto compiledTime = std::experimental::filesystem::last_write_time(compiledVertexPath);
-			auto baseVertexWriteTime = std::experimental::filesystem::last_write_time(baseVertexPath);
+			auto compiledTime = std::filesystem::last_write_time(compiledVertexPath);
+			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseVertexWriteTime)
@@ -60,8 +60,8 @@ namespace Engine
 		}
 		if (fragmentExists)
 		{
-			auto compiledTime = std::experimental::filesystem::last_write_time(compiledFragmentPath);
-			auto baseFragmentWriteTime = std::experimental::filesystem::last_write_time(baseFragmentPath);
+			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);
+			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseFragmentWriteTime)
@@ -170,14 +170,14 @@ namespace Engine
 		std::string compiledGeometryPath = "Data/Shaders/Vulkan/spirv/" + idStr + "_geom.spv";
 		std::string compiledFragmentPath = "Data/Shaders/Vulkan/spirv/" + idStr + "_frag.spv";
 
-		vertexExists = std::experimental::filesystem::exists(compiledVertexPath);
-		geometryExists = std::experimental::filesystem::exists(compiledGeometryPath);
-		fragmentExists = std::experimental::filesystem::exists(compiledFragmentPath);
+		vertexExists = std::filesystem::exists(compiledVertexPath);
+		geometryExists = std::filesystem::exists(compiledGeometryPath);
+		fragmentExists = std::filesystem::exists(compiledFragmentPath);
 
 		if (vertexExists)
 		{
-			auto compiledTime = std::experimental::filesystem::last_write_time(compiledVertexPath);
-			auto baseVertexWriteTime = std::experimental::filesystem::last_write_time(baseVertexPath);
+			auto compiledTime = std::filesystem::last_write_time(compiledVertexPath);
+			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseVertexWriteTime)
@@ -185,8 +185,8 @@ namespace Engine
 		}
 		if (geometryExists)
 		{
-			auto compiledTime = std::experimental::filesystem::last_write_time(compiledGeometryPath);
-			auto baseGeometryWriteTime = std::experimental::filesystem::last_write_time(baseGeometryPath);
+			auto compiledTime = std::filesystem::last_write_time(compiledGeometryPath);
+			auto baseGeometryWriteTime = std::filesystem::last_write_time(baseGeometryPath);
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseGeometryWriteTime)
@@ -194,8 +194,8 @@ namespace Engine
 		}
 		if (fragmentExists)
 		{
-			auto compiledTime = std::experimental::filesystem::last_write_time(compiledFragmentPath);
-			auto baseFragmentWriteTime = std::experimental::filesystem::last_write_time(baseFragmentPath);
+			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);
+			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseFragmentWriteTime)
@@ -316,12 +316,12 @@ namespace Engine
 		// Check if the compiled file already exists so we don't save to do it again
 		std::string compiledComputePath = "Data/Shaders/Vulkan/spirv/" + idStr + "_comp.spv";
 
-		computeExists = std::experimental::filesystem::exists(compiledComputePath);
+		computeExists = std::filesystem::exists(compiledComputePath);
 
 		if (computeExists)
 		{
-			auto compiledTime = std::experimental::filesystem::last_write_time(compiledComputePath);
-			auto baseComputeWriteTime = std::experimental::filesystem::last_write_time(baseComputePath);
+			auto compiledTime = std::filesystem::last_write_time(compiledComputePath);
+			auto baseComputeWriteTime = std::filesystem::last_write_time(baseComputePath);
 
 			// If the compiled time is older than when the base shader was modified the we need to compile it again
 			if (compiledTime < baseComputeWriteTime)

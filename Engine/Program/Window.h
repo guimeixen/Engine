@@ -13,10 +13,12 @@
 #include <iostream>
 
 class EditorManager;
-class InputManager;
 
 namespace Engine
 {
+	
+	class InputManager;
+
 	class Window
 	{
 	public:

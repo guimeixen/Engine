@@ -31,6 +31,11 @@ namespace Engine
 
 		renderer = Renderer::Create(nullptr, GraphicsAPI::GXM, &fileManager, 960, 544, 960, 544);
 
+		if (renderer == nullptr)
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create renderer!\n");
+			return false;
+		}
 		sceKernelGetFreeMemorySize(&info);
 		Log::Print(LogLevel::LEVEL_INFO, "USER_CDRAM_RW memory available size: %d\n", info.size_cdram);
 		Log::Print(LogLevel::LEVEL_INFO, "USER_MAIN_PHYCONT_*_RW available size: %d\n", info.size_phycont);

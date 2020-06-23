@@ -36,7 +36,7 @@ namespace Engine
 
 		cloudsPass.AddTextureOutput("cloudsLowRes", colorAttach);
 
-		cloudsPass.SetOnSetup([renderer, &scriptManager, this, &frameGraph](const Pass *thisPass)
+		cloudsPass.OnSetup([renderer, &scriptManager, this, &frameGraph](const Pass *thisPass)
 		{
 			cloudsLowResFB = thisPass->GetFramebuffer();
 			cloudMaterial = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/clouds_mat.lua", this->quadMesh.vao->GetVertexInputDescs());
@@ -48,7 +48,7 @@ namespace Engine
 				renderer->UpdateMaterialInstance(cloudMaterial);
 			}
 		});
-		cloudsPass.SetOnExecute([this]() {PerformVolumetricCloudsPass(); });
+		cloudsPass.OnExecute([this]() {PerformVolumetricCloudsPass(); });
 
 		// Add the clouds reprojection pass
 		Pass &cloudReprojectionPass = frameGraph.AddPass("cloudsReprojectionPass");
@@ -58,7 +58,7 @@ namespace Engine
 		cloudReprojectionPass.AddTextureInput("cloudsLowRes");
 		cloudReprojectionPass.AddTextureOutput("cloudsTexture", colorAttach);	
 
-		cloudReprojectionPass.SetOnSetup([renderer, &scriptManager, this](const Pass *thisPass)
+		cloudReprojectionPass.OnSetup([renderer, &scriptManager, this](const Pass *thisPass)
 		{
 			cloudReprojectionFB = thisPass->GetFramebuffer();
 			cloudReprojectionMaterial = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/clouds_reprojection_mat.lua", this->quadMesh.vao->GetVertexInputDescs());
@@ -69,7 +69,7 @@ namespace Engine
 				renderer->UpdateMaterialInstance(cloudReprojectionMaterial);
 			}
 		});
-		cloudReprojectionPass.SetOnExecute([this]() {PerformCloudsReprojectionPass(); });
+		cloudReprojectionPass.OnExecute([this]() {PerformCloudsReprojectionPass(); });
 
 		previousFrameTexture = renderer->CreateTexture2DFromData(cloudsFBWidth, cloudsFBHeight, colorAttach.params, nullptr);
 

@@ -5,7 +5,7 @@
 #include "include\glew\glew.h"
 
 #include <map>
-#include <vector>
+#include <string>
 
 namespace Engine
 {
@@ -23,6 +23,7 @@ namespace Engine
 
 		void SetModelMatrix(const glm::mat4 &matrix);
 		void SetInstanceDataOffset(int offset);
+		void SetStartIndex(int index);
 
 		void SetMat4(const std::string &name, const glm::mat4& matrix);
 		void SetMat3(const std::string &name, const glm::mat3& matrix);
@@ -36,13 +37,14 @@ namespace Engine
 		void SetMat4Array(const std::string &name, const float *data, unsigned int count);
 
 	private:
-		std::string ReadFile(std::ifstream &file, const std::string &dir);
+		std::string ReadFile(std::ifstream &file, const std::string &dir, const std::string &mainShaderPath);
 		void SetUniformLocations();
 
 	private:
 		GLuint program;
 		GLint modelMatrixLoc;
 		GLint instanceDataOffsetLoc;
+		GLint startIndexLoc;
 		std::map<std::string, int> uniforms;
 	};
 }

@@ -51,9 +51,9 @@ void AssetsBrowserWindow::Render()
 			if (ImGui::InputText("Name", fileName, 64, ImGuiInputTextFlags_EnterReturnsTrue))
 			{
 				// OpenFileWithDefaultProgram needs full path
-				std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + currentDir + '/' + fileName + ".lua";
+				std::string path = std::filesystem::current_path().generic_string() + '/' + currentDir + '/' + fileName + ".lua";
 				std::ofstream file(path);
-
+				
 				file << "require('common')\n\n" << fileName << " = {\n\n\tonInit = function(self, e)\n\t\t\n\tend,\n\n\tonUpdate = function(self, e, dt)\n\t\t\n\tend\n}";
 				file.close();
 
@@ -66,7 +66,7 @@ void AssetsBrowserWindow::Render()
 			if (ImGui::Button("Create"))
 			{
 				//std::string path = currentDir + '/' + fileName + ".lua";
-				std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + currentDir + '/' + fileName + ".lua";
+				std::string path = std::filesystem::current_path().generic_string() + '/' + currentDir + '/' + fileName + ".lua";
 				std::ofstream file(path);
 
 				file << fileName << " = {\n\n\tonInit = function(self, e)\n\t\t\n\tend,\n\n\tonUpdate = function(self, e, dt)\n\t\t\n\tend\n}";
@@ -95,13 +95,13 @@ void AssetsBrowserWindow::Render()
 
 			if (ImGui::InputText("Name", folderName, 64, ImGuiInputTextFlags_EnterReturnsTrue))
 			{
-				std::experimental::filesystem::create_directory(std::experimental::filesystem::current_path().generic_string() + '/' + currentDir + '/' + folderName);
+				std::filesystem::create_directory(std::filesystem::current_path().generic_string() + '/' + currentDir + '/' + folderName);
 				ImGui::CloseCurrentPopup();
 				reloadFiles = true;
 			}
 			if (ImGui::Button("Create"))
 			{
-				std::experimental::filesystem::create_directory(std::experimental::filesystem::current_path().generic_string() + '/' + currentDir + '/' + folderName);
+				std::filesystem::create_directory(std::filesystem::current_path().generic_string() + '/' + currentDir + '/' + folderName);
 				ImGui::CloseCurrentPopup();
 				reloadFiles = true;
 			}
@@ -144,8 +144,8 @@ void AssetsBrowserWindow::Render()
 					// Try open the file
 					if (std::strstr(filesInCurrentDir[i].c_str(), ".lua") > 0)
 					{
-						std::cout << std::experimental::filesystem::current_path() << '\n';
-						std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[i];
+						std::cout << std::filesystem::current_path() << '\n';
+						std::string path = std::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[i];
 
 						Engine::utils::OpenFileWithDefaultProgram(path);
 					}
@@ -174,7 +174,7 @@ void AssetsBrowserWindow::Render()
 		{
 			if (ImGui::Button("Open"))
 			{
-				std::string path = std::experimental::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[contextFileIndex];
+				std::string path = std::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[contextFileIndex];
 				Engine::utils::OpenFileWithDefaultProgram(path);
 				ImGui::CloseCurrentPopup();
 			}

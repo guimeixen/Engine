@@ -41,7 +41,7 @@ namespace Engine
 
 	void EntityManager::SetEnabled(Entity e, bool enable)
 	{
-		// Used so we don't call the setEnabled functions to enabled an entity when it's already enabled, the same for disabling
+		// Used so we don't call the setEnabled functions to enable an entity when it's already enabled, the same for disabling
 		bool dontRepeat = false;
 
 		if (enable)

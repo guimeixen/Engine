@@ -217,7 +217,7 @@ namespace Engine
 					}			
 
 					shaderPasses.push_back(pass);
-					Log::Print(LogLevel::LEVEL_INFO, "Added pass\n");
+					Log::Print(LogLevel::LEVEL_INFO, "Added pass %u\n", shaderPasses.size() - 1);
 				}
 			}
 		}
@@ -551,11 +551,13 @@ namespace Engine
 		MaterialInstance *mi = new MaterialInstance;
 		mi->lastParamOffset = 0;
 
+		std::string defines = "";
+
 #ifdef EDITOR
-		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, "#define EDITOR\n", scriptManager, inputDescs);
-#else
-		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, "", scriptManager, inputDescs);
+		defines += "#define EDITOR\n";
 #endif
+
+		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, defines, scriptManager, inputDescs);
 
 		mi->textures.resize(mi->baseMaterial->texturesInfo.size());
 		mi->buffers.resize(mi->baseMaterial->buffersInfo.size());
