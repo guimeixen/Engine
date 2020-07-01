@@ -1,6 +1,7 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
 #include "include/ubos.glsl"
+#include "include/shadow.glsl"
 
 layout(location = 0) out vec4 outColor;
 
@@ -11,14 +12,19 @@ layout(location = 3) in vec3 normal;
 layout(location = 4) in float clipSpaceDepth;
 layout(location = 5) in vec4 lightSpacePos[3];
 
-layout(set = 1, binding = 1) uniform sampler2D diffuseR;
+tex_bind2D_user(0) diffuseR;
+tex_bind2D_user(1) diffuseG;
+tex_bind2D_user(2) diffuseB;
+tex_bind2D_user(3) diffuseBlack;
+tex_bind2D_user(4) normalR;
+tex_bind2D_user(5) splatmapTex;
+
+/*layout(set = 1, binding = 1) uniform sampler2D diffuseR;
 layout(set = 1, binding = 2) uniform sampler2D diffuseG;
 layout(set = 1, binding = 3) uniform sampler2D diffuseB;
 layout(set = 1, binding = 4) uniform sampler2D diffuseBlack;
 layout(set = 1, binding = 5) uniform sampler2D normalR;
-layout(set = 1, binding = 6) uniform sampler2D splatmapTex;
-
-#include "include/shadow.glsl"
+layout(set = 1, binding = 6) uniform sampler2D splatmapTex;*/
 
 #ifdef FORWARD_PLUS
 #include "include/forward_plus.glsl"

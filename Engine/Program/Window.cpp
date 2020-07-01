@@ -55,7 +55,7 @@ namespace Engine
 			window = glfwCreateWindow(width, height, "Game", nullptr, nullptr);
 		}
 
-		glfwSetWindowPos(window, 550, 50);
+		glfwSetWindowPos(window, 350, 50);
 
 		glfwSetWindowUserPointer(window, this);
 

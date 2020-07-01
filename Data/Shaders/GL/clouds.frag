@@ -6,9 +6,13 @@ layout(location = 0) out vec4 color;
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 camRay;
 
-layout(binding = FIRST_SLOT) uniform sampler3D baseNoiseTexture;
+tex_bind3D_user(0) baseNoiseTexture;
+tex_bind3D_user(1) highFreqNoiseTexture;
+tex_bind2D_user(2) weatherTexture;
+
+/*layout(binding = FIRST_SLOT) uniform sampler3D baseNoiseTexture;
 layout(binding = FIRST_SLOT + 1) uniform sampler3D highFreqNoiseTexture;
-layout(binding = FIRST_SLOT + 2) uniform sampler2D weatherTexture;
+layout(binding = FIRST_SLOT + 2) uniform sampler2D weatherTexture;*/
 /*layout(binding = 3) uniform sampler2D highCloudsTexture;
 layout(binding = 4) uniform sampler2D verticalCoverageTexture;*/
 

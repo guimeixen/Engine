@@ -68,12 +68,12 @@ namespace Engine
 		frameGraph.Bake(renderer);
 		frameGraph.ExportGraphVizFile();
 
-		renderer->AddResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
-		renderer->AddResourceToSlot(11, frustumsSSBO, PipelineStage::COMPUTE);
-		renderer->AddResourceToSlot(12, lightListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
-		renderer->AddResourceToSlot(13, opaqueLightIndexListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
-		renderer->AddResourceToSlot(14, opaqueLightIndexCounterSSBO, PipelineStage::COMPUTE);
-		renderer->AddResourceToSlot(15, lightGrid, true, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+		renderer->AddTextureResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
+		renderer->AddBufferResourceToSlot(11, frustumsSSBO, PipelineStage::COMPUTE);
+		renderer->AddBufferResourceToSlot(12, lightListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+		renderer->AddBufferResourceToSlot(13, opaqueLightIndexListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+		renderer->AddBufferResourceToSlot(14, opaqueLightIndexCounterSSBO, PipelineStage::COMPUTE);
+		renderer->AddTextureResourceToSlot(15, lightGrid, true, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
 		renderer->SetupResources();
 		
 		frustumsMat = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/forward_plus/frustums_mat.lua", {});
@@ -131,7 +131,7 @@ namespace Engine
 		renderer->RemoveTexture(lightGrid);
 
 		lightGrid = renderer->CreateTexture2DFromData((unsigned int)std::ceil((float)width / LIGHT_TILE_SIZE), (unsigned int)std::ceil((float)height / LIGHT_TILE_SIZE), params, nullptr);
-		renderer->UpdateResourceOnSlot(15, lightGrid, true);
+		renderer->UpdateTextureResourceOnSlot(15, lightGrid, true);
 	}
 
 	void ForwardPlusRenderer::Render()

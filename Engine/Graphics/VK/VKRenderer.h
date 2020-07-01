@@ -95,10 +95,10 @@ namespace Engine
 
 		void Dispatch(const DispatchItem &item) override;
 
-		void AddResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews = false) override;
-		void AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages) override;
+		void AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews = false) override;
+		void AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages) override;
 		void SetupResources() override;
-		void UpdateResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews = false) override;
+		void UpdateTextureResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews = false) override;
 
 		void PerformBarrier(const Barrier &barrier) override;
 
@@ -176,11 +176,9 @@ namespace Engine
 		std::vector<VKSSBO*> ssbos;
 		std::vector<VkPipeline> pipelines;
 
-		std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
-		std::vector<VkWriteDescriptorSet> globalSetWrites;
-		std::vector<VKBufferInfo> bufferInfos;
-		std::vector<VKImageInfo> imagesInfo;
-
+		//std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
+		//std::vector<VkWriteDescriptorSet> globalSetWrites;
+		
 		VKUniformBuffer *camDynamicUBO = nullptr;
 		CameraDynamicUBO camDynamicUBOData;
 		uint32_t dynamicAlignment = 0;
@@ -194,10 +192,22 @@ namespace Engine
 		VkPipeline curPipeline;
 		VkPipelineLayout graphicsPipelineLayout;
 		std::vector<VkPipelineLayout> computePipelineLayouts;
-		VkDescriptorSetLayout globalSetLayout;
-		VkDescriptorSetLayout graphicsSecondSetLayout;
 		std::vector<VkDescriptorSetLayout> computeSecondsSetLayouts;
-		VkDescriptorSet globalSet;
+		//VkDescriptorSetLayout globalSetLayout;	
+		//VkDescriptorSet globalSet;
+
+		std::vector<VkDescriptorSetLayoutBinding> buffersSetLayoutBindings;
+		std::vector<VkDescriptorSetLayoutBinding> texturesSetLayoutBindings;
+		VkDescriptorSetLayout buffersSetLayout;
+		VkDescriptorSetLayout texturesSetLayout;
+		VkDescriptorSetLayout userSetLayout;
+		std::vector<VkWriteDescriptorSet> buffersSetWrites;
+		std::vector<VkWriteDescriptorSet> texturesSetWrites;
+		VkDescriptorSet buffersSet;
+		VkDescriptorSet texturesSet;
+
+		std::vector<VKBufferInfo> bufferInfos;
+		std::vector<VKImageInfo> imagesInfo;
 
 		uint32_t curMeshParamsOffset = 0;
 

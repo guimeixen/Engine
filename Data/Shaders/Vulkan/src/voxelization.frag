@@ -1,5 +1,6 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 normal;
@@ -7,11 +8,16 @@ layout(location = 2) in vec4 lightSpacePos;
 layout(location = 3) in vec3 worldPos;
 layout(location = 4) flat in int axis;
 
-layout(set = 1, binding = 0) uniform sampler2D texDiffuse;
-layout(set = 0, binding = 6, rgba8) uniform coherent volatile image3D voxelTexture;
-layout(set = 0, binding = 4) uniform sampler2DShadow shadowMap;
+tex_bind2D_user(0) texDiffuse;
+tex_bind2DShadow_global(CSM_TEXTURE) shadowMap;
+image3D_g(VOXEL_IMAGE, rgba8, coherent volatile) voxelTexture;
 
-#include "include/ubos.glsl"
+
+//layout(set = 1, binding = 0) uniform sampler2D texDiffuse;
+//layout(set = 0, binding = 6, rgba8) uniform coherent volatile image3D voxelTexture;
+//layout(set = 0, binding = 4) uniform sampler2DShadow shadowMap;
+
+
 //#include "include/voxelization_helpers.glsl"
 
 /*vec4 convRGBA8ToVec4(uint val)

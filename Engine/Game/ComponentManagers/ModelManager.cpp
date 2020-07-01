@@ -23,7 +23,7 @@ namespace Engine
 		this->game = game;
 		transformManager = &game->GetTransformManager();
 
-		shadowPassID = SID("shadow");
+		shadowPassID = SID("csm");
 
 		data = {};
 		//data.buffer = new unsigned char[initialCapacity * (sizeof(Entity) + sizeof(ModelS) + sizeof(unsigned int) + sizeof(bool) + sizeof(float) + sizeof(AABB) + sizeof(AABB))];
@@ -1038,13 +1038,13 @@ namespace Engine
 			}
 		}
 
-		s.Write(uniqueModels.size());
+		s.Write(static_cast<unsigned int>(uniqueModels.size()));
 		for (auto it = uniqueModels.begin(); it != uniqueModels.end(); it++)
 		{
 			it->second->Serialize(s);
 		}
 
-		s.Write(animatedModels.size());
+		s.Write(static_cast<unsigned int>(animatedModels.size()));
 		for (size_t i = 0; i < animatedModels.size(); i++)
 		{
 			AnimatedModel *am = static_cast<AnimatedModel*>(animatedModels[i]);
@@ -1071,7 +1071,7 @@ namespace Engine
 				{
 					if (animatedModels[j] == mi.model)
 					{
-						s.Write(j);
+						s.Write(static_cast<unsigned int>(j));
 						break;
 					}
 				}

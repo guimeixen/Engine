@@ -76,8 +76,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>$(SolutionDir)\lib;C:\VulkanSDK\1.2.135.0\Lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)\Engine;$(SolutionDir)\include;C:\VulkanSDK\1.2.135.0\Include;$(SolutionDir)\Editor\imgui;$(SolutionDir)GameSparks\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib;C:\VulkanSDK\1.2.135.0\Lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Engine;$(SolutionDir)include;C:\VulkanSDK\1.2.135.0\Include;$(SolutionDir)Editor\imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -118,16 +118,22 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;$(SolutionDir)/include/bullet;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>debug/x64/glfw3.lib;vulkan-1.lib;debug/x64/glew32d.lib;OpenGL32.lib;debug/x64/assimp.lib;debug/x64/SOIL.lib;debug/x64/Lua5.3.4.lib;debug/x64/BulletCollision_Debug.lib;debug/x64/BulletDynamics_Debug.lib;debug/x64/BulletSoftBody_Debug.lib;debug/x64/LinearMath_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>debug/x64/glfw3.lib;vulkan-1.lib;debug/x64/glew32d.lib;OpenGL32.lib;debug/x64/assimp.lib;debug/x64/Lua5.3.4.lib;debug/x64/BulletCollision_Debug.lib;debug/x64/BulletDynamics_Debug.lib;debug/x64/BulletSoftBody_Debug.lib;debug/x64/LinearMath_Debug.lib;debug/x86/fmodL_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\assimp.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\fmodL.dll" "$(TargetDir)"
+copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\glew32d.dll" "$(TargetDir)"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

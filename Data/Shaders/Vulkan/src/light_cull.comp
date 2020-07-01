@@ -13,7 +13,8 @@ layout(std140, set = 0, binding = O_LIGHT_INDEX_LIST) writeonly buffer OpaqueLig
 	uint oLightIndexList[];
 };
 
-layout(set = 0, binding = LIGHT_GRID_BINDING, rg32ui) uniform writeonly uimage2D oLightGrid;
+uimage2D_g(LIGHT_GRID_BINDING, rg32ui, writeonly) oLightGrid;
+//layout(set = 0, binding = LIGHT_GRID_BINDING, rg32ui) uniform writeonly uimage2D oLightGrid;
 
 shared uint uMinDepth;
 shared uint uMaxDepth;

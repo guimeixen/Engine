@@ -70,10 +70,10 @@ namespace Engine
 
 		void Dispatch(const DispatchItem &item) override;
 
-		void AddResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews = false) override;
-		void AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages) override;
+		void AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews = false) override;
+		void AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages) override;
 		void SetupResources() override;
-		void UpdateResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews = false) override;
+		void UpdateTextureResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews = false) override;
 
 		void PerformBarrier(const Barrier &barrier) override;
 

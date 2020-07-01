@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec4 posuv;
 
-out vec2 uv;
+layout (location = 0) out vec2 uv;
 
 void main()
 {

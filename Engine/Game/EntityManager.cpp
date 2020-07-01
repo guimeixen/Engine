@@ -118,7 +118,7 @@ namespace Engine
 	void EntityManager::Serialize(Serializer &s)
 	{
 		s.Write(nextEntity.id);
-		s.Write(freeIndices.size());
+		s.Write(static_cast<unsigned int>(freeIndices.size()));
 		for (size_t i = 0; i < freeIndices.size(); i++)
 		{
 			s.Write(freeIndices.top());
@@ -137,10 +137,10 @@ namespace Engine
 		Log::Print(LogLevel::LEVEL_INFO, "Deserializing entity manager\n");
 
 		s.Read(nextEntity.id);
-		size_t size = 0;
+		unsigned int size = 0;
 		s.Read(size);
 		unsigned int temp;
-		for (size_t i = 0; i < size; i++)
+		for (unsigned int i = 0; i < size; i++)
 		{
 			s.Read(temp);
 			freeIndices.push(temp);			// The indices will be flipped, but it is not a problem. We're just interested in the value of the indices and not their order.

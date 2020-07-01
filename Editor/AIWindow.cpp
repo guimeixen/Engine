@@ -1,14 +1,15 @@
 #include "AIWindow.h"
 
-#include "Engine\Game\Game.h"
-#include "Engine\Program\Input.h"
-#include "Engine\Program\Utils.h"
+#include "Engine/Game/Game.h"
+#include "Engine/Program/Input.h"
+#include "Engine/Program/Log.h"
+#include "Engine/Program/Utils.h"
 #include "EditorManager.h"
 
-#include <include\glm\gtc\type_ptr.hpp>
+#include <include/glm/gtc/type_ptr.hpp>
 
-#include "imgui\imgui.h"
-#include "imgui\imgui_dock.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_dock.h"
 
 #include <iostream>
 
@@ -76,7 +77,7 @@ void AIWindow::Render()
 		if (selectGrid && Engine::Input::IsMousePressed(0) && editorManager->IsMouseInsideGameView())
 		{
 			glm::vec3 dir = Engine::utils::GetRayDirection(Engine::Input::GetMousePosition(), game->GetMainCamera());
-			std::cout << dir.x << "   " << dir.y << "   " << dir.z << '\n';
+			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "%.2f %.2f %.2f\n", dir.x, dir.y, dir.z);
 			intersected = game->GetTerrain()->IntersectTerrain(game->GetMainCamera()->GetPosition(), dir, intersectionPoint);
 		}
 

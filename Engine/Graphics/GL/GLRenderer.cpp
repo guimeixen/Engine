@@ -20,7 +20,7 @@
 #include "Program/Utils.h"
 #include "Program/StringID.h"
 
-#include "Data/Shaders/GL/include/common.glsl"
+#include "Data/Shaders/common.glsl"
 #include "Data/Shaders/bindings.glsl"
 
 #include "include/glm/gtc/matrix_transform.hpp"
@@ -687,7 +687,7 @@ namespace Engine
 		renderStats.dispatchCalls++;
 	}
 
-	void GLRenderer::AddResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void GLRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
 	{
 		if (!texture)
 			return;
@@ -730,7 +730,7 @@ namespace Engine
 		
 	}
 
-	void GLRenderer::AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
+	void GLRenderer::AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
 	{
 		if (!buffer)
 			return;
@@ -758,7 +758,7 @@ namespace Engine
 	{
 	}
 
-	void GLRenderer::UpdateResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews)
+	void GLRenderer::UpdateTextureResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews)
 	{
 	}
 

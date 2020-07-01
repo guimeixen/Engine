@@ -3,7 +3,7 @@
 #include "Graphics/Lights.h"
 #include "Game/EntityManager.h"
 
-#include "Data/Shaders/GL/include/common.glsl"
+#include "Data/Shaders/common.glsl"
 
 #include <vector>
 #include <unordered_map>

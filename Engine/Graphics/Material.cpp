@@ -477,6 +477,15 @@ namespace Engine
 				defines += "#define EDITOR\n";
 #endif
 
+				if (renderer->GetCurrentAPI() == GraphicsAPI::OpenGL)
+				{
+					defines += "#define OPENGL\n";
+				}
+				else if (renderer->GetCurrentAPI() == GraphicsAPI::Vulkan)
+				{
+					defines += "#define VULKAN\n";
+				}
+
 				mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, line.substr(8), defines, scriptManager, descs);
 				mi->textures.resize(mi->baseMaterial->texturesInfo.size());
 			}
@@ -516,7 +525,7 @@ namespace Engine
 
 		//Log::Print(LogLevel::LEVEL_INFO, "Loading material instance textures\n");
 
-		// TODO : instead of adding this limit load the textures for the texturePaths we have and for the missing one load the default white texture
+		// TODO : instead of adding this limit, load the textures for the texturePaths we have and for the missing one load the default white texture
 		// Make sure that we don't load more textures than we can
 		// We could have space for 2 texture but missing a texture path or we could have space for only 1 texture but have 2 texture paths
 		size_t texturesToLoad = mi->textures.size() > texturePaths.size() ? texturePaths.size() : mi->textures.size();
@@ -556,6 +565,15 @@ namespace Engine
 #ifdef EDITOR
 		defines += "#define EDITOR\n";
 #endif
+
+		if (renderer->GetCurrentAPI() == GraphicsAPI::OpenGL)
+		{
+			defines += "#define OPENGL\n";
+		}
+		else if (renderer->GetCurrentAPI() == GraphicsAPI::Vulkan)
+		{
+			defines += "#define VULKAN\n";
+		}
 
 		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, defines, scriptManager, inputDescs);
 

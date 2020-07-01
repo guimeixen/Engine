@@ -19,7 +19,7 @@
 #include "Program/Utils.h"
 #include "Program/StringID.h"
 
-#include "Data/Shaders/GL/include/common.glsl"
+#include "Data/Shaders/common.glsl"
 #include "Data/Shaders/bindings.glsl"
 
 #include "include/glm/gtc/matrix_transform.hpp"
@@ -133,8 +133,8 @@ namespace Engine
 		instanceDataBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		instanceDataBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-		setLayoutBindings.push_back(cameraLayoutBinding);
-		setLayoutBindings.push_back(instanceDataBinding);
+		buffersSetLayoutBindings.push_back(cameraLayoutBinding);
+		buffersSetLayoutBindings.push_back(instanceDataBinding);
 
 		// Dynamic ubo for cameras
 		minUBOAlignment = (uint32_t)base.GetDeviceLimits().minUniformBufferOffsetAlignment;
@@ -192,14 +192,14 @@ namespace Engine
 		camWrite.descriptorCount = 1;
 		camWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		camWrite.dstArrayElement = 0;
-		camWrite.dstBinding = 0;
+		camWrite.dstBinding = CAMERA_UBO;
 
 		VkWriteDescriptorSet instanceDataWrite = {};
 		instanceDataWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		instanceDataWrite.descriptorCount = 1;
 		instanceDataWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		instanceDataWrite.dstArrayElement = 0;
-		instanceDataWrite.dstBinding = 1;
+		instanceDataWrite.dstBinding = INSTANCE_DATA_SSBO;
 
 		VKBufferInfo camInfo = {};
 		camInfo.binding = CAMERA_UBO;
@@ -209,8 +209,8 @@ namespace Engine
 		instanceBufInfo.binding = INSTANCE_DATA_SSBO;
 		instanceBufInfo.buffer = instanceDataSSBO->GetBuffer();
 
-		globalSetWrites.push_back(camWrite);
-		globalSetWrites.push_back(instanceDataWrite);
+		buffersSetWrites.push_back(camWrite);
+		buffersSetWrites.push_back(instanceDataWrite);
 
 		bufferInfos.push_back(camInfo);
 		bufferInfos.push_back(instanceBufInfo);
@@ -632,7 +632,7 @@ namespace Engine
 			return;
 		}
 	
-		CameraUBO *ubo = (CameraUBO*)(((uint64_t)camDynamicUBOData.camerasData + (static_cast<uint32_t>(curDynamicCameraOffset) * dynamicAlignment)));
+		CameraUBO *ubo = (CameraUBO*)(((uint64_t)camDynamicUBOData.camerasData + (curDynamicCameraOffset * dynamicAlignment)));
 		ubo->proj = camera->GetProjectionMatrix();
 		ubo->proj[1][1] *= -1;
 		ubo->proj[3][1] *= -1;		// For orthographic cameras
@@ -645,7 +645,8 @@ namespace Engine
 		ubo->nearFarPlane = glm::vec2(camera->GetNearPlane(), camera->GetFarPlane());
 
 		uint32_t dynamicOffset = static_cast<uint32_t>(curDynamicCameraOffset) * dynamicAlignment;
-		vkCmdBindDescriptorSets(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 0, 1, &globalSet, 1, &dynamicOffset);
+		VkDescriptorSet s[] = { buffersSet, texturesSet };
+		vkCmdBindDescriptorSets(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 0, 2, s, 1, &dynamicOffset);
 	}
 
 	void VKRenderer::SetDefaultRenderTarget()
@@ -799,7 +800,7 @@ namespace Engine
 
 		// Check the set to see if it's equal to the previous so we don't bind it
 		if (renderItem.matInstance->textures.size() > 0)
-			vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &sets[renderItem.matInstance->graphicsSetID].set[currentFrame], 0, nullptr);
+			vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 2, 1, &sets[renderItem.matInstance->graphicsSetID].set[currentFrame], 0, nullptr);
 
 		struct data
 		{
@@ -884,7 +885,7 @@ namespace Engine
 
 		// Check the set to see if it's equal to the previous so we don't bind it
 		if (renderItem.matInstance->textures.size() > 0)
-			vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &sets[renderItem.matInstance->graphicsSetID].set[currentFrame], 0, nullptr);
+			vkCmdBindDescriptorSets(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 2, 1, &sets[renderItem.matInstance->graphicsSetID].set[currentFrame], 0, nullptr);
 
 		if (renderItem.materialDataSize > 0)
 		{
@@ -916,11 +917,15 @@ namespace Engine
 		
 		VkPipelineLayout computeLayout = computePipelineLayouts[item.matInstance->computePipelineLayoutIdx];
 
+		// Only bind once on compute when the camera changes
+		// On setcamera()  changed=true     and here   if(changed) change set
 		uint32_t dynamicOffset = static_cast<uint32_t>(curDynamicCameraOffset) * dynamicAlignment;
-		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computeLayout, 0, 1, &globalSet, 1, &dynamicOffset);
+
+		VkDescriptorSet s[] = {buffersSet, texturesSet};
+		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computeLayout, 0, 2, s, 1, &dynamicOffset);
 
 		if (item.matInstance->computeSetID < sets.size())
-			vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computeLayout, 1, 1, &sets[item.matInstance->computeSetID].set[currentFrame], 0, nullptr);
+			vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computeLayout, 2, 1, &sets[item.matInstance->computeSetID].set[currentFrame], 0, nullptr);
 
 		if (item.materialDataSize > 0 && item.materialDataSize <= sizeof(glm::vec4))
 			vkCmdPushConstants(cmdBuffer, computeLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, static_cast<uint32_t>(item.materialDataSize), item.materialData);
@@ -928,7 +933,7 @@ namespace Engine
 		vkCmdDispatch(cmdBuffer, item.numGroupsX, item.numGroupsY, item.numGroupsZ);
 	}
 
-	void VKRenderer::AddResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void VKRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
 	{
 		if (!texture)
 			return;
@@ -981,13 +986,13 @@ namespace Engine
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
 
-			setLayoutBindings.push_back(b);
-			globalSetWrites.push_back(write);
+			texturesSetLayoutBindings.push_back(b);
+			texturesSetWrites.push_back(write);
 
 			VKImageInfo info = {};
 			info.layout = layout;
 			info.imageViews.push_back(tex->GetImageView());
-			info.index = static_cast<unsigned int>(globalSetWrites.size() - 1);
+			info.index = static_cast<unsigned int>(texturesSetWrites.size() - 1);
 
 			if (useStorage)
 				info.sampler = VK_NULL_HANDLE;
@@ -1017,8 +1022,7 @@ namespace Engine
 			}
 
 			VkDescriptorSetLayoutBinding b = {};
-			b.binding = binding;
-			
+			b.binding = binding;		
 			b.descriptorType = type;
 			b.stageFlags = shaderStages;
 
@@ -1051,26 +1055,25 @@ namespace Engine
 			
 			VkWriteDescriptorSet write = {};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			write.descriptorType = type;
+			write.dstArrayElement = 0;
+			write.dstBinding = binding;
 
 			if (separateMipViews)
 				write.descriptorCount = mips;
 			else
 				write.descriptorCount = 1;
 
-			write.descriptorType = type;
-			write.dstArrayElement = 0;
-			write.dstBinding = binding;
+			texturesSetLayoutBindings.push_back(b);
+			texturesSetWrites.push_back(write);
 
-			setLayoutBindings.push_back(b);
-			globalSetWrites.push_back(write);
-
-			info.index = static_cast<unsigned int>(globalSetWrites.size() - 1);
+			info.index = static_cast<unsigned int>(texturesSetWrites.size() - 1);
 
 			imagesInfo.push_back(info);
 		}
 	}
 
-	void VKRenderer::AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
+	void VKRenderer::AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
 	{
 		if (!buffer)
 			return;
@@ -1096,26 +1099,19 @@ namespace Engine
 			b.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			b.stageFlags = shaderStages;
 
-			/*VkDescriptorBufferInfo info = {};
-			info.buffer = ubo->GetBuffer();
-			info.offset = 0;
-			info.range = VK_WHOLE_SIZE;*/
-
 			VkWriteDescriptorSet write = {};
 			write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			write.descriptorCount = 1;
 			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
-			//write.dstSet = globalSet;				// Don't add here because the set isn't yet created
-			//write.pBufferInfo = &info;				// Don't add here otherwise when we leave the function this will be garbage
 
-			setLayoutBindings.push_back(b);
-			globalSetWrites.push_back(write);			
+			buffersSetLayoutBindings.push_back(b);
+			buffersSetWrites.push_back(write);			
 
 			VKBufferInfo info = {};
 			info.buffer = ubo->GetBuffer();
-			info.binding = static_cast<unsigned int>(globalSetWrites.size() - 1);
+			info.binding = static_cast<unsigned int>(buffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
 		}
@@ -1136,12 +1132,12 @@ namespace Engine
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
 
-			setLayoutBindings.push_back(b);
-			globalSetWrites.push_back(write);
+			buffersSetLayoutBindings.push_back(b);
+			buffersSetWrites.push_back(write);
 
 			VKBufferInfo info = {};
 			info.buffer = ssbo->GetBuffer();
-			info.binding = static_cast<unsigned int>(globalSetWrites.size() - 1);
+			info.binding = static_cast<unsigned int>(buffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
 		}
@@ -1162,12 +1158,12 @@ namespace Engine
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
 
-			setLayoutBindings.push_back(b);
-			globalSetWrites.push_back(write);
+			buffersSetLayoutBindings.push_back(b);
+			buffersSetWrites.push_back(write);
 
 			VKBufferInfo info = {};
 			info.buffer = indBuffer->GetBuffer();
-			info.binding = static_cast<unsigned int>(globalSetWrites.size() - 1);
+			info.binding = static_cast<unsigned int>(buffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
 		}
@@ -1175,16 +1171,28 @@ namespace Engine
 
 	void VKRenderer::SetupResources()
 	{
-		VkDescriptorSetLayoutCreateInfo globalSetLayoutInfo = {};
-		globalSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		globalSetLayoutInfo.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
-		globalSetLayoutInfo.pBindings = setLayoutBindings.data();
+		VkDescriptorSetLayoutCreateInfo buffersSetLayoutInfo = {};
+		buffersSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		buffersSetLayoutInfo.bindingCount = static_cast<uint32_t>(buffersSetLayoutBindings.size());
+		buffersSetLayoutInfo.pBindings = buffersSetLayoutBindings.data();
 
-		if (vkCreateDescriptorSetLayout(base.GetDevice(), &globalSetLayoutInfo, nullptr, &globalSetLayout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(base.GetDevice(), &buffersSetLayoutInfo, nullptr, &buffersSetLayout) != VK_SUCCESS)
 		{
-			std::cout << "Failed to create global descriptor set layout\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create buffers descriptor set layout!\n");
 			return;
 		}
+
+		VkDescriptorSetLayoutCreateInfo texturesSetLayoutInfo = {};
+		texturesSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		texturesSetLayoutInfo.bindingCount = static_cast<uint32_t>(texturesSetLayoutBindings.size());
+		texturesSetLayoutInfo.pBindings = texturesSetLayoutBindings.data();
+
+		if (vkCreateDescriptorSetLayout(base.GetDevice(), &texturesSetLayoutInfo, nullptr, &texturesSetLayout) != VK_SUCCESS)
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create textures descriptor set layout!\n");
+			return;
+		}
+
 
 		// We use a single pipeline layout with the desc set layout above and another one with a max of 8 textures
 		VkDescriptorSetLayoutBinding setBindings[8];
@@ -1204,13 +1212,13 @@ namespace Engine
 		setLayoutInfo.bindingCount = 8;
 		setLayoutInfo.pBindings = setBindings;
 
-		if (vkCreateDescriptorSetLayout(base.GetDevice(), &setLayoutInfo, nullptr, &graphicsSecondSetLayout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(base.GetDevice(), &setLayoutInfo, nullptr, &userSetLayout) != VK_SUCCESS)
 		{
 			std::cout << "Failed to create tex descriptor set layout\n";
 			return;
 		}
 
-		VkDescriptorSetLayout graphicsSetLayouts[] = { globalSetLayout, graphicsSecondSetLayout };
+		VkDescriptorSetLayout graphicsSetLayouts[] = { buffersSetLayout, texturesSetLayout, userSetLayout };
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -1222,7 +1230,7 @@ namespace Engine
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-		pipelineLayoutInfo.setLayoutCount = 2;
+		pipelineLayoutInfo.setLayoutCount = 3;
 		pipelineLayoutInfo.pSetLayouts = graphicsSetLayouts;
 
 		if (vkCreatePipelineLayout(base.GetDevice(), &pipelineLayoutInfo, nullptr, &graphicsPipelineLayout) != VK_SUCCESS)
@@ -1232,17 +1240,29 @@ namespace Engine
 		setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		setAllocInfo.descriptorPool = descriptorPool;
 		setAllocInfo.descriptorSetCount = 1;
-		setAllocInfo.pSetLayouts = &globalSetLayout;
+		setAllocInfo.pSetLayouts = &buffersSetLayout;
 
-		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &globalSet) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &buffersSet) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate descriptor set\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate buffers descriptor set\n");
 			return;
 		}
 
-		for (size_t i = 0; i < globalSetWrites.size(); i++)
+		setAllocInfo.pSetLayouts = &texturesSetLayout;
+
+		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &texturesSet) != VK_SUCCESS)
 		{
-			globalSetWrites[i].dstSet = globalSet;
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate textures descriptor set\n");
+			return;
+		}
+
+		for (size_t i = 0; i < buffersSetWrites.size(); i++)
+		{
+			buffersSetWrites[i].dstSet = buffersSet;
+		}
+		for (size_t i = 0; i < texturesSetWrites.size(); i++)
+		{
+			texturesSetWrites[i].dstSet = texturesSet;
 		}
 
 		// Create this to hold the buffer infos otherwise when we exit the loop pBufferInfo will point to garbage
@@ -1258,57 +1278,53 @@ namespace Engine
 			info.offset = 0;
 			info.range = VK_WHOLE_SIZE;
 
-			//bufInfos[i] = info;
+			buffersSetWrites[bi.binding].pBufferInfo = &info;
 
-			//globalSetWrites[bi.binding].pBufferInfo = &bufInfos[i];
-			globalSetWrites[bi.binding].pBufferInfo = &info;
-
-			vkUpdateDescriptorSets(base.GetDevice(), 1, &globalSetWrites[bi.binding], 0, nullptr);
+			vkUpdateDescriptorSets(base.GetDevice(), 1, &buffersSetWrites[bi.binding], 0, nullptr);
 		}
 
 		for (size_t i = 0; i < imagesInfo.size(); i++)
 		{
-			const VKImageInfo &ii = imagesInfo[i];
+			const VKImageInfo &imgInfo = imagesInfo[i];
 
-			if (ii.separateMipViews)
+			if (imgInfo.separateMipViews)
 			{
-				std::vector<VkDescriptorImageInfo> infos(ii.mips);
-				for (uint32_t j = 0; j < ii.mips; j++)
+				std::vector<VkDescriptorImageInfo> infos(imgInfo.mips);
+				for (uint32_t j = 0; j < imgInfo.mips; j++)
 				{
-					infos[j].imageLayout = ii.layout;
-					infos[j].sampler = ii.sampler;
-					infos[j].imageView = ii.imageViews[j];
+					infos[j].imageLayout = imgInfo.layout;
+					infos[j].sampler = imgInfo.sampler;
+					infos[j].imageView = imgInfo.imageViews[j];
 				}
 
-				globalSetWrites[ii.index].pImageInfo = infos.data();
+				texturesSetWrites[imgInfo.index].pImageInfo = infos.data();
 
-				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalSetWrites[ii.index], 0, nullptr);
+				vkUpdateDescriptorSets(base.GetDevice(), 1, &texturesSetWrites[imgInfo.index], 0, nullptr);
 			}
 			else
 			{
 				VkDescriptorImageInfo info = {};
-				info.imageLayout = ii.layout;
-				info.imageView = ii.imageViews[0];
-				info.sampler = ii.sampler;
+				info.imageLayout = imgInfo.layout;
+				info.imageView = imgInfo.imageViews[0];
+				info.sampler = imgInfo.sampler;
 
-				//imgInfos[i] = info;
+				texturesSetWrites[imgInfo.index].pImageInfo = &info;
 
-				//globalSetWrites[ii.binding].pImageInfo = &imgInfos[i];
-				globalSetWrites[ii.index].pImageInfo = &info;
-
-				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalSetWrites[ii.index], 0, nullptr);
-			}
+				vkUpdateDescriptorSets(base.GetDevice(), 1, &texturesSetWrites[imgInfo.index], 0, nullptr);
+			}		
 		}
 
 		//vkUpdateDescriptorSets(base.GetDevice(), static_cast<uint32_t>(globalSetWrites.size()), globalSetWrites.data(), 0, nullptr);
 
-		globalSetWrites.clear();
-		setLayoutBindings.clear();
+		buffersSetWrites.clear();
+		texturesSetWrites.clear();
+		buffersSetLayoutBindings.clear();
+		texturesSetLayoutBindings.clear();
 		bufferInfos.clear();
 		imagesInfo.clear();
 	}
 
-	void VKRenderer::UpdateResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews)
+	void VKRenderer::UpdateTextureResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews)
 	{
 		VkImageLayout layout;
 		VkDescriptorType type;
@@ -1378,7 +1394,7 @@ namespace Engine
 		write.descriptorType = type;
 		write.dstArrayElement = 0;
 		write.dstBinding = binding;
-		write.dstSet = globalSet;
+		write.dstSet = texturesSet;
 		write.pImageInfo = infos.data();
 
 		vkUpdateDescriptorSets(base.GetDevice(), 1, &write, 0, nullptr);
@@ -1905,8 +1921,9 @@ namespace Engine
 		}
 
 		vkDestroyPipelineLayout(device, graphicsPipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(device, globalSetLayout, nullptr);
-		vkDestroyDescriptorSetLayout(device, graphicsSecondSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device, buffersSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device, texturesSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device, userSetLayout, nullptr);
 		vkDestroyRenderPass(device, defaultRenderPass, nullptr);
 
 		if (descriptorPool != VK_NULL_HANDLE)
@@ -2060,7 +2077,7 @@ namespace Engine
 
 			computeSecondsSetLayouts.push_back(setLayout);			
 
-			VkDescriptorSetLayout computeSetLayouts[] = { globalSetLayout, setLayout };
+			VkDescriptorSetLayout computeSetLayouts[] = { buffersSetLayout, texturesSetLayout, setLayout };
 
 			VkPushConstantRange pushConstantRange = {};
 			pushConstantRange.offset = 0;
@@ -2075,13 +2092,15 @@ namespace Engine
 
 			if (mat->buffers.size() > 0 || mat->textures.size() > 0)
 			{
-				pipelineLayoutInfo.setLayoutCount = 2;
+				VkDescriptorSetLayout computeSetLayouts[] = { buffersSetLayout, texturesSetLayout, setLayout };
+				pipelineLayoutInfo.setLayoutCount = 3;
 				pipelineLayoutInfo.pSetLayouts = computeSetLayouts;
 			}
 			else
 			{
-				pipelineLayoutInfo.setLayoutCount = 1;
-				pipelineLayoutInfo.pSetLayouts = &globalSetLayout;
+				VkDescriptorSetLayout computeSetLayouts[] = { buffersSetLayout, texturesSetLayout };
+				pipelineLayoutInfo.setLayoutCount = 2;
+				pipelineLayoutInfo.pSetLayouts = computeSetLayouts;
 			}
 
 			VkPipelineLayout pipelineLayout;
@@ -2542,7 +2561,7 @@ namespace Engine
 		setAllocInfo.descriptorSetCount = 1;
 
 		if (pipeType == PipelineType::GRAPHICS)
-			setAllocInfo.pSetLayouts = &graphicsSecondSetLayout;
+			setAllocInfo.pSetLayouts = &userSetLayout;
 		else if (pipeType == PipelineType::COMPUTE)
 			setAllocInfo.pSetLayouts = &computeSecondsSetLayouts[computeSecondsSetLayouts.size() - 1];
 

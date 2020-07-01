@@ -1,5 +1,6 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec4 inPosUv;
 layout(location = 1) in vec4 inTrans;	// xy - translation, z - size, w - range
@@ -11,13 +12,12 @@ layout(location = 3) out vec3 normal;
 layout(location = 4) out float clipSpaceDepth;
 layout(location = 5) out vec4 lightSpacePos[3];
 
-layout(set = 1, binding = 0) uniform sampler2D heightmap;
+tex_bind2D_user(0) heightmap;
+//layout(set = 1, binding = 0) uniform sampler2D heightmap;
 
 const vec2 gridDim = vec2(16.0, 16.0);
 const vec2 size = vec2(2.0, 0.0);
 const ivec3 off = ivec3(-1, 0, 1);
-
-#include "include/ubos.glsl"
 
 // gridPos - position in the terrain in the range [0,1], we can use the uv
 // worldPos - world space position of the vertex to morph

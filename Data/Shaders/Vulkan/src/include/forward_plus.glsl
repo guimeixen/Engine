@@ -45,4 +45,5 @@ layout(std140, set = 0, binding = 14) writeonly buffer OpaqueLightIndexCounter
 
 //layout(set = 0, binding = 16, r16f) uniform writeonly image2D debugTexture;
 
-layout(set = 1, binding = 0) uniform sampler2D depthTextureVS;
+tex_bind2D_user(0) depthTextureVS;
+//layout(set = 1, binding = 0) uniform sampler2D depthTextureVS;

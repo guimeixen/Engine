@@ -1,6 +1,7 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
 #include "include/ubos.glsl"
+#include "include/shadow.glsl"
 
 layout(location = 0) out vec4 outColor;
 
@@ -10,9 +11,8 @@ layout(location = 2) in vec3 worldPos;
 layout(location = 3) in float clipSpaceDepth;
 layout(location = 4) in vec4 lightSpacePos[3];
 
-layout(set = 1, binding = 0) uniform sampler2D tex;
-
-#include "include/shadow.glsl"
+tex_bind2D_user(0) tex;
+//layout(set = 1, binding = 0) uniform sampler2D tex;
 
 const vec3 matDiffuseColor = vec3(1.0);
 const vec3 matSpecularColor = vec3(0.57);

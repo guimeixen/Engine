@@ -603,7 +603,7 @@ namespace Engine
 		backBufferIndex = (backBufferIndex + 1) % DISPLAY_BUFFER_COUNT;
 	}
 
-	void GXMRenderer::AddResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void GXMRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
 	{
 		if (!texture)
 			return;
@@ -626,7 +626,7 @@ namespace Engine
 		}
 	}
 
-	void GXMRenderer::AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
+	void GXMRenderer::AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
 	{
 		if (!buffer)
 			return;
@@ -651,7 +651,7 @@ namespace Engine
 	{
 	}
 
-	void GXMRenderer::UpdateResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews)
+	void GXMRenderer::UpdateTextureResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews)
 	{
 
 	}

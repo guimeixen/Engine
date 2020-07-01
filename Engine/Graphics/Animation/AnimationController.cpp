@@ -181,8 +181,8 @@ namespace Engine
 
 	void AnimationController::Serialize(Serializer &s) const
 	{
-		s.Write(animNodes.size());
-		s.Write(parametersDesc.size());
+		s.Write(static_cast<unsigned int>(animNodes.size()));
+		s.Write(static_cast<unsigned int>(parametersDesc.size()));
 
 		for (size_t i = 0; i < animNodes.size(); i++)
 		{
@@ -242,7 +242,7 @@ namespace Engine
 		s.Write(animID);
 		s.Write(loop);
 		s.Write(name);
-		s.Write(links.size());
+		s.Write(static_cast<unsigned int>(links.size()));
 
 		for (size_t i = 0; i < links.size(); i++)
 		{
@@ -285,7 +285,7 @@ namespace Engine
 	{
 		s.Write(toNodeID);
 		s.Write(transitionTime);
-		s.Write(conditions.size());
+		s.Write(static_cast<unsigned int>(conditions.size()));
 
 		for (size_t i = 0; i < conditions.size(); i++)
 		{

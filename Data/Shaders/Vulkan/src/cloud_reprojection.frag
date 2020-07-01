@@ -7,8 +7,10 @@ layout (location = 0) in vec2 uv;
 
 #include "include/ubos.glsl"
 
-layout(set = 1, binding = 0) uniform sampler2D cloudLowResTexture;
-layout(set = 1, binding = 1) uniform sampler2D previousFrameTexture;
+tex_bind2D_user(0) cloudLowResTexture;
+tex_bind2D_user(1) previousFrameTexture;
+/*layout(set = 1, binding = 0) uniform sampler2D cloudLowResTexture;
+layout(set = 1, binding = 1) uniform sampler2D previousFrameTexture;*/
 
 void main()
 {

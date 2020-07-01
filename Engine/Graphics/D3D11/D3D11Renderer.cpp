@@ -926,7 +926,7 @@ namespace Engine
 		immediateContext->CSSetUnorderedAccessViews(0, setUAVs, nullUAVs.data(), nullptr);		// So the resource can be used on a next pass
 	}
 
-	void D3D11Renderer::AddResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void D3D11Renderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
 	{
 		if (!texture)
 			return;
@@ -957,7 +957,7 @@ namespace Engine
 		}*/
 	}
 
-	void D3D11Renderer::AddResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
+	void D3D11Renderer::AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
 	{
 		if (!buffer)
 			return;
@@ -997,7 +997,7 @@ namespace Engine
 	{
 	}
 
-	void D3D11Renderer::UpdateResourceOnSlot(unsigned int binding, Texture * texture, bool useStorage, bool separateMipViews)
+	void D3D11Renderer::UpdateTextureResourceOnSlot(unsigned int binding, Texture * texture, bool useStorage, bool separateMipViews)
 	{
 	}
 

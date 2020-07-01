@@ -3,7 +3,7 @@
 #include "Physics/BoundingVolumes.h"
 #include "Graphics/Camera/Camera.h"
 
-#include "Data/Shaders/GL/include/common.glsl"
+#include "Data/Shaders/common.glsl"
 
 #include "include/glm/glm.hpp"
 

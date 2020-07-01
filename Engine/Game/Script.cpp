@@ -293,7 +293,7 @@ namespace Engine
 	void Script::Serialize(Serializer &s)
 	{
 		s.Write(path);
-		s.Write(properties.size());
+		s.Write(static_cast<unsigned int>(properties.size()));
 
 		for (size_t i = 0; i < properties.size(); i++)
 		{

@@ -7,11 +7,17 @@ layout(location = 0) out vec4 outColor;
 layout(location = 0) in vec3 worldPos;
 layout(location = 1) in vec4 clipSpacePos;
 
-layout(set = 1, binding = 0) uniform sampler2D reflectionTex;
+tex_bind2D_user(0) reflectionTex;
+tex_bind2D_user(1) normalMap;
+tex_bind2D_user(2) refractionTex;
+tex_bind2D_user(3) refractionDepthTex;
+tex_bind2D_user(4) foamTexture;
+
+/*layout(set = 1, binding = 0) uniform sampler2D reflectionTex;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;
 layout(set = 1, binding = 2) uniform sampler2D refractionTex;
 layout(set = 1, binding = 3) uniform sampler2D refractionDepthTex;
-layout(set = 1, binding = 4) uniform sampler2D foamTexture;
+layout(set = 1, binding = 4) uniform sampler2D foamTexture;*/
 
 const float twoPI = 2 * 3.14159;
 const float wavelength[4] = float[](13.0, 9.9, 7.3, 6.0);

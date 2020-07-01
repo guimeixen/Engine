@@ -4,6 +4,7 @@ model_mat =
 	{
 		csm = 
 		{
+			queue='csm',
 			shader="shadow_map"
 		},
 		base =

@@ -1,17 +1,22 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 color;
 
 layout(location = 0) in vec2 uv;
 
-#include "include/ubos.glsl"
+tex_bind2D_user(0) sceneHDR;
+tex_bind2D_user(1) sceneDepth;
+tex_bind2D_user(2) bloomTex;
+tex_bind2D_user(3) cloudsTexture;
+tex_bind2D_user(4) computeImg;
 
-layout(set = 1, binding = 0) uniform sampler2D sceneHDR;
+/*layout(set = 1, binding = 0) uniform sampler2D sceneHDR;
 layout(set = 1, binding = 1) uniform sampler2D sceneDepth;
 layout(set = 1, binding = 2) uniform sampler2D bloomTex;
 layout(set = 1, binding = 3) uniform sampler2D cloudsTexture;
-layout(set = 1, binding = 4) uniform sampler2D computeImg;
+layout(set = 1, binding = 4) uniform sampler2D computeImg;*/
 
 const int samples = 65;
 

@@ -587,7 +587,7 @@ void AnimationWindow::SaveEditorAnimationController(const std::string &path)
 	Engine::Serializer s(game->GetFileManager());
 	s.OpenForWriting();
 
-	s.Write(editorNodes.size());
+	s.Write(static_cast<unsigned int>(editorNodes.size()));
 
 	for (size_t i = 0; i < editorNodes.size(); i++)
 	{
@@ -652,7 +652,7 @@ void EditorAnimNode::Serialize(Engine::Serializer &s)
 	s.Write(glmpos);
 	s.Write(glmsize);
 	s.Write(name);
-	s.Write(editorLinks.size());
+	s.Write(static_cast<unsigned int>(editorLinks.size()));
 
 	for (size_t i = 0; i < editorLinks.size(); i++)
 	{

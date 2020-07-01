@@ -231,12 +231,12 @@ namespace Engine
 				MaterialInstance *matInst = meshesAndMaterials[j].mat;
 
 				const std::vector<ShaderPass> &passes = matInst->baseMaterial->GetShaderPasses();
-				for (size_t k = 0; k < passCount; k++)
+				for (unsigned int k = 0; k < passCount; k++)
 				{
 					for (size_t l = 0; l < passes.size(); l++)
 					{
 						if (passIds[k] == passes[l].queueID)
-							matches[numMatching++] = { k, l, matInst, static_cast<unsigned short>(j) };
+							matches[numMatching++] = { k, static_cast<unsigned int>(l), matInst, static_cast<unsigned short>(j) };
 					}
 				}
 			}
@@ -745,7 +745,7 @@ namespace Engine
 		for (size_t i = 0; i < vegetation.size(); i++)
 		{
 			if (vegetation[i].capacity > 0)				// Check if count is more than 0 otherwise it can crash in the for below because we might have added the vegetation but not placed any
-				dat.push_back({ vegetation[i].offset, i });
+				dat.push_back({ vegetation[i].offset, static_cast<unsigned int>(i) });
 		}
 
 		unsigned int datIndex = 1;		// Start at 1 so we don't skip the first veg model
@@ -1434,7 +1434,7 @@ namespace Engine
 
 		Serializer s(game->GetFileManager());
 		s.OpenForWriting();
-		s.Write(vegetation.size());
+		s.Write(static_cast<unsigned int>(vegetation.size()));
 		for (size_t i = 0; i < vegetation.size(); i++)
 		{
 			s.Write(vegetation[i].count);

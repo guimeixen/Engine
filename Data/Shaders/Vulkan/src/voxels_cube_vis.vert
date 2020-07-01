@@ -1,13 +1,15 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec3 inPos;
 
 layout(location = 0) out vec3 color;
 
-#include "include/ubos.glsl"
+tex_bind3D_global(VOXEL_TEXTURE) voxelTexture;
+//layout(set = 0, binding = 9) uniform sampler3D voxelTexture;
 
-layout(set = 0, binding = 9) uniform sampler3D voxelTexture;
+
 //layout(set = 0, binding = 6, rgba8) uniform readonly image3D voxelTexture;
 
 struct Voxel

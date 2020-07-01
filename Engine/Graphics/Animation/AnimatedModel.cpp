@@ -700,7 +700,7 @@ namespace Engine
 		for (size_t i = 0; i < meshesAndMaterials.size(); i++)
 			s.Write(meshesAndMaterials[i].mat->path);
 
-		s.Write(animations.size());
+		s.Write(static_cast<unsigned int>(animations.size()));
 
 		for (size_t i = 0; i < animations.size(); i++)
 		{

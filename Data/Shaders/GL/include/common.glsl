@@ -10,6 +10,9 @@
 // Lighting
 #define MAX_POINT_LIGHTS 8
 
+#define texture_bind3D(b) layout(binding = FIRST_SLOT + b) uniform sampler3D
+#define texture_bind2D(b) layout(binding = FIRST_SLOT + b) uniform sampler2D
+
 //#define VIEW_UNIFORMS_BINDING				0
 //#define MAT_UBO_BINDING							2
 //#define DIRLIGHT_UNIFORMS_BINDING			2
@@ -18,4 +21,5 @@
 //#define INSTANCE_DATA_BINDING					5
 #define VOXEL_POSITIONS_BUFFER				7
 #define VOXEL_VIS_INDIRECT_BUFFER			8
-//#define FRAME_UBO_BINDING						9
+//#define FRAME_UBO_BINDING						9*/
+

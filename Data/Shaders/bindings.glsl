@@ -1,14 +1,16 @@
 // UBOs and SSBOs
 #define CAMERA_UBO								0
-#define INSTANCE_DATA_SSBO 				1
+#define INSTANCE_DATA_SSBO 						1
 #define FRAME_UBO								2
 #define DIR_LIGHT_UBO							3
-#define FORWARD_POINT_LIGHTS_UBO	5
+#define FORWARD_POINT_LIGHTS_UBO				5
 
 
 // Textures
-#define CSM_TEXTURE							4
-#define VOXEL_TEXTURE							99
+#define CSM_TEXTURE								0
+#define VOXEL_IMAGE								1
+#define VOXEL_TEXTURE							2
+#define VOXEL_IMAGE_MIPS						3
 
 
 

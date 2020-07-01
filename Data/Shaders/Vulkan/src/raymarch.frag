@@ -1,14 +1,14 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 outColor;
 
 layout(location = 0) in vec3 worldPos;
 layout(location = 1) in vec2 uv;
 
-layout(set = 1, binding = 0) uniform sampler3D noiseTex;
-
-#include "include/ubos.glsl"
+tex_bind3D_user(0) noiseTex;
+//layout(set = 1, binding = 0) uniform sampler3D noiseTex;
 
 #define STEPS 64
 #define STEP_SIZE (1.0 / STEPS)

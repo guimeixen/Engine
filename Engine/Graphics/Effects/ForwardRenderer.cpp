@@ -29,8 +29,8 @@ namespace Engine
 		frameGraph.Bake(renderer);
 		frameGraph.ExportGraphVizFile();
 	
-		renderer->AddResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
-		renderer->AddResourceToSlot(FORWARD_POINT_LIGHTS_UBO, pointLightsUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
+		renderer->AddTextureResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
+		renderer->AddBufferResourceToSlot(FORWARD_POINT_LIGHTS_UBO, pointLightsUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
 
 		renderer->SetupResources();	
 	}
@@ -224,7 +224,7 @@ namespace Engine
 	void ForwardRenderer::PerformHDRPass()
 	{
 		renderer->SetCamera(mainCamera);
-		renderer->RebindTexture(csmFB->GetDepthTexture());
+		//renderer->RebindTexture(csmFB->GetDepthTexture());
 
 		tod.Render(renderer);
 		renderer->Submit(renderQueues[4]);
