@@ -1,4 +1,6 @@
-layout(binding = VOXEL_TEXTURE_SLOT) uniform sampler3D voxelTexture;
+tex3D_g(VOXEL_TEXTURE) voxelTexture;
+
+//layout(binding = VOXEL_TEXTURE) uniform sampler3D voxelTexture;
 
 const float volumeSize = 128;
 const float samplingFactor = 1.0;

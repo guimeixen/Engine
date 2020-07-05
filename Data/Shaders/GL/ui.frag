@@ -1,13 +1,13 @@
 #version 450
-#include include/common.glsl
+#include "../common.glsl"
 
 layout(location = 0) out vec4 outColor;
 
 layout(location = 0) in vec2 uv;
 
-layout(binding = FIRST_SLOT) uniform sampler2D tex;
+tex2D_u(0) tex;
 
-layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
+PROPERTIES
 {
 	vec4 color;
 	float depth;

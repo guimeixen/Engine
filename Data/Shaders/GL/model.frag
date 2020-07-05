@@ -1,23 +1,22 @@
 #version 450
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 outColor;
-layout(location = 1) out vec4 outNormal;
+//layout(location = 1) out vec4 outNormal;
 
-in vec2 uv;
-in vec3 normal;
-in vec3 worldPos;
-in vec4 lightSpacePos[3];
-in float clipSpaceDepth;
-//in vec3 color;
+layout(location = 0) in vec2 uv;
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec3 worldPos;
+layout(location = 3) in float clipSpaceDepth;
+layout(location = 4) in vec4 lightSpacePos[3];
 
-layout(binding = FIRST_SLOT) uniform sampler2D tex;
+tex2D_u(0) tex;
 
-#include include/voxel_cone_tracing.glsl
-#include include/shadow.glsl
+#include "include/voxel_cone_tracing.glsl"
+#include "include/shadow.glsl"
 
 #ifdef FORWARD_PLUS
-#include include/forward_plus.glsl
+#include "include/forward_plus.glsl"
 
 layout(std430, binding = O_LIGHT_INDEX_LIST) readonly buffer OpaqueLightIndexList
 {
@@ -30,8 +29,8 @@ layout(binding = LIGHT_GRID_BINDING, rg32ui) uniform readonly uimage2D oLightGri
 void main()
 {
 	vec3 N = normalize(normal);
-	outNormal.rgb = N;
-	outNormal.a = 1.0;
+	//outNormal.rgb = N;
+	//outNormal.a = 1.0;
 
 	outColor = texture(tex, uv);
 	
@@ -107,7 +106,6 @@ void main()
 		//lighting *= indirectDiffuse.a;
 	//}
 	outColor.rgb *= lighting;
-	//outColor.rgb=color;
 	//outColor.rgb=vec3( indirectDiffuse.rgb);
 	//outColor.rgb = indirectDiffuse.rgb;
 	//outColor.rgb = vec3(indirectDiffuse.a *indirectDiffuse.a * indirectDiffuse.a);

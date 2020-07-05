@@ -32,6 +32,7 @@ namespace Engine
 		mainDirectionalLight.color = glm::vec3(1.0f);
 		mainDirectionalLight.ambient = 0.17f;
 
+		frameData = {};
 		frameData.giIntensity = 1.0f;
 		frameData.aoIntensity = 0.0f;
 		frameData.skyColorMultiplier = 0.55f;

@@ -1,12 +1,13 @@
 #version 450
-#include include/common.glsl
+#include "../common.glsl"
 
 out vec4 outColor;
 
 in vec2 uv;
 in vec4 color;
 
-layout(binding = FIRST_SLOT) uniform sampler2D tex;
+//layout(binding = FIRST_SLOT) uniform sampler2D tex;
+tex2D_u(0) texAtlas;
 
 /*layout(std140, binding = 1) uniform MaterialUBO
 {
@@ -30,7 +31,7 @@ const float edgeWidth = 0.10;
 
 void main()
 {
-	float dist = 1.0 - texture(tex, uv).a;	// The further a pixel is the higher the distance from the center. The alpha is the opposite it decreases the further from the center
+	float dist = 1.0 - texture(texAtlas, uv).a;	// The further a pixel is the higher the distance from the center. The alpha is the opposite it decreases the further from the center
 															// For the correct distance we need to invert the alpha
 															
 	float alpha = 1.0 - smoothstep(width, width + edgeWidth, dist);	

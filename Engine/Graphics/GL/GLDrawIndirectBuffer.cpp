@@ -25,6 +25,8 @@ namespace Engine
 
 	void GLDrawIndirectBuffer::Update(const void *data, unsigned int size, int offset)
 	{
+		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, id);
 		glBufferSubData(GL_DRAW_INDIRECT_BUFFER, offset, size, data);
+		//glNamedBufferSubData(id, offset, size, data);
 	}
 }

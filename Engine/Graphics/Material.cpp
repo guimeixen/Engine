@@ -43,13 +43,13 @@ namespace Engine
 		luabridge::LuaRef matTable = luabridge::getGlobal(L, name.c_str());
 
 		Log::Print(LogLevel::LEVEL_INFO, "Loading passes table\n");
-		Log::Print(LogLevel::LEVEL_INFO, "%s\n", matTable.tostring().c_str());
+		Log::Print(LogLevel::LEVEL_INFO, "\t%s\n", matTable.tostring().c_str());
 		// Load passes table
 		luabridge::LuaRef passesTable = matTable["passes"];
-		Log::Print(LogLevel::LEVEL_INFO, "Loaded table\n");
+		//Log::Print(LogLevel::LEVEL_INFO, "Loaded table\n");
 		if (!passesTable.isNil())
 		{
-			Log::Print(LogLevel::LEVEL_INFO, "Loading passes\n");
+			//Log::Print(LogLevel::LEVEL_INFO, "Loading passes\n");
 			std::map<std::string, luabridge::LuaRef> values = scriptManager.GetKeyValueMap(passesTable);
 
 			// Loop over every pass of this material
@@ -477,15 +477,6 @@ namespace Engine
 				defines += "#define EDITOR\n";
 #endif
 
-				if (renderer->GetCurrentAPI() == GraphicsAPI::OpenGL)
-				{
-					defines += "#define OPENGL\n";
-				}
-				else if (renderer->GetCurrentAPI() == GraphicsAPI::Vulkan)
-				{
-					defines += "#define VULKAN\n";
-				}
-
 				mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, line.substr(8), defines, scriptManager, descs);
 				mi->textures.resize(mi->baseMaterial->texturesInfo.size());
 			}
@@ -565,15 +556,6 @@ namespace Engine
 #ifdef EDITOR
 		defines += "#define EDITOR\n";
 #endif
-
-		if (renderer->GetCurrentAPI() == GraphicsAPI::OpenGL)
-		{
-			defines += "#define OPENGL\n";
-		}
-		else if (renderer->GetCurrentAPI() == GraphicsAPI::Vulkan)
-		{
-			defines += "#define VULKAN\n";
-		}
 
 		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, defines, scriptManager, inputDescs);
 

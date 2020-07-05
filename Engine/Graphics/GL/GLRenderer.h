@@ -100,7 +100,6 @@ namespace Engine
 
 		unsigned int currentTextures[16];
 
-		unsigned int currentBinding = 0;
 		unsigned int currentTextureBinding = 0;
 
 		//Buffer* meshParamsUBO = nullptr;

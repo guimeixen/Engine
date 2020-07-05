@@ -19,7 +19,6 @@
 #include "Program/Utils.h"
 #include "Program/StringID.h"
 
-#include "Data/Shaders/common.glsl"
 #include "Data/Shaders/bindings.glsl"
 
 #include "include/glm/gtc/matrix_transform.hpp"

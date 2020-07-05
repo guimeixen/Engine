@@ -82,7 +82,7 @@ namespace Engine
 	{
 		renderer->WaitIdle();
 		game.Dispose();
-		Engine::ResourcesLoader::Clean();
+		ResourcesLoader::Clean();
 		
 #ifdef EDITOR	
 		editorManager.Dispose();

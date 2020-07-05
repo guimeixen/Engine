@@ -208,8 +208,8 @@ namespace Engine
 			dispatchItem.materialData = &mip;
 			dispatchItem.materialDataSize = sizeof(mip);
 
-			renderer->BindImage(0, mip, voxelTexture, ImageAccess::READ_ONLY);		// MIP MIGHT NOT BE WRITTEN! Make sure this pass occurs after mipmapping
-			renderer->Dispatch(dispatchItem);
+			//renderer->BindImage(0, mip, voxelTexture, ImageAccess::READ_ONLY);		// MIP MIGHT NOT BE WRITTEN! Make sure this pass occurs after mipmapping
+			//renderer->Dispatch(dispatchItem);
 		});
 	}
 
@@ -263,8 +263,8 @@ namespace Engine
 				dispatchItem.materialDataSize = sizeof(voxelMipmapData);
 
 				//voxelTexture->BindAsImage(1, i + 1, true, ImageAccess::WRITE_ONLY, TextureInternalFormat::RGBA8);
-				renderer->BindImage(0, i + 1, voxelTexture, ImageAccess::WRITE_ONLY);
-				renderer->Dispatch(dispatchItem);
+				//renderer->BindImage(0, i + 1, voxelTexture, ImageAccess::WRITE_ONLY);
+				//renderer->Dispatch(dispatchItem);
 
 				BarrierImage bi = {};
 				bi.image = voxelTexture;

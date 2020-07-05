@@ -7,11 +7,11 @@ layout(location = 0) out vec4 outColor;
 layout(location = 0) in vec3 worldPos;
 layout(location = 1) in vec4 clipSpacePos;
 
-tex_bind2D_user(0) reflectionTex;
-tex_bind2D_user(1) normalMap;
-tex_bind2D_user(2) refractionTex;
-tex_bind2D_user(3) refractionDepthTex;
-tex_bind2D_user(4) foamTexture;
+tex2D_u(0) reflectionTex;
+tex2D_u(1) normalMap;
+tex2D_u(2) refractionTex;
+tex2D_u(3) refractionDepthTex;
+tex2D_u(4) foamTexture;
 
 /*layout(set = 1, binding = 0) uniform sampler2D reflectionTex;
 layout(set = 1, binding = 1) uniform sampler2D normalMap;

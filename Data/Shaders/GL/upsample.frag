@@ -1,12 +1,15 @@
 #version 450
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 outColor;
 
 in vec2 uv;
 
-layout(binding = FIRST_SLOT) uniform sampler2D brightTexture;
-layout(binding = FIRST_SLOT + 1) uniform sampler2D baseTexture;
+tex2D_u(0) brightTexture;
+tex2D_u(1) baseTexture;
+
+/*layout(binding = FIRST_SLOT) uniform sampler2D brightTexture;
+layout(binding = FIRST_SLOT + 1) uniform sampler2D baseTexture;*/
 
 /*layout(std140, binding = OBJECT_UBO_BINDING) uniform ObjectUBO
 {

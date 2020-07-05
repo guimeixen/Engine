@@ -1,14 +1,13 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 color;
 
 layout (location = 0) in vec2 uv;
 
-#include "include/ubos.glsl"
-
-tex_bind2D_user(0) cloudLowResTexture;
-tex_bind2D_user(1) previousFrameTexture;
+tex2D_u(0) cloudLowResTexture;
+tex2D_u(1) previousFrameTexture;
 /*layout(set = 1, binding = 0) uniform sampler2D cloudLowResTexture;
 layout(set = 1, binding = 1) uniform sampler2D previousFrameTexture;*/
 

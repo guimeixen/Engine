@@ -29,7 +29,7 @@ namespace Engine
 	{
 		RenderingPath::Init(game);
 
-		renderer->AddGlobalDefine("#define FORWARD_PLUS");
+		renderer->AddGlobalDefine("FORWARD_PLUS");
 
 		depthPrepassQueueID = SID("depthPrepass");
 

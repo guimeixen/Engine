@@ -28,7 +28,7 @@
 #include "Game/ComponentManagers/SoundManager.h"
 
 #ifdef EDITOR
-#include "Editor/EditorManager.h"
+#include "../Editor/EditorManager.h"
 #endif
 
 #include <iostream>

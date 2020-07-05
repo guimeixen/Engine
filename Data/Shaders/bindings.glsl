@@ -5,13 +5,27 @@
 #define DIR_LIGHT_UBO							3
 #define FORWARD_POINT_LIGHTS_UBO				5
 
-
 // Textures
 #define CSM_TEXTURE								0
 #define VOXEL_IMAGE								1
 #define VOXEL_TEXTURE							2
 #define VOXEL_IMAGE_MIPS						3
 
+
+
+
+// Used only on OpenGL, but is outside the #ifdef OPENGL because otherwise we can't access it from c++ code
+#define MAT_PROPERTIES_UBO_BINDING				6
+#define FIRST_TEXTURE							4
+
+
+
+
+#ifdef OPENGL_API
+
+
+
+#endif
 
 
 // set 0	-> UBOs

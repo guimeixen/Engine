@@ -1,10 +1,9 @@
 #version 450
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec3 inPos;
 
 layout(location = 0) out vec3 worldPos;
-
-#include include/ubos.glsl
 
 void main()
 {

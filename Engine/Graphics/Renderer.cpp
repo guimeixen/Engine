@@ -46,6 +46,8 @@ namespace Engine
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
 			}*/
 
+			renderer->AddGlobalDefine("OPENGL_API");
+
 			return renderer;
 		}
 		else if (api == GraphicsAPI::Vulkan)
@@ -53,6 +55,8 @@ namespace Engine
 			renderer = new VKRenderer(fileManager, window, width, height, monitorWidth, monitorHeight);
 			if (!renderer->Init())
 				return nullptr;
+
+			renderer->AddGlobalDefine("VULKAN_API");
 
 			return renderer;
 		}

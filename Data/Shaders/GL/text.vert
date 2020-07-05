@@ -1,12 +1,11 @@
 #version 450
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec4 posuv;
 layout(location = 1) in vec4 inColor;
 
 out vec2 uv;
 out vec4 color;
-
-#include include/ubos.glsl
 
 void main()
 {

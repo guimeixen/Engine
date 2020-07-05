@@ -181,6 +181,15 @@ namespace Engine
 		//postPass.AddTextureInput("computeImg", computeMat->textures[0]);
 		postPass.AddDepthInput("depth");
 
+#ifdef EDITOR
+		Engine::AttachmentInfo postOutput = {};
+		postOutput.width = game->GetRenderer()->GetWidth();
+		postOutput.height = game->GetRenderer()->GetHeight();
+		postOutput.params = { Engine::TextureWrap::CLAMP_TO_EDGE, Engine::TextureFilter::LINEAR, Engine::TextureFormat::RGBA, Engine::TextureInternalFormat::RGBA8, Engine::TextureDataType::UNSIGNED_BYTE, false, false };
+
+		postPass.AddTextureOutput("final", postOutput);
+#endif
+
 		postPass.OnSetup([this](const Pass *thisPass)
 		{
 			postProcessFB = thisPass->GetFramebuffer();
@@ -210,15 +219,6 @@ namespace Engine
 			postProcMatInstance->textures[2] = upsampleFB[1]->GetColorTexture();
 		});
 		postPass.OnExecute([this]() { PerformPostProcessPass(); });
-
-#ifdef EDITOR
-		Engine::AttachmentInfo finalAttach = {};
-		finalAttach.width = game->GetRenderer()->GetWidth();
-		finalAttach.height = game->GetRenderer()->GetHeight();
-		finalAttach.params = { Engine::TextureWrap::CLAMP_TO_EDGE, Engine::TextureFilter::LINEAR, Engine::TextureFormat::RGBA, Engine::TextureInternalFormat::RGBA8, Engine::TextureDataType::UNSIGNED_BYTE, false, false };
-
-		postPass.AddTextureOutput("final", finalAttach);
-#endif
 	}
 
 	void ForwardRenderer::PerformHDRPass()

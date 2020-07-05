@@ -1,10 +1,9 @@
 #version 450
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec3 pos;
 
 uniform mat4 toWorldSpace;
-
-#include include/ubos.glsl
 
 void main()
 {

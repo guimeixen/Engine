@@ -156,7 +156,7 @@ namespace Engine
 		const RenderStats &GetRendererStats() const { return renderStats; }
 		FileManager *GetFileManager() const { return fileManager; }
 
-		void AddGlobalDefine(const std::string &define) { globalDefines += define + '\n'; }
+		void AddGlobalDefine(const std::string &define) { globalDefines += "#define " + define + '\n'; }
 		const std::string &GetGlobalDefines() const { return globalDefines; }
 
 		static Renderer *Create(GLFWwindow *window, GraphicsAPI api, FileManager *fileManager, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight);

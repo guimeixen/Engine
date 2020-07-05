@@ -1,13 +1,15 @@
 #version 450
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 color;
 
 layout (location = 0) in vec2 uv;
 
-#include include/ubos.glsl
+tex2D_u(0) cloudLowResTexture;
+tex2D_u(1) previousFrameTexture;
 
-layout(binding = FIRST_SLOT) uniform sampler2D cloudLowResTexture;
-layout(binding = FIRST_SLOT + 1) uniform sampler2D previousFrameTexture;
+/*layout(binding = FIRST_SLOT) uniform sampler2D cloudLowResTexture;
+layout(binding = FIRST_SLOT + 1) uniform sampler2D previousFrameTexture;*/
 
 void main()
 {

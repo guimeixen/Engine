@@ -475,7 +475,7 @@ namespace Engine
 
 			if (!computeFile.is_open())
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", computeName, computePath.c_str());
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", computeName.c_str(), computePath.c_str());
 			}
 
 			size_t compFileSize = (size_t)computeFile.tellg();
@@ -507,12 +507,12 @@ namespace Engine
 
 			if (!vertexFile.is_open())
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", vertexName, vertexPath.c_str());
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", vertexName.c_str(), vertexPath.c_str());
 			}
 
 			if (!fragmentFile.is_open())
 			{
-				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", fragmentName, fragmentPath.c_str());
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to open compiled shader  %s, file : %s\n", fragmentName.c_str(), fragmentPath.c_str());
 			}
 
 			size_t vertFileSize = (size_t)vertexFile.tellg();

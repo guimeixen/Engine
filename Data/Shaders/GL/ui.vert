@@ -1,4 +1,5 @@
 #version 450
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec4 posuv;
 
@@ -6,9 +7,7 @@ layout(location = 0) out vec2 uv;
 
 uniform mat4 toWorldSpace;
 
-#include include/ubos.glsl
-
-layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
+PROPERTIES
 {
 	vec4 color;
 	float depth;

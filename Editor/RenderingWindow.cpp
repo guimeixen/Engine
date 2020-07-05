@@ -215,7 +215,7 @@ void RenderingWindow::Render()
 			else if (selectedDebugType == 2)
 				debugSettings.type = Engine::DebugType::REFLECTION;
 			else if (selectedDebugType == 3)
-				debugSettings.type = Engine::DebugType::VOXEL_TEXTURE;
+				debugSettings.type = Engine::DebugType::VOXELS_TEXTURE;
 			else if (selectedDebugType == 4)
 				debugSettings.type = Engine::DebugType::REFRACTION;
 

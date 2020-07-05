@@ -27,8 +27,8 @@ namespace Engine
 
 	void GLUniformBuffer::Update(const void *data, unsigned int size, int offset)
 	{
-		//glBindBuffer(GL_UNIFORM_BUFFER, id);
-		//glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
-		glNamedBufferSubData(id, offset, size, data);
+		glBindBuffer(GL_UNIFORM_BUFFER, id);
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+		//glNamedBufferSubData(id, offset, size, data);
 	}
 }

@@ -1,14 +1,14 @@
 #version 450
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 color;
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 camRay;
 
-tex_bind3D_user(0) baseNoiseTexture;
-tex_bind3D_user(1) highFreqNoiseTexture;
-tex_bind2D_user(2) weatherTexture;
+tex3D_u(0) baseNoiseTexture;
+tex3D_u(1) highFreqNoiseTexture;
+tex2D_u(2) weatherTexture;
 
 /*layout(binding = FIRST_SLOT) uniform sampler3D baseNoiseTexture;
 layout(binding = FIRST_SLOT + 1) uniform sampler3D highFreqNoiseTexture;

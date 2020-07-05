@@ -1,16 +1,22 @@
 #version 450
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 outColor;
 
 layout(location = 0) in vec3 worldPos;
 layout(location = 1) in vec4 clipSpacePos;
 
-layout(binding = FIRST_SLOT) uniform sampler2D reflectionTex;
+tex2D_u(0) reflectionTex;
+tex2D_u(1) normalMap;
+tex2D_u(2) refractionTex;
+tex2D_u(3) refractionDepthTex;
+tex2D_u(4) foamTexture;
+
+/*layout(binding = FIRST_SLOT) uniform sampler2D reflectionTex;
 layout(binding = FIRST_SLOT + 1) uniform sampler2D normalMap;
 layout(binding = FIRST_SLOT + 2) uniform sampler2D refractionTex;
 layout(binding = FIRST_SLOT + 3) uniform sampler2D refractionDepthTex;
-layout(binding = FIRST_SLOT + 4) uniform sampler2D foamTexture;
+layout(binding = FIRST_SLOT + 4) uniform sampler2D foamTexture;*/
 
 const float twoPI = 2 * 3.14159;
 const float wavelength[4] = float[](13.0, 9.9, 7.3, 6.0);

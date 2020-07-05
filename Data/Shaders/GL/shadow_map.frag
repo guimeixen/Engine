@@ -1,9 +1,9 @@
 #version 450
-#include include/common.glsl
+#include "../common.glsl"
 
-in vec2 uv;
+layout(location = 0) in vec2 uv;
 
-layout(binding = FIRST_SLOT) uniform sampler2D tex;
+tex2D_u(0) tex;
 
 void main()
 {

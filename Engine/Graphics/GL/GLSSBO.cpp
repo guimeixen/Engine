@@ -27,7 +27,9 @@ namespace Engine
 
 	void GLSSBO::Update(const void *data, unsigned int size, int offset)
 	{
-		glNamedBufferSubData(id, offset, size, data);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, id);
+		glBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, data);
+		//glNamedBufferSubData(id, offset, size, data);
 	}
 
 }

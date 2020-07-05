@@ -23,6 +23,6 @@ void main()
 
 #elif VULKAN
 
-#define GET_UV(uv) vec2(uv.x, 1.0 - uv.w)
+#define GET_UV(uv) vec2(uv.x, 1.0 - uv.y)
 
 #endif

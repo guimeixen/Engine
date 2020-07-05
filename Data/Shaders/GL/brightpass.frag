@@ -1,11 +1,12 @@
 #version 450
-#include include/common.glsl
+#include "../common.glsl"
 
 layout(location = 0) out vec4 outColor;
 
 in vec2 uv;
 
-layout(binding = FIRST_SLOT) uniform sampler2D sceneHDR;
+tex2D_u(0) sceneHDR;
+//layout(binding = FIRST_SLOT) uniform sampler2D sceneHDR;
 
 /*layout(std140, binding = OBJECT_UBO_BINDING) uniform ObjectUBO
 {

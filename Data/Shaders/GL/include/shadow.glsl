@@ -1,6 +1,7 @@
-#include include/common.glsl
+#include "../../common.glsl"
 
-layout(binding = SHADOW_MAP_SLOT) uniform sampler2DShadow shadowMap;
+tex2DShadow_g(CSM_TEXTURE) shadowMap;
+//layout(binding = SHADOW_MAP_SLOT) uniform sampler2DShadow shadowMap;
 
 const vec3 cascadeColor[4] = vec3[](vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(1.0, 1.0, 0.0));
 

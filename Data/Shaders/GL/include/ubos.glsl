@@ -1,5 +1,4 @@
-#include include/common.glsl
-#include ../bindings.glsl
+#include "../../common.glsl"
 
 layout(std140, binding = CAMERA_UBO) uniform ViewUniforms
 {
@@ -81,10 +80,15 @@ layout(std140, binding = FRAME_UBO) uniform FrameUniforms
 	
 	vec2 screenRes;
 	//vec2 invScreenRes;
-	vec2 vignetteParams;
+	vec2 vignetteParams;				// x -> intensity, y -> falloff
+	
+	vec4 terrainEditParams; 			// xy -> intersection point, z = 0  editing disabled z = 1 editing enabled, w - brush radius
+	vec4 terrainEditParams2;		// x - brushStrength
 	
 	uint frameNumber;
 	uint cloudUpdateBlockSize;
+	float deltaTime;
+	float padding;
 };
 
 layout(std140, binding = DIR_LIGHT_UBO) uniform DirLight

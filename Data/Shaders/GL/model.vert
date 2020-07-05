@@ -11,11 +11,11 @@ layout(location = 3) in ivec4 boneIDs;
 layout(location = 4) in vec4 weights;
 #endif
 
-out vec2 uv;
-out vec3 normal;
-out vec3 worldPos;
-out vec4 lightSpacePos[3];
-out float clipSpaceDepth;
+layout(location = 0) out vec2 uv;
+layout(location = 1) out vec3 normal;
+layout(location = 2) out vec3 worldPos;
+layout(location = 3) out float clipSpaceDepth;
+layout(location = 4) out vec4 lightSpacePos[3];
 //out vec3 color;
 
 #ifndef INSTANCING
@@ -25,8 +25,8 @@ uniform int instanceDataOffset;
 uniform int startIndex;
 #endif
 
-#include include/ubos.glsl
-#include include/utils.glsl
+#include "include/ubos.glsl"
+#include "include/utils.glsl"
 
 /*#ifdef ANIMATED
 layout(std140, binding = OBJECT_UBO_BINDING) uniform ObjectUBO

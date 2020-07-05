@@ -1,11 +1,10 @@
 #version 450
+#include "include/ubos.glsl"
 
-#include include/ubos.glsl
+layout(binding = VOXEL_TEXTURE) uniform sampler3D srcVoxels;
+layout(binding = VOXEL_IMAGE, rgba8) uniform writeonly image3D dstVoxels;
 
-layout(binding = VOXEL_TEXTURE_SLOT) uniform sampler3D srcVoxels;
-layout(binding = 0, rgba8) uniform writeonly image3D dstVoxels;
-
-layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
+PROPERTIES
 {
 	int srcMipLevel;
 	int dstMipRes;

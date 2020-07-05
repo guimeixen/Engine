@@ -1,12 +1,13 @@
 #version 450
+#include "include/ubos.glsl"
 
 layout (location = 0) in vec3 inPos;
 
 layout(location = 0) out vec3 color;
 
-#include include/ubos.glsl
+tex3D_g(VOXEL_TEXTURE) voxelTexture;
 
-layout(binding = VOXEL_TEXTURE_SLOT) uniform sampler3D voxelTexture;
+//layout(binding = VOXEL_TEXTURE) uniform sampler3D voxelTexture;
 //layout(binding = 0, rgba8) uniform readonly image3D voxelTexture;
 
 struct Voxel
@@ -20,7 +21,13 @@ layout(binding = 7, std140) readonly buffer VoxelSSBO
 	Voxel voxels[];
 };
 
-layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
+/*layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
+{
+	float volumeSize;
+	float mipLevel;
+};*/
+
+PROPERTIES
 {
 	float volumeSize;
 	float mipLevel;

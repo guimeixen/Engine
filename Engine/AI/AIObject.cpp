@@ -2,7 +2,6 @@
 
 #include "Game/Game.h"
 #include "Program/Log.h"
-#include "Graphics/Renderer.h"
 #include "Program/Utils.h"
 
 namespace Engine

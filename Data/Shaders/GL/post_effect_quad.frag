@@ -1,14 +1,19 @@
 #version 450
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 color;
 
-layout (location = 0) in vec2 uv;
+layout(location = 0) in vec2 uv;
 
-layout(binding = FIRST_SLOT) uniform sampler2D sceneHDR;
+tex2D_u(0) sceneHDR;
+tex2D_u(1) sceneDepth;
+tex2D_u(2) bloomTex;
+tex2D_u(3) cloudsTexture;
+
+/*layout(binding = FIRST_SLOT) uniform sampler2D sceneHDR;
 layout(binding = FIRST_SLOT + 1) uniform sampler2D sceneDepth;
 layout(binding = FIRST_SLOT + 2) uniform sampler2D bloomTex;
-layout(binding = FIRST_SLOT + 3) uniform sampler2D cloudsTexture;
+layout(binding = FIRST_SLOT + 3) uniform sampler2D cloudsTexture;*/
 
 const int samples = 65;
 

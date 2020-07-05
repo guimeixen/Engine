@@ -1,4 +1,5 @@
 #version 450
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 normal;
@@ -6,12 +7,15 @@ layout(location = 2) in vec3 worldPos;
 layout(location = 3) in vec4 lightSpacePos;
 layout(location = 4) flat in int axis;
 
-#include include/ubos.glsl
 //#include include/voxelization_helpers.glsl
 
-layout(binding = FIRST_SLOT) uniform sampler2D texDiffuse;
+tex2D_u(0) texDiffuse;
+image3D_g(VOXEL_IMAGE, rgba8, writeonly) voxelTexture;
+tex2DShadow_g(CSM_TEXTURE) shadowMap;
+
+/*layout(binding = FIRST_SLOT) uniform sampler2D texDiffuse;
 layout(binding = 0, rgba8) uniform writeonly image3D voxelTexture;
-layout(binding = SHADOW_MAP_SLOT) uniform sampler2DShadow shadowMap;
+layout(binding = SHADOW_MAP_SLOT) uniform sampler2DShadow shadowMap;*/
 
 void main()
 {

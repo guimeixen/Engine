@@ -20,7 +20,6 @@
 #include "Program/Utils.h"
 #include "Program/StringID.h"
 
-#include "Data/Shaders/common.glsl"
 #include "Data/Shaders/bindings.glsl"
 
 #include "include/glm/gtc/matrix_transform.hpp"
@@ -123,11 +122,10 @@ namespace Engine
 		viewUniformBuffer = new GLUniformBuffer(nullptr, sizeof(CameraUBO));
 		viewUniformBuffer->BindTo(CAMERA_UBO);
 
-		currentBinding = 2;
+		//currentBinding = 2;
 
 		materialUBO = new GLUniformBuffer(nullptr, 128);
-		materialUBO->BindTo(2);
-
+		materialUBO->BindTo(MAT_PROPERTIES_UBO_BINDING);
 		return true;
 	}
 
@@ -453,6 +451,7 @@ namespace Engine
 		{
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, instanceDataSSBO);
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, instanceDataOffset, instanceBuffer);
+			//glNamedBufferSubData(instanceDataSSBO, 0, instanceDataOffset, instanceBuffer);
 		}
 
 		//meshParamsOffset = 0;
@@ -513,7 +512,8 @@ namespace Engine
 				const TextureParams &p = t->GetTextureParams();
 				if (!p.usedAsStorageInGraphics)
 				{
-					t->Bind(i + currentTextureBinding);
+					t->Bind(FIRST_TEXTURE + i);
+					//t->Bind(i + currentTextureBinding);			// currenTextureBinding acts as FIRST_TEXTURE_SLOT
 					renderStats.textureChanges++;
 				}
 				//SetTexture(t->GetID(), i);
@@ -591,7 +591,7 @@ namespace Engine
 				{
 
 				}*/
-				t->Bind(i + currentTextureBinding);
+				t->Bind(FIRST_TEXTURE + i);
 				renderStats.textureChanges++;
 				//SetTexture(t->GetID(), i);
 			}
@@ -661,7 +661,8 @@ namespace Engine
 
 				if (!p.usedAsStorageInCompute)
 				{
-					t->Bind(i + currentTextureBinding);
+					//t->Bind(i + currentTextureBinding);
+					t->Bind(FIRST_TEXTURE + i);
 				}
 				
 				renderStats.textureChanges++;
@@ -689,6 +690,10 @@ namespace Engine
 
 	void GLRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
 	{
+		// Even though texture and images bindings are separate in OpenGL, we treat it as if they use the same
+		// bindings points to help with the Vulkan implementation. I don't think there are performance issues
+		// by leaving gaps in the bindings? OpenGL maybe collapses unused ones?
+
 		if (!texture)
 			return;
 
@@ -704,9 +709,7 @@ namespace Engine
 			else
 			{
 				GLTexture2D *tex = static_cast<GLTexture2D*>(texture);
-				tex->Bind(currentTextureBinding);
-
-				currentTextureBinding++;
+				tex->Bind(binding);
 			}
 		}
 		else if (texture->GetType() == TextureType::TEXTURE3D)
@@ -721,13 +724,11 @@ namespace Engine
 			else
 			{
 				GLTexture3D *tex = static_cast<GLTexture3D*>(texture);
-				tex->Bind(currentTextureBinding);
-
-				currentTextureBinding++;
+				tex->Bind(binding);			
 			}
 		}
 
-		
+		currentTextureBinding++;
 	}
 
 	void GLRenderer::AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages)
@@ -738,20 +739,20 @@ namespace Engine
 		if (buffer->GetType() == BufferType::UniformBuffer)
 		{
 			GLUniformBuffer *ubo = static_cast<GLUniformBuffer*>(buffer);
-			ubo->BindTo(currentBinding);
+			ubo->BindTo(binding);
 		}
 		else if (buffer->GetType() == BufferType::ShaderStorageBuffer)
 		{
 			GLSSBO *ssbo = static_cast<GLSSBO*>(buffer);
-			ssbo->BindTo(currentBinding);
+			ssbo->BindTo(binding);
 		}
 		else if (buffer->GetType() == BufferType::DrawIndirectBuffer)
 		{
 			GLDrawIndirectBuffer *indBuffer = static_cast<GLDrawIndirectBuffer*>(buffer);
-			indBuffer->BindTo(currentBinding);
+			indBuffer->BindTo(binding);
 		}
 
-		currentBinding++;
+		//currentBinding++;
 	}
 
 	void GLRenderer::SetupResources()

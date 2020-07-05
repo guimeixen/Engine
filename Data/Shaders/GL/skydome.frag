@@ -1,13 +1,16 @@
 #version 450
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 layout(location = 0) out vec4 outColor;
 //layout(location = 1) out vec4 outNormal;
 
-layout(binding = FIRST_SLOT) uniform sampler2D transmittanceTexture;
-layout(binding = FIRST_SLOT + 1) uniform sampler3D inscatterTexture;
-
 layout(location = 0) in vec3 worldPos;
+
+tex2D_u(0) transmittanceTexture;
+tex3D_u(1) inscatterTexture;
+
+/*layout(binding = FIRST_SLOT) uniform sampler2D transmittanceTexture;
+layout(binding = FIRST_SLOT + 1) uniform sampler3D inscatterTexture;*/
 
 const float M_PI = 3.141592657;
 const int RES_R = 32;

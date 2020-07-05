@@ -1,6 +1,7 @@
 #include "GLShader.h"
 
 //#include "VariableTypes.h"
+#include "Program/Log.h"
 
 #include "include\glm\gtc\type_ptr.hpp"
 
@@ -230,7 +231,7 @@ namespace Engine
 		glDeleteProgram(program);
 	}
 
-	std::string GLShader::ReadFile(std::ifstream &file, const std::string &dir, const std::string& mainShaderPath)
+	std::string GLShader::ReadFile(std::ifstream &file, const std::string &path, const std::string& mainShaderPath)
 	{
 		std::string src, line;
 
@@ -239,11 +240,23 @@ namespace Engine
 			if (line.substr(0, 8) == "#include")
 			{
 				std::string pathInShader = line.substr(9);
-				std::string includePath = dir;
+				std::string includePath = path;
+				
+				if (pathInShader.size() > 1)
+				{
+					pathInShader.erase(0, 1);
+					pathInShader.erase(pathInShader.size() - 1);
+				}
+				else
+				{
+					Log::Print(LogLevel::LEVEL_ERROR, "Error in include path of shader: %s\n", mainShaderPath.c_str());
+					break;
+				}
 
 				// Check ../
 				// The file still needs to be inside the Data folder
 				// Only goes as far as the Data folder
+				// Right now the path is relative to the shader we're compiling, it should instead be relative to the where the included glsl file is
 				int i = 1;
 				while (pathInShader.substr(3 * i - 3, 3) == "../")
 				{
@@ -255,14 +268,24 @@ namespace Engine
 				if (i > 1)
 					pathInShader = pathInShader.substr(3 * i - 3);			// Remove the ../
 
-				includePath += '/' + pathInShader;
+				size_t slashIndex = pathInShader.find_last_of('/');
+				std::string includePathInShader;
 
+				std::string newPath = includePath;				// Get the path before adding the shader name (eg. Data/Shaders/GL)
+				includePath += '/' + pathInShader;				// Now add the shader name and relative path (eg. include/ubos.glsl) plus the slash eg. Data/Shaders/GL  becomes Data/Shaders/GL/include/ubos.glsl
+
+				// eg. Get the include part from include/ubos.glsl
+				if (slashIndex != std::string::npos)
+				{
+					includePathInShader = pathInShader.substr(0, slashIndex);
+					newPath += '/' + includePathInShader;
+				}		
 
 				std::ifstream includeFile(includePath);
 
 				if (includeFile.is_open())
 				{
-					src += ReadFile(includeFile, dir, mainShaderPath);
+					src += ReadFile(includeFile, newPath, mainShaderPath);
 					includeFile.close();
 				}
 				else

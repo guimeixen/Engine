@@ -37,8 +37,8 @@ namespace Engine
 
 		if (api == GraphicsAPI::OpenGL)
 		{
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 			//glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 			window = glfwCreateWindow(width, height, "Game", nullptr, nullptr);
@@ -55,7 +55,7 @@ namespace Engine
 			window = glfwCreateWindow(width, height, "Game", nullptr, nullptr);
 		}
 
-		glfwSetWindowPos(window, 350, 50);
+		glfwSetWindowPos(window, 100, 50);
 
 		glfwSetWindowUserPointer(window, this);
 
