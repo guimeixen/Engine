@@ -1,514 +1,422 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="..\Editor\AIWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\AnimationProperties.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\AnimationWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\AssetsBrowserWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\AssimpLoader.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\ConsoleWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\EditorManager.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\EditorNameManager.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\EditorWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\EntityDebugWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\Gizmo.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\MaterialWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\ObjectWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\RenderingWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\SceneWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\SkeletonTreeWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\TerrainWindow.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imconfig.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imgui.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imgui_dock.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imgui_draw.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imgui_impl_dx11.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imgui_impl_glfw.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Editor\imgui\imgui_impl_vulkan.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="..\Engine\AI\AIObject.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\AI\AISystem.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="AIWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationProperties.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\Application.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\AI\AStarGrid.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\AI\AStarNodeHeap.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Camera\Camera.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\CascadedShadowMap.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Physics\Collider.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\DebugDrawManager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\UI\EditText.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Font.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Camera\FPSCamera.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Camera\Frustum.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\Game.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLFramebuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLIndexBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLRenderer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLShader.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLTexture2D.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLTextureCube.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLUniformBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLUtils.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLVertexArray.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLVertexBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\UI\Image.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imconfig.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_dock.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_draw.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Program\Input.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Program\Log.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\MainView.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Material.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\MeshDefaults.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Model.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\ParticleSystem.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Program\Random.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Physics\Ray.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Renderer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\ResourcesLoader.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Physics\RigidBody.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderingWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Program\Serializer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Shader.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Sound\SoundSource.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\UI\StaticText.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\stb.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Terrain\Terrain.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\AI\AIObject.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Terrain\TerrainNode.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\AI\AISystem.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="TerrainWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\Engine\AI\AStarGrid.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Program\Utils.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VertexArray.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKBase.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKDebug.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKFramebuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKIndexBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKRenderer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKShader.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKSwapChain.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKTexture2D.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKTextureCube.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKUniformBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKUtils.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKVertexArray.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\UI\Widget.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Program\Window.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorManager.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Physics\Trigger.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\UI\UIManager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Gizmo.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="SkeletonTreeWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\ProjectedGridWater.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\TimeOfDayManager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Texture.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLTexture3D.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\VCTGI.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLDrawIndirectBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\GL\GLSSBO.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Animation\AnimatedModel.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Animation\AnimationController.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_dx11.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_vulkan.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_opengl3.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="imgui\imgui_impl_glfw.cpp">
-      <Filter>Source Files\IMGUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Framebuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11IndexBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Renderer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Shader.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Texture2D.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Texture3D.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11UniformBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Utils.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11VertexArray.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11VertexBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\FrameGraph.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKAllocator.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKTexture3D.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11SSBO.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKSSBO.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="ConsoleWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\VolumetricClouds.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\Script.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\ComponentManagers\ScriptManager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\ComponentManagers\ModelManager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\ComponentManagers\ParticleManager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Game\ComponentManagers\TransformManager.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\AI\AStarNodeHeap.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Game\EntityManager.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="EditorNameManager.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\Engine\Game\Game.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Game\Script.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Game\ComponentManagers\LightManager.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Game\ComponentManagers\ModelManager.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Game\ComponentManagers\ParticleManager.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Game\ComponentManagers\PhysicsManager.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Game\ComponentManagers\ScriptManager.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Game\ComponentManagers\SoundManager.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="EntityDebugWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\Engine\Game\ComponentManagers\TransformManager.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Game\UI\Button.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="AssetsBrowserWindow.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\Engine\Game\UI\EditText.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\DeferredRenderer.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\Game\UI\Image.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\ForwardPlusRenderer.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\Game\UI\StaticText.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\ForwardRenderer.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\Game\UI\UIManager.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Effects\RenderingPath.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\Game\UI\Widget.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Animation\AnimatedModel.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Animation\AnimationController.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Camera\Camera.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Camera\FPSCamera.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Camera\Frustum.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Graphics\D3D11\D3D11DrawIndirectBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Framebuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11IndexBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Renderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Shader.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11SSBO.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Texture2D.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Texture3D.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11UniformBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11Utils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11VertexArray.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\D3D11\D3D11VertexBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\CascadedShadowMap.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\DebugDrawManager.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\DeferredRenderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\ForwardPlusRenderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\ForwardRenderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\ProjectedGridWater.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\PSVitaRenderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\RenderingPath.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\TimeOfDayManager.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\VCTGI.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Effects\VolumetricClouds.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLDrawIndirectBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLFramebuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLIndexBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLRenderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLShader.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLSSBO.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLTexture2D.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLTexture3D.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLTextureCube.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLUniformBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLUtils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLVertexArray.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\GL\GLVertexBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Terrain\Terrain.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Terrain\TerrainNode.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKAllocator.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKBase.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKDebug.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Graphics\VK\VKDrawIndirectBuffer.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Program\PSVCompiler.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\Graphics\VK\VKFramebuffer.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Program\FileManager.cpp">
-      <Filter>Source Files\Engine</Filter>
+    <ClCompile Include="..\Engine\Graphics\VK\VKIndexBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKRenderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKShader.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKSSBO.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKSwapChain.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKTexture2D.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKTexture3D.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKTextureCube.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKUniformBuffer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKUtils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VK\VKVertexArray.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Font.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\FrameGraph.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Material.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\MeshDefaults.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Model.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\ParticleSystem.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Renderer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\ResourcesLoader.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Shader.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\Texture.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Graphics\VertexArray.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Physics\Collider.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Physics\Ray.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Physics\RigidBody.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Physics\Trigger.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Program\Allocator.cpp">
-      <Filter>Source Files\Engine</Filter>
+      <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="AssimpLoader.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\Engine\Program\FileManager.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Program\Input.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Program\Log.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Program\PSVCompiler.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Program\Random.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Program\Serializer.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Program\Utils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Program\Window.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Sound\SoundSource.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\GPU.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="imgui\imconfig.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_dock.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_internal.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderingWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\stb_rect_pack.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\stb_textedit.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\stb_truetype.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimationProperties.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="AnimationWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorManager.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="Gizmo.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="SkeletonTreeWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_dx11.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_vulkan.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_opengl3.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="imgui\imgui_impl_glfw.h">
-      <Filter>Header Files\IMGUI</Filter>
-    </ClInclude>
-    <ClInclude Include="ConsoleWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="AIWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorNameManager.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="EntityDebugWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="AssetsBrowserWindow.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="AssimpLoader.h">
-      <Filter>Header Files\Editor</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{53bb10e0-dc8f-4faf-a1b7-797091dd032e}</UniqueIdentifier>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{2329aa61-69e2-46fc-9b93-f142547f8912}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{dbf1bafa-037a-482a-90fe-ba19abfc98d0}</UniqueIdentifier>
+    <Filter Include="Source files">
+      <UniqueIdentifier>{9cd05f88-ee9f-4b7b-bd91-0e06ada7a4f1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\IMGUI">
-      <UniqueIdentifier>{e8cf2e14-dcaf-42aa-b9ad-39bccbf1075a}</UniqueIdentifier>
+    <Filter Include="Header files">
+      <UniqueIdentifier>{eb2a0a29-536c-4c6d-9cd8-b0f827213428}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Editor">
-      <UniqueIdentifier>{bf76eeef-53a0-4530-9653-e5465b5a49e2}</UniqueIdentifier>
+    <Filter Include="Source files\Editor">
+      <UniqueIdentifier>{9ecf5622-14d9-4043-acd9-a1b98229bf45}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Engine">
-      <UniqueIdentifier>{7ca4adca-0408-4fc5-9f06-f5283eec68af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\IMGUI">
-      <UniqueIdentifier>{868b563d-71a4-4593-9380-21592886e541}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Editor">
-      <UniqueIdentifier>{7c5e827b-c1e4-41b7-b63e-cd549ea14dfc}</UniqueIdentifier>
+    <Filter Include="Source files\imgui">
+      <UniqueIdentifier>{4f1c752b-c67e-4e70-9800-8fd7a563ac94}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

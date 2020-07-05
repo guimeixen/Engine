@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{ABC9654E-9C8C-42F1-B69B-6F15AC8234B7}</ProjectGuid>
+    <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Editor</RootNamespace>
+    <ProjectGuid>{4d16a10c-f0af-4487-804a-37300ff29066}</ProjectGuid>
+    <RootNamespace>Test</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Editor</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -58,6 +60,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Debug32.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -71,119 +74,107 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Engine;$(SolutionDir)include;C:\VulkanSDK\1.2.135.0\Include;$(SolutionDir)Editor\imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)include;C:\VulkanSDK\1.2.135.0\Include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)lib;C:\VulkanSDK\1.2.135.0\Lib32;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>$(SolutionDir)lib;C:\VulkanSDK\1.2.135.0\Lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Engine;$(SolutionDir)include;C:\VulkanSDK\1.2.135.0\Include;$(SolutionDir)Editor\imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>$(SolutionDir)\lib;C:\VulkanSDK\1.2.135.0\Lib32;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)\Engine;$(SolutionDir)\include;C:\VulkanSDK\1.2.135.0\Include;$(SolutionDir)\Editor\imgui;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>$(SolutionDir)\lib;C:\VulkanSDK\1.2.135.0\Lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)\Engine;$(SolutionDir)\include;C:\VulkanSDK\1.2.135.0\Include;$(SolutionDir)\Editor\imgui;$(SolutionDir)GameSparks\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;NOMINMAX;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;$(SolutionDir)/include/bullet;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <SDLCheck>
+      </SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>debug/x86/glfw3.lib;vulkan-1.lib;debug/x86/glew32d.lib;OpenGL32.lib;debug/x86/assimp.lib;debug/x86/Lua5.3.4.lib;debug/x86/BulletCollision_Debug.lib;debug/x86/BulletDynamics_Debug.lib;debug/x86/BulletSoftBody_Debug.lib;debug/x86/LinearMath_Debug.lib;debug/x86/fmodL_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\assimp.dll" "$(TargetDir)"
 copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\fmodL.dll" "$(TargetDir)"
-copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\glew32d.dll" "$(TargetDir)"
-</Command>
-    </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;$(SolutionDir)/include/bullet;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-    </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>debug/x64/glfw3.lib;vulkan-1.lib;debug/x64/glew32d.lib;OpenGL32.lib;debug/x64/assimp.lib;debug/x64/Lua5.3.4.lib;debug/x64/BulletCollision_Debug.lib;debug/x64/BulletDynamics_Debug.lib;debug/x64/BulletSoftBody_Debug.lib;debug/x64/LinearMath_Debug.lib;debug/x86/fmodL_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <Profile>true</Profile>
-    </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\assimp.dll" "$(TargetDir)"
-copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\fmodL.dll" "$(TargetDir)"
-copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\glew32d.dll" "$(TargetDir)"
-</Command>
+copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\glew32d.dll" "$(TargetDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;NOMINMAX;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;GLM_ENABLE_EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>release/x86/glfw3.lib;vulkan-1.lib;release/x86/glew32.lib;OpenGL32.lib;release/x86/assimp.lib;release/x86/Lua5.3.4.lib;release/x86/BulletCollision.lib;release/x86/BulletDynamics.lib;release/x86/BulletSoftBody.lib;release/x86/LinearMath.lib;release/x86/fmod_vc.lib;d3d11.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <Profile>true</Profile>
     </Link>
-    <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\assimp.dll" "$(TargetDir)"
-copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\fmod.dll" "$(TargetDir)"
-copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitecture)\glew32.dll" "$(TargetDir)"
-</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;EDITOR;GLM_FORCE_RADIANS;GLM_FORCE_DEPTH_ZERO_TO_ONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>release/x64/glfw3.lib;vulkan-1.lib;release/x64/glew32.lib;OpenGL32.lib;release/x64/assimp.lib;release/x64/SOIL.lib;release/x64/Lua5.3.4.lib;release/x64/BulletCollision.lib;release/x64/BulletDynamics.lib;release/x64/BulletSoftBody.lib;release/x64/LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <Profile>true</Profile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Editor\AIWindow.cpp" />
+    <ClCompile Include="..\Editor\AnimationProperties.cpp" />
+    <ClCompile Include="..\Editor\AnimationWindow.cpp" />
+    <ClCompile Include="..\Editor\AssetsBrowserWindow.cpp" />
+    <ClCompile Include="..\Editor\AssimpLoader.cpp" />
+    <ClCompile Include="..\Editor\ConsoleWindow.cpp" />
+    <ClCompile Include="..\Editor\EditorManager.cpp" />
+    <ClCompile Include="..\Editor\EditorNameManager.cpp" />
+    <ClCompile Include="..\Editor\EditorWindow.cpp" />
+    <ClCompile Include="..\Editor\EntityDebugWindow.cpp" />
+    <ClCompile Include="..\Editor\Gizmo.cpp" />
+    <ClCompile Include="..\Editor\imgui\imconfig.cpp" />
+    <ClCompile Include="..\Editor\imgui\imgui.cpp" />
+    <ClCompile Include="..\Editor\imgui\imgui_dock.cpp" />
+    <ClCompile Include="..\Editor\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\Editor\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\Editor\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\Editor\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\Editor\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\Editor\MaterialWindow.cpp" />
+    <ClCompile Include="..\Editor\ObjectWindow.cpp" />
+    <ClCompile Include="..\Editor\RenderingWindow.cpp" />
+    <ClCompile Include="..\Editor\SceneWindow.cpp" />
+    <ClCompile Include="..\Editor\SkeletonTreeWindow.cpp" />
+    <ClCompile Include="..\Editor\TerrainWindow.cpp" />
     <ClCompile Include="..\Engine\AI\AIObject.cpp" />
     <ClCompile Include="..\Engine\AI\AISystem.cpp" />
     <ClCompile Include="..\Engine\AI\AStarGrid.cpp" />
@@ -205,6 +196,7 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Game\UI\StaticText.cpp" />
     <ClCompile Include="..\Engine\Game\UI\UIManager.cpp" />
     <ClCompile Include="..\Engine\Game\UI\Widget.cpp" />
+    <ClCompile Include="..\Engine\GPU.cpp" />
     <ClCompile Include="..\Engine\Graphics\Animation\AnimatedModel.cpp" />
     <ClCompile Include="..\Engine\Graphics\Animation\AnimationController.cpp" />
     <ClCompile Include="..\Engine\Graphics\Camera\Camera.cpp" />
@@ -227,8 +219,8 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Graphics\Effects\DeferredRenderer.cpp" />
     <ClCompile Include="..\Engine\Graphics\Effects\ForwardPlusRenderer.cpp" />
     <ClCompile Include="..\Engine\Graphics\Effects\ForwardRenderer.cpp" />
-    <ClCompile Include="..\Engine\Graphics\Effects\MainView.cpp" />
     <ClCompile Include="..\Engine\Graphics\Effects\ProjectedGridWater.cpp" />
+    <ClCompile Include="..\Engine\Graphics\Effects\PSVitaRenderer.cpp" />
     <ClCompile Include="..\Engine\Graphics\Effects\RenderingPath.cpp" />
     <ClCompile Include="..\Engine\Graphics\Effects\TimeOfDayManager.cpp" />
     <ClCompile Include="..\Engine\Graphics\Effects\VCTGI.cpp" />
@@ -291,63 +283,7 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Program\Window.cpp" />
     <ClCompile Include="..\Engine\Sound\SoundSource.cpp" />
     <ClCompile Include="..\Engine\stb.cpp" />
-    <ClCompile Include="AIWindow.cpp" />
-    <ClCompile Include="AnimationProperties.cpp" />
-    <ClCompile Include="AnimationWindow.cpp" />
-    <ClCompile Include="AssetsBrowserWindow.cpp" />
-    <ClCompile Include="AssimpLoader.cpp" />
-    <ClCompile Include="ConsoleWindow.cpp" />
-    <ClCompile Include="EditorManager.cpp" />
-    <ClCompile Include="EditorNameManager.cpp" />
-    <ClCompile Include="EditorWindow.cpp" />
-    <ClCompile Include="EntityDebugWindow.cpp" />
-    <ClCompile Include="Gizmo.cpp" />
-    <ClCompile Include="imgui\imconfig.cpp" />
-    <ClCompile Include="imgui\imgui.cpp" />
-    <ClCompile Include="imgui\imgui_dock.cpp" />
-    <ClCompile Include="imgui\imgui_draw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="imgui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MaterialWindow.cpp" />
-    <ClCompile Include="ObjectWindow.cpp" />
-    <ClCompile Include="RenderingWindow.cpp" />
-    <ClCompile Include="SceneWindow.cpp" />
-    <ClCompile Include="SkeletonTreeWindow.cpp" />
-    <ClCompile Include="TerrainWindow.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="AIWindow.h" />
-    <ClInclude Include="AnimationProperties.h" />
-    <ClInclude Include="AnimationWindow.h" />
-    <ClInclude Include="AssetsBrowserWindow.h" />
-    <ClInclude Include="AssimpLoader.h" />
-    <ClInclude Include="Commands.h" />
-    <ClInclude Include="ConsoleWindow.h" />
-    <ClInclude Include="EditorManager.h" />
-    <ClInclude Include="EditorNameManager.h" />
-    <ClInclude Include="EditorWindow.h" />
-    <ClInclude Include="EntityDebugWindow.h" />
-    <ClInclude Include="Gizmo.h" />
-    <ClInclude Include="imgui\imconfig.h" />
-    <ClInclude Include="imgui\imgui.h" />
-    <ClInclude Include="imgui\imgui_dock.h" />
-    <ClInclude Include="imgui\imgui_impl_dx11.h" />
-    <ClInclude Include="imgui\imgui_impl_glfw.h" />
-    <ClInclude Include="imgui\imgui_impl_opengl3.h" />
-    <ClInclude Include="imgui\imgui_impl_vulkan.h" />
-    <ClInclude Include="imgui\imgui_internal.h" />
-    <ClInclude Include="imgui\stb_rect_pack.h" />
-    <ClInclude Include="imgui\stb_textedit.h" />
-    <ClInclude Include="imgui\stb_truetype.h" />
-    <ClInclude Include="MaterialWindow.h" />
-    <ClInclude Include="ObjectWindow.h" />
-    <ClInclude Include="RenderingWindow.h" />
-    <ClInclude Include="SceneWindow.h" />
-    <ClInclude Include="SkeletonTreeWindow.h" />
-    <ClInclude Include="TerrainWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
