@@ -1,4 +1,4 @@
-#include "common.glsl"
+#include "../../../common.glsl"
 
 //tex_bind2DShadow_global(CSM_TEXTURE) shadowMap;
 //layout(set = 1, binding = CSM_TEXTURE) uniform sampler2DShadow shadowMap;

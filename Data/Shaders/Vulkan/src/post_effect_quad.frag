@@ -6,17 +6,11 @@ layout(location = 0) out vec4 color;
 
 layout(location = 0) in vec2 uv;
 
-tex_bind2D_user(0) sceneHDR;
-tex_bind2D_user(1) sceneDepth;
-tex_bind2D_user(2) bloomTex;
-tex_bind2D_user(3) cloudsTexture;
-tex_bind2D_user(4) computeImg;
-
-/*layout(set = 1, binding = 0) uniform sampler2D sceneHDR;
-layout(set = 1, binding = 1) uniform sampler2D sceneDepth;
-layout(set = 1, binding = 2) uniform sampler2D bloomTex;
-layout(set = 1, binding = 3) uniform sampler2D cloudsTexture;
-layout(set = 1, binding = 4) uniform sampler2D computeImg;*/
+tex2D_u(0) sceneHDR;
+tex2D_u(1) sceneDepth;
+tex2D_u(2) bloomTex;
+tex2D_u(3) cloudsTexture;
+tex2D_u(4) computeImg;
 
 const int samples = 65;
 

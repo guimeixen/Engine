@@ -3,12 +3,12 @@
 #include "include/ubos.glsl"
 #include "include/forward_plus.glsl"
 
-layout(std140, set = 0, binding = FRUSTUMS_BINDING) writeonly buffer FrustumSSBO
+layout(std140, set = 0, binding = FRUSTUMS_SSBO) writeonly buffer FrustumSSBO
 {
 	Frustum frustums[];
 };
 
-layout(push_constant) uniform PushConsts
+PROPERTIES
 {
 	uvec2 numFrustums;
 };

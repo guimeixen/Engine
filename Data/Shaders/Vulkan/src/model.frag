@@ -13,18 +13,17 @@ layout(location = 4) in vec4 lightSpacePos[3];
 #include "include/shadow.glsl"
 #include "include/voxel_cone_tracing.glsl"
 
-//layout(set = 2, binding = 0) uniform sampler2D tex;
 tex2D_u(0) tex;
 
 #ifdef FORWARD_PLUS
 #include "include/forward_plus.glsl"
 
-layout(std140, set = 0, binding = O_LIGHT_INDEX_LIST) readonly buffer OpaqueLightIndexList
+layout(std140, set = 0, binding = OPAQUE_LIGHT_INDEX_LIST_SSBO) readonly buffer OpaqueLightIndexList
 {
 	uint oLightIndexList[];
 };
 
-uimage2D_g(LIGHT_GRID_BINDING, rg32ui, readonly) oLightGrid;
+uimage2D_g(LIGHT_GRID_TEXTURE, rg32ui, readonly) oLightGrid;
 //layout(set = 0, binding = LIGHT_GRID_BINDING, rg32ui) uniform readonly uimage2D oLightGrid;
 #endif
 

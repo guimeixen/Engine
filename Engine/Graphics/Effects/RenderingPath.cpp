@@ -98,8 +98,8 @@ namespace Engine
 		// Slot 0 is reserved for the camera ubo and slot 1 for the instance/transform data ssbo
 		renderer->AddBufferResourceToSlot(FRAME_UBO, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
 		renderer->AddBufferResourceToSlot(DIR_LIGHT_UBO, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
-		renderer->AddBufferResourceToSlot(7, vctgi.GetIndirectBuffer(), PipelineStage::COMPUTE);
-		renderer->AddBufferResourceToSlot(8, vctgi.GetVoxelPositionsBuffer(), PipelineStage::VERTEX | PipelineStage::COMPUTE);
+		renderer->AddBufferResourceToSlot(DEBUG_VOXELS_INDIRECT_DRAW, vctgi.GetIndirectBuffer(), PipelineStage::COMPUTE);
+		renderer->AddBufferResourceToSlot(DEBUG_VOXELS_POSITION_SSBO, vctgi.GetVoxelPositionsBuffer(), PipelineStage::VERTEX | PipelineStage::COMPUTE);
 
 		renderer->AddTextureResourceToSlot(VOXEL_IMAGE, vctgi.GetVoxelTexture(), true, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);	// use the voxel texture as a storage image here	
 		renderer->AddTextureResourceToSlot(VOXEL_TEXTURE, vctgi.GetVoxelTexture(), false, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);	// use the voxel texture as a normal texture here, so we can sample from it

@@ -69,11 +69,13 @@ namespace Engine
 		frameGraph.ExportGraphVizFile();
 
 		renderer->AddTextureResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
-		renderer->AddBufferResourceToSlot(11, frustumsSSBO, PipelineStage::COMPUTE);
-		renderer->AddBufferResourceToSlot(12, lightListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
-		renderer->AddBufferResourceToSlot(13, opaqueLightIndexListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
-		renderer->AddBufferResourceToSlot(14, opaqueLightIndexCounterSSBO, PipelineStage::COMPUTE);
-		renderer->AddTextureResourceToSlot(15, lightGrid, true, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+		renderer->AddTextureResourceToSlot(LIGHT_GRID_TEXTURE, lightGrid, true, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+
+		renderer->AddBufferResourceToSlot(FRUSTUMS_SSBO, frustumsSSBO, PipelineStage::COMPUTE);
+		renderer->AddBufferResourceToSlot(LIGHT_LIST_SSBO, lightListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+		renderer->AddBufferResourceToSlot(OPAQUE_LIGHT_INDEX_LIST_SSBO, opaqueLightIndexListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+		renderer->AddBufferResourceToSlot(OPAQUE_LIGHT_INDEX_COUNTER_SSBO, opaqueLightIndexCounterSSBO, PipelineStage::COMPUTE);
+		
 		renderer->SetupResources();
 		
 		frustumsMat = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/forward_plus/frustums_mat.lua", {});
@@ -100,7 +102,7 @@ namespace Engine
 	{
 		RenderingPath::Resize(width, height);
 
-		frameGraph.GetPass("depthPrepass").Resize(width , height);
+		frameGraph.GetPass("depthPrepass").Resize(width, height);
 		frameGraph.Bake(renderer);
 
 		renderer->UpdateMaterialInstance(postProcMatInstance);
@@ -131,7 +133,7 @@ namespace Engine
 		renderer->RemoveTexture(lightGrid);
 
 		lightGrid = renderer->CreateTexture2DFromData((unsigned int)std::ceil((float)width / LIGHT_TILE_SIZE), (unsigned int)std::ceil((float)height / LIGHT_TILE_SIZE), params, nullptr);
-		renderer->UpdateTextureResourceOnSlot(15, lightGrid, true);
+		renderer->UpdateTextureResourceOnSlot(LIGHT_GRID_TEXTURE, lightGrid, true);
 	}
 
 	void ForwardPlusRenderer::Render()
@@ -306,7 +308,7 @@ namespace Engine
 			item.materialData = &curLightCount;
 			item.materialDataSize = sizeof(unsigned int);
 
-			renderer->BindImage(1, 0, lightGrid, ImageAccess::WRITE_ONLY);
+			renderer->BindImage(LIGHT_GRID_TEXTURE, 0, lightGrid, ImageAccess::WRITE_ONLY);
 			renderer->Dispatch(item);
 		});
 	}
@@ -452,7 +454,7 @@ namespace Engine
 	void ForwardPlusRenderer::PerformHDRPass()
 	{
 		renderer->SetCamera(mainCamera);
-		renderer->BindImage(1, 0, lightGrid, ImageAccess::READ_ONLY);
+		renderer->BindImage(LIGHT_GRID_TEXTURE, 0, lightGrid, ImageAccess::READ_ONLY);
 		renderer->RebindTexture(csmFB->GetDepthTexture());
 
 		tod.Render(renderer);

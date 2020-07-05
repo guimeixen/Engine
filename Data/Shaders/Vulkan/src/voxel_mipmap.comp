@@ -2,12 +2,12 @@
 #extension GL_GOOGLE_include_directive : enable
 #include "include/ubos.glsl"
 
-tex_bind3D_global(VOXEL_TEXTURE) srcVoxels;
+tex3D_g(VOXEL_TEXTURE) srcVoxels;
 image3D_g(VOXEL_IMAGE_MIPS, rgba8, writeonly) dstVoxels[8];
 //layout(set = 0, binding = 9) uniform sampler3D srcVoxels;
 //layout(set = 0, binding = 10, rgba8) uniform writeonly image3D dstVoxels[8];
 
-layout(push_constant) uniform PushConsts
+PROPERTIES
 {
 	int mipIndex;		// The second mip starts at 1 in the dstVoxels array. We can also use it as the srcMipLevel in texelFetch
 	int dstMipRes;

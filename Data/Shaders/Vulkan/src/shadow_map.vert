@@ -16,7 +16,7 @@ layout(location = 4) in vec4 weights;
 
 layout(location = 0) out vec2 uv;
 
-layout(push_constant) uniform PushConsts
+PROPERTIES
 {
 	uint startIndex;
 	uint numVecs;

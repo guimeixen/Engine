@@ -3,17 +3,17 @@
 #include "include/ubos.glsl"
 #include "include/forward_plus.glsl"
 
-layout(std140, set = 0, binding = FRUSTUMS_BINDING) readonly buffer FrustumSSBO
+layout(std140, set = 0, binding = FRUSTUMS_SSBO) readonly buffer FrustumSSBO
 {
 	Frustum frustums[];
 };
 
-layout(std140, set = 0, binding = O_LIGHT_INDEX_LIST) writeonly buffer OpaqueLightIndexList
+layout(std140, set = 0, binding = OPAQUE_LIGHT_INDEX_LIST_SSBO) writeonly buffer OpaqueLightIndexList
 {
 	uint oLightIndexList[];
 };
 
-uimage2D_g(LIGHT_GRID_BINDING, rg32ui, writeonly) oLightGrid;
+uimage2D_g(LIGHT_GRID_TEXTURE, rg32ui, writeonly) oLightGrid;
 //layout(set = 0, binding = LIGHT_GRID_BINDING, rg32ui) uniform writeonly uimage2D oLightGrid;
 
 shared uint uMinDepth;
@@ -24,7 +24,7 @@ shared uint oLightCount;					// Num of lights that are intersecting the current 
 shared uint oLightIndexStartOffset;	// Offste into the global light index list
 shared uint oLightList[256];				// Allows us to store 256 lights per tile
 
-layout(push_constant) uniform PushConstants
+PROPERTIES
 {
 	uint numLights;
 };

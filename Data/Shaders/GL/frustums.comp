@@ -1,13 +1,13 @@
 #version 450
-#include include/ubos.glsl
-#include include/forward_plus.glsl
+#include "include/ubos.glsl"
+#include "include/forward_plus.glsl"
 
-layout(std140, binding = FRUSTUMS_BINDING) writeonly buffer FrustumSSBO
+layout(std140, binding = FRUSTUMS_SSBO) writeonly buffer FrustumSSBO
 {
 	Frustum frustums[];
 };
 
-layout(std140, binding = MAT_UBO_BINDING) uniform MatUBO
+PROPERTIES
 {
 	uvec2 numFrustums;
 };

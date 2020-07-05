@@ -7,8 +7,8 @@ layout(location = 0) out vec4 outColor;
 
 layout(location = 0) in vec3 worldPos;
 
-tex_bind2D_user(0) transmittanceTexture;
-tex_bind3D_user(1) inscatterTexture;
+tex2D_u(0) transmittanceTexture;
+tex3D_u(1) inscatterTexture;
 
 /*layout(set = 1, binding = 0) uniform sampler2D transmittanceTexture;
 layout(set = 1, binding = 1) uniform sampler3D inscatterTexture;*/

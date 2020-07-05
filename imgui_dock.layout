@@ -39,7 +39,7 @@ y        54
 size_x   316
 size_y   448
 status   0
-active   0
+active   1
 opened   1
 location 02
 child0   -1
@@ -103,7 +103,7 @@ y        54
 size_x   316
 size_y   448
 status   0
-active   1
+active   0
 opened   1
 location 02
 child0   -1

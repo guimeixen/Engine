@@ -6,7 +6,7 @@ layout(location = 0) in vec3 inPos;
 
 layout(location = 0) out vec3 color;
 
-tex_bind3D_global(VOXEL_TEXTURE) voxelTexture;
+tex3D_g(VOXEL_TEXTURE) voxelTexture;
 //layout(set = 0, binding = 9) uniform sampler3D voxelTexture;
 
 
@@ -18,12 +18,12 @@ struct Voxel
 	float pad;
 };
 
-layout(set = 0, binding = 8, std140) readonly buffer VoxelSSBO
+layout(set = 0, binding = DEBUG_VOXELS_POSITION_SSBO, std140) readonly buffer VoxelSSBO
 {
 	Voxel voxels[];
 };
 
-layout(push_constant) uniform PushConsts
+PROPERTIES
 {
 	float volumeSize;
 	float mipLevel;

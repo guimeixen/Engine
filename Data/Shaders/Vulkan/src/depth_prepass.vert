@@ -13,7 +13,7 @@ layout(location = 4) in vec4 weights;
 
 #include "include/utils.glsl"
 
-layout(push_constant) uniform PushConsts
+PROPERTIES
 {
 	uint startIndex;
 	uint numVecs;
@@ -37,5 +37,5 @@ void main()
 	wPos = toWorldSpace * pos;
 #endif
 
-	gl_Position = projectionMatrix *  viewMatrix * wPos;
+	gl_Position = projView * wPos;
 }

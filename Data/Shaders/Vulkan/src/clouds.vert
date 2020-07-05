@@ -1,12 +1,11 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
+#include "include/ubos.glsl"
 
 layout(location = 0) in vec4 posuv;
 
 layout(location = 0) out vec2 uv;
 layout(location = 1) out vec3 camRay;
-
-#include "include/ubos.glsl"
 
 vec3 UVToCamRay(vec2 uv)
 {

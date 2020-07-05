@@ -2,7 +2,6 @@
 #extension GL_GOOGLE_include_directive : enable
 #include "include/ubos.glsl"
 
-
 layout(location = 0) in vec4 posuv;
 layout(location = 1) in vec4 inColor;
 

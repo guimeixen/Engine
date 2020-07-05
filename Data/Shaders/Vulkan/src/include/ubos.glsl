@@ -1,4 +1,4 @@
-#include "common.glsl"
+#include "../../common.glsl"
 
 layout(std140, set = 0, binding = CAMERA_UBO) uniform ViewUniforms
 {

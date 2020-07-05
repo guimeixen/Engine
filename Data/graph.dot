@@ -14,6 +14,12 @@ voxelTextureMipmapped[style=filled fillcolor=darkorange];
 fillPositions[style=filled fillcolor=grey];
 voxelPositionsBuffer[style=filled fillcolor=darksalmon];
 voxelsIndirectBuffer[style=filled fillcolor=darksalmon];
+frustumsPass[style=filled fillcolor=grey];
+frustumsBuffer[style=filled fillcolor=darksalmon];
+depthPrepass[style=filled fillcolor=grey];
+depthPrepassOutput[style=filled fillcolor=darkorange];
+lightCullingPass[style=filled fillcolor=grey];
+lightGrid[style=filled fillcolor=darkorange];
 refraction[style=filled fillcolor=grey];
 refractionTex[style=filled fillcolor=darkorange];
 refractionDepth[style=filled fillcolor=darkorange];
@@ -45,6 +51,9 @@ voxelization->voxelTexture;
 voxelMipMaps->voxelTextureMipmapped;
 fillPositions->voxelPositionsBuffer;
 fillPositions->voxelsIndirectBuffer;
+frustumsPass->frustumsBuffer;
+depthPrepass->depthPrepassOutput;
+lightCullingPass->lightGrid;
 refraction->refractionTex;
 refraction->refractionDepth;
 reflection->reflectionTex;
@@ -73,10 +82,12 @@ brightPass->DownsamplePass4;
 color->BrightPass;
 reflectionTex->base;
 refractionTex->base;
-terrainEdit->"terrainEdit Barrier RAW";
-"terrainEdit Barrier RAW"->base;
+terrainImg->"terrainImg Barrier RAW";
+"terrainImg Barrier RAW"->base;
 voxelTextureMipmapped->"voxelTextureMipmapped Barrier RAW";
 "voxelTextureMipmapped Barrier RAW"->base;
+lightGrid->"lightGrid Barrier RAW";
+"lightGrid Barrier RAW"->base;
 voxelsIndirectBuffer->"voxelsIndirectBuffer Barrier RAW";
 "voxelsIndirectBuffer Barrier RAW"->base;
 voxelPositionsBuffer->"voxelPositionsBuffer Barrier RAW";
@@ -84,6 +95,9 @@ voxelPositionsBuffer->"voxelPositionsBuffer Barrier RAW";
 shadowMap->base
 refractionDepth->base
 shadowMap->refraction
+frustumsBuffer->"frustumsBuffer Barrier RAW";
+"frustumsBuffer Barrier RAW"->lightCullingPass;
+depthPrepassOutput->lightCullingPass
 voxelTextureMipmapped->"voxelTextureMipmapped Barrier RAW";
 "voxelTextureMipmapped Barrier RAW"->fillPositions;
 voxelTexture->"voxelTexture Barrier RAW";

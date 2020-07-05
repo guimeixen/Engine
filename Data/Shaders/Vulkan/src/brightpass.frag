@@ -6,8 +6,7 @@ layout(location = 0) out vec4 outColor;
 
 layout(location = 0) in vec2 uv;
 
-tex_bind2D_user(0) sceneHDR;
-//layout(set = 1, binding = 0) uniform sampler2D sceneHDR;
+tex2D_u(0) sceneHDR;
 
 float brightness(vec3 rgb)
 {

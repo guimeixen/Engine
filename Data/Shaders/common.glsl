@@ -26,7 +26,7 @@
 
 #define PROPERTIES layout(std140, binding = MAT_PROPERTIES_UBO_BINDING) uniform MatUBO
 
-#elif VULKAN_API
+#else
 
 #define BUFFERS_SET 0
 #define TEXTURES_SET 1
@@ -38,8 +38,8 @@
 #define tex3D_g(b) layout(set = TEXTURES_SET, binding = b) uniform sampler3D
 
 // Global Images
-#define image3D_g(b, format, mode) layout(set = 1, binding = b, format) uniform mode image3D
-#define uimage2D_g(b, format, mode) layout(set = 1, binding = b, format) uniform mode uimage2D
+#define image3D_g(b, format, mode) layout(set = TEXTURES_SET, binding = b, format) uniform mode image3D
+#define uimage2D_g(b, format, mode) layout(set = TEXTURES_SET, binding = b, format) uniform mode uimage2D
 
 // User Textures
 #define tex2D_u(b) layout(set = USER_SET, binding = b) uniform sampler2D

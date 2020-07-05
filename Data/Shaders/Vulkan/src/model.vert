@@ -21,7 +21,7 @@ layout(location = 2) out vec3 worldPos;
 layout(location = 3) out float clipSpaceDepth;
 layout(location = 4) out vec4 lightSpacePos[3];
 
-layout(push_constant) uniform PushConsts
+PROPERTIES
 {
 	uint startIndex;
 	uint numVecs;

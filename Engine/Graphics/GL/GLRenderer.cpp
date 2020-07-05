@@ -704,7 +704,7 @@ namespace Engine
 			if ((p.usedAsStorageInCompute || p.usedAsStorageInGraphics) && useStorage)
 			{
 				GLTexture2D *tex = static_cast<GLTexture2D*>(texture);
-				//tex->BindAsImage(currentTextureBinding);
+				//tex->BindAsImage(binding, 0, false, ImageAccess::READ_ONLY);
 			}
 			else
 			{

@@ -455,8 +455,10 @@ namespace Engine
 		if (std::system(command.c_str()) != 0)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to compile shader\n");
-			if (defines.length() != 0)
-				std::remove(path.c_str());
+
+			// Fow now if the shader fails to compile, don't remove the generated shader file so we can check what went wrong
+			//if (defines.length() != 0)
+				//std::remove(path.c_str());
 
 			return;
 		}

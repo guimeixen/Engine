@@ -18,12 +18,12 @@ tex2D_u(0) tex;
 #ifdef FORWARD_PLUS
 #include "include/forward_plus.glsl"
 
-layout(std430, binding = O_LIGHT_INDEX_LIST) readonly buffer OpaqueLightIndexList
+layout(std430, binding = OPAQUE_LIGHT_INDEX_LIST_SSBO) readonly buffer OpaqueLightIndexList
 {
 	uint oLightIndexList[];
 };
 
-layout(binding = LIGHT_GRID_BINDING, rg32ui) uniform readonly uimage2D oLightGrid;
+layout(binding = LIGHT_GRID_TEXTURE, rg32ui) uniform readonly uimage2D oLightGrid;
 #endif
 
 void main()

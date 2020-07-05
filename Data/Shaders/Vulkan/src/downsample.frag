@@ -1,12 +1,12 @@
 #version 450
 #extension GL_GOOGLE_include_directive : enable
-#include "include/common.glsl"
+#include "../../common.glsl"
 
 layout(location = 0) out vec4 outColor;
 
 layout(location = 0) in vec2 uv;
 
-tex_bind2D_user(0) tex;
+tex2D_u(0) tex;
 
 void main()
 {
