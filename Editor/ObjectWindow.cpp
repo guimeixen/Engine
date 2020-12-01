@@ -385,14 +385,25 @@ void ObjectWindow::Render()
 
 		if (ImGui::BeginPopup("Create new script popup"))
 		{
-			if (ImGui::InputText("Name", scriptNameInputBuffer, 64, ImGuiInputTextFlags_EnterReturnsTrue))
+			if (ImGui::InputText("Name", scriptNameInputBuffer, 64, ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::Button("Create"))
 			{
-				std::ofstream(editorManager->GetCurrentProjectDir() + '/' + scriptNameInputBuffer + ".lua");
-				ImGui::CloseCurrentPopup();
-			}
-			if (ImGui::Button("Create"))
-			{
-				std::ofstream(editorManager->GetCurrentProjectDir() + '/' + scriptNameInputBuffer + ".lua");
+				std::string path = editorManager->GetCurrentProjectDir() + '/' + scriptNameInputBuffer + ".lua";
+
+				if (std::filesystem::exists(path))
+				{
+					// File already exists
+					// TODO show alert
+				}
+				else
+				{
+					std::ofstream script(path);
+					script << "require('common')\n\n" + std::string(scriptNameInputBuffer) + " = {\n\n\tonInit = function(self, e)\n\tend,\n\n\tonUpdate = function(self, e, dt)\n\tend\n}";
+					script.close();				// close because we're going to open it in scriptmanager to load the script. (Is it necessary?)
+					game->GetScriptManager().AddScript(selectedEntity, path);
+
+					SetEntity(selectedEntity);		// Call to show the script component in the object tab
+				}			
+
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

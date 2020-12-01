@@ -19,6 +19,11 @@
 *.spv
 *.layout
 
+Data/graph.dot
+*.dot
+imgui_dock.layout
+*.layout
+
 CMakeCache.txt
 
 Levels/
@@ -345,7 +350,3 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
-Data/graph.dot
-*.dot
-imgui_dock.layout
-*.layout
