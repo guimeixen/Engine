@@ -54,7 +54,7 @@ namespace Engine
 		const VkQueue &GetPresentQueue() const { return presentQueue; }
 		const VkQueue &GetTransferQueue() const { return transferQueue; }
 		const VkQueue &GetComputeQueue() const { return computeQueue; }
-		uint32_t GetGraphicsQueueFamily() const { return indices.graphicsFamily; }
+		uint32_t GetGraphicsQueueFamily() const { return queueIndices.graphicsFamilyIndex; }
 
 		VkPhysicalDeviceFeatures GetDeviceFeatures() const { return deviceFeatures; }
 		VkPhysicalDeviceLimits GetDeviceLimits() const { return deviceProperties.limits; }
@@ -68,26 +68,28 @@ namespace Engine
 		bool CreateDebugReportCallback();
 		bool CreateSurface(GLFWwindow *window);
 		bool CreatePhysicalDevice();
-		bool CreateLogicalDevice();
-		bool CreateCommandPool();
+		bool CreateDevice();
+		bool CreateGraphicsCommandPool();
+		bool CreateComputeCommandPool();
 
 	private:
 		VkInstance instance;
-		VkDebugReportCallbackEXT callback;
+		VkDebugReportCallbackEXT debugCallback;
 		VkSurfaceKHR surface;
-		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+		VkPhysicalDevice physicalDevice;
 		VkDevice device;
+
+		bool showAvailableExtensions;
 
 		VKAllocator *vkAllocator;
 
-		QueueFamilyIndices indices;
-
+		QueueFamilyIndices queueIndices;
 		VkQueue graphicsQueue;
 		VkQueue computeQueue;
 		VkQueue presentQueue;
 		VkQueue transferQueue;
 
-		VkCommandPool cmdPool;
+		VkCommandPool graphicsCmdPool;
 		VkCommandPool computeCmdPool;
 		VkCommandBuffer singleTimeCmdBuffer;
 

@@ -44,7 +44,23 @@ namespace Engine
 		descriptorPool = VK_NULL_HANDLE;
 		defaultRenderPass = VK_NULL_HANDLE;
 		curPipeline = VK_NULL_HANDLE;
+		userSetLayout = VK_NULL_HANDLE;
+		texturesSet = VK_NULL_HANDLE;
+		texturesSetLayout = VK_NULL_HANDLE;
+		buffersSet = VK_NULL_HANDLE;
+		buffersSetLayout = VK_NULL_HANDLE;
+		graphicsPipelineLayout = VK_NULL_HANDLE;
+		transferCommandBuffer = VK_NULL_HANDLE;
+		backBufferRenderPassInfos = {};	
+		currentFB = nullptr;
+		instanceDataSSBO = nullptr;
+		mappedInstanceData = nullptr;
 		currentFrame = 0;
+
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			frameResources[i] = {};
+		}
 	}
 
 	VKRenderer::~VKRenderer()
@@ -1592,14 +1608,35 @@ namespace Engine
 		region.extent.height = srcTex->GetHeight();
 		region.extent.depth = 1;
 
+		VkOffset3D blitSize;
+		blitSize.x = srcTex->GetWidth();
+		blitSize.y = srcTex->GetHeight();
+		blitSize.z = 1;
+
+		VkImageBlit blit = {};
+		blit.srcOffsets[1] = blitSize;
+		blit.dstOffsets[1] = blitSize;
+		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.layerCount = 1;
+		blit.srcSubresource.mipLevel = 0;
+		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.layerCount = 1;
+		blit.dstSubresource.mipLevel = 0;
+
+
 		// Transition the srcTex from SHADER_READ to TRANSFER_SRC
 		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, srcTex, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1);
 
 		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, dstTex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1);
 
-		vkCmdCopyImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		//vkCmdCopyImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		// The copy is done so transition the dstTex from TRANSFER_DST to SHADER_READ
+		vkCmdBlitImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
+
+		// Transition both images now to SHADER_READ
+		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, srcTex, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
 		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, dstTex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
 	}
 
@@ -1718,6 +1755,7 @@ namespace Engine
 			wasResized = false;
 			//return;
 		}
+		// TODO:Recreate swapchain
 		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
 			std::cout << "out of date\n";
 
@@ -1753,7 +1791,7 @@ namespace Engine
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &frameResources[currentFrame].frameCmdBuffer;
-		submitInfo.pWaitSemaphores = &frameResources[currentFrame].imageAvailableSemaphore;				// Wait for present to finish
+		submitInfo.pWaitSemaphores = &frameResources[currentFrame].imageAvailableSemaphore;
 		submitInfo.pSignalSemaphores = &frameResources[currentFrame].renderFinishedSemaphore;
 		
 		if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, frameResources[currentFrame].frameFence) != VK_SUCCESS)

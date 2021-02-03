@@ -62,9 +62,9 @@ namespace Engine
 			return extensions;
 		}
 
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface, bool tryFindTransferOnlyQueue, bool tryFindComputeOnlyQueue)
 		{
-			QueueFamilyIndices indices;
+			QueueFamilyIndices indices = {};
 
 			uint32_t queueFamilyCount = 0;
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -72,73 +72,85 @@ namespace Engine
 			std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 			vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-			Log::Print(LogLevel::LEVEL_INFO, "Queue families count: %d\n", queueFamilyCount);
+			Log::Print(LogLevel::LEVEL_INFO, "Queue families count: %u", queueFamilyCount);
 
-			int i = 0;
 			VkBool32 presentSupport = false;
 
-			for (const auto &queueFamily : queueFamilies)
+			for (size_t i = 0; i < queueFamilies.size(); i++)
 			{
-				if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+				Log::Print(LogLevel::LEVEL_INFO, "Family %u has %u queues that support ", i, queueFamilies[i].queueCount);
+
+				if (queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 				{
-					indices.graphicsFamily = i;
+					Log::Print(LogLevel::LEVEL_INFO, "GRAPHICS, ");
+					indices.graphicsFamilyIndex = i;
+				}
+				if (queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+					Log::Print(LogLevel::LEVEL_INFO, "TRANSFER, ");
+				if (queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+					Log::Print(LogLevel::LEVEL_INFO, "COMPUTE, ");
+				if (queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT)
+					Log::Print(LogLevel::LEVEL_INFO, "SPARSE BINDING, ");
+
+				// Try to find an exclusive queue for transfer if requested
+				if (tryFindTransferOnlyQueue && indices.transferFamilyIndex == -1 && queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT && (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)
+				{
+					indices.transferFamilyIndex = i;
 				}
 
-				// Choose the first queue
-				if (indices.transferFamily == -1 && queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT /*&& (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0*/)		// Try using an exclusive queue for transfer
+				// Try using an exclusive queue for compute if requested
+				if (tryFindComputeOnlyQueue && indices.computeFamilyIndex == -1 && queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT && (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)
 				{
-					indices.transferFamily = i;
+					indices.computeFamilyIndex = i;
 				}
 
-				// TODO: If no exclusive compute queue found then find the first that supports compute
-				if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT && (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)		// Find a compute only queue
-				{
-					indices.computeFamily = i;
-				}
 
+				// Check if this queue family supports presentation
 				vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
-				if (queueFamily.queueCount > 0 && presentSupport)
-					indices.presentFamily = i;
+
+				if (queueFamilies[i].queueCount > 0 && presentSupport)
+				{
+					Log::Print(LogLevel::LEVEL_INFO, "and PRESENT");
+
+					// Choose the first queue family that supports present, because on this GPU there are two families that support present, one with graphics and one without
+					if (indices.presentFamilyIndex == -1)
+						indices.presentFamilyIndex = i;
+				}
 
 				if (indices.IsComplete())
 					break;
+			}
 
-				i++;
+
+
+			// If we didn't find a transfer exlusive queue, then find the first one that supports transfer
+			if (indices.transferFamilyIndex == -1)
+			{
+				for (size_t i = 0; i < queueFamilies.size(); i++)
+				{
+					if (queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+					{
+						indices.transferFamilyIndex = i;
+						break;
+					}
+				}
 			}
 
 			// If we didn't find a compute exlusive queue, then find the first one that supports compute
-			if (indices.computeFamily == -1)
+			if (indices.computeFamilyIndex == -1)
 			{
 				for (size_t i = 0; i < queueFamilies.size(); i++)
 				{
 					if (queueFamilies[i].queueCount > 0 && queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
 					{
-						indices.computeFamily = i;
+						indices.computeFamilyIndex = i;
 						break;
 					}
 				}
 			}
 
 			return indices;
-		}
-
-		bool CheckDeviceExtensionSupported(VkPhysicalDevice device, const std::vector<const char*> &deviceExtensions)
-		{
-			uint32_t extensionCount = 0;
-			vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-			std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-			vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-			std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-
-			for (const auto& extension : availableExtensions)
-			{
-				requiredExtensions.erase(extension.extensionName);
-			}
-
-			return requiredExtensions.empty();
 		}
 
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
@@ -171,32 +183,112 @@ namespace Engine
 			return details;
 		}
 
-		bool IsPhysicalDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, const std::vector<const char*>& deviceExtensions)
-		{
-			VkPhysicalDeviceProperties deviceProperties;
-			vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
-			VkPhysicalDeviceFeatures deviceFeatures;
-			vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-			QueueFamilyIndices indices = FindQueueFamilies(device, surface);
-
-			bool extensionsSupported = CheckDeviceExtensionSupported(device, deviceExtensions);
-
-			bool swapChainApropriate = false;
-			if (extensionsSupported)
+		VkPhysicalDevice ChoosePhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices, const std::vector<const char*>& deviceExtensions, VkSurfaceKHR surface)
+		{			
+			VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+			
+			// Try to find a discrete GPU first
+			for (size_t i = 0; i < physicalDevices.size(); i++)
 			{
-				SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);
-				swapChainApropriate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+				VkPhysicalDeviceProperties deviceProperties;
+				vkGetPhysicalDeviceProperties(physicalDevices[i], &deviceProperties);
+
+				VkPhysicalDeviceFeatures deviceFeatures;
+				vkGetPhysicalDeviceFeatures(physicalDevices[i], &deviceFeatures);
+
+				bool featuresAvailabe = false;
+
+				if (deviceFeatures.textureCompressionBC &&
+					deviceFeatures.shaderClipDistance &&
+					deviceFeatures.wideLines &&
+					deviceFeatures.fragmentStoresAndAtomics &&
+					deviceFeatures.geometryShader &&
+					deviceFeatures.shaderStorageImageExtendedFormats)
+				{
+					featuresAvailabe = true;
+				}
+
+				SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevices[i], surface);
+
+				if (swapChainSupport.formats.size() == 0 || swapChainSupport.presentModes.size() == 0)
+					break;
+
+				if (deviceProperties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU && CheckPhysicalDeviceExtensionSupport(physicalDevices[i], deviceExtensions) && featuresAvailabe)
+				{
+					physicalDevice = physicalDevices[i];
+					break;
+				}
 			}
 
-			bool featuresAvailable = false;
+			// If we don't have a discrete GPU, try to find a integrated GPU
 
-			if (deviceFeatures.textureCompressionBC && deviceFeatures.shaderClipDistance && deviceFeatures.wideLines && deviceFeatures.fragmentStoresAndAtomics && deviceFeatures.geometryShader && deviceFeatures.shaderStorageImageExtendedFormats)
-				featuresAvailable = true;
+			if (physicalDevice == VK_NULL_HANDLE)
+			{
+				for (size_t i = 0; i < physicalDevices.size(); i++)
+				{
+					VkPhysicalDeviceProperties deviceProperties;
+					vkGetPhysicalDeviceProperties(physicalDevices[i], &deviceProperties);
 
-			//return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
-			return indices.IsComplete() && extensionsSupported && swapChainApropriate && featuresAvailable;
+					VkPhysicalDeviceFeatures deviceFeatures;
+					vkGetPhysicalDeviceFeatures(physicalDevices[i], &deviceFeatures);
+
+					bool featuresAvailabe = false;
+
+					if (deviceFeatures.textureCompressionBC &&
+						deviceFeatures.shaderClipDistance &&
+						deviceFeatures.wideLines &&
+						deviceFeatures.fragmentStoresAndAtomics &&
+						deviceFeatures.geometryShader &&
+						deviceFeatures.shaderStorageImageExtendedFormats)
+					{
+						featuresAvailabe = true;
+					}
+
+					SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physicalDevice, surface);
+
+					if (swapChainSupport.formats.size() == 0 || swapChainSupport.presentModes.size() == 0)
+						break;
+
+					if (deviceProperties.deviceType == VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU && CheckPhysicalDeviceExtensionSupport(physicalDevices[i], deviceExtensions) && featuresAvailabe)
+					{
+						physicalDevice = physicalDevices[i];
+						break;
+					}
+				}
+			}
+
+			return physicalDevice;
+		}
+
+		bool CheckPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions)
+		{
+			uint32_t extensionCount = 0;
+			vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+
+			std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+			vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+
+			bool supported = false;
+			for (size_t i = 0; i < deviceExtensions.size(); i++)
+			{
+				supported = false;
+				for (size_t j = 0; j < availableExtensions.size(); j++)
+				{
+					if (strcmp(availableExtensions[j].extensionName, deviceExtensions[i]) == 0)
+					{
+						supported = true;
+						break;
+					}
+				}
+
+				if (!supported)
+				{
+					Log::Print(LogLevel::LEVEL_INFO, "Extension: %s requested, but not supported", deviceExtensions[i]);
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)

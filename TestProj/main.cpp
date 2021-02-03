@@ -24,7 +24,7 @@ public:
 		forwardRenderer.EnableOcean(false);
 		forwardRenderer.EnableBloom(false);*/
 
-		game.LoadProject("models");
+		//game.LoadProject("models");
 
 		auto time = std::chrono::system_clock::now();
 		time_t tt = std::chrono::system_clock::to_time_t(time);
@@ -142,7 +142,7 @@ int main()
 	const unsigned int HEIGHT = 720;
 
 	MyApplication app;
-	if (!app.Init(Engine::GraphicsAPI::OpenGL, WIDTH, HEIGHT))
+	if (!app.Init(Engine::GraphicsAPI::Vulkan, WIDTH, HEIGHT))
 		return 1;
 
 	return app.Run();

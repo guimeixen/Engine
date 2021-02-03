@@ -14,6 +14,28 @@ namespace Engine
 	VKBase::VKBase()
 	{
 		vkAllocator = nullptr;
+
+		instance = VK_NULL_HANDLE;
+		debugCallback = VK_NULL_HANDLE;
+		physicalDevice = VK_NULL_HANDLE;
+		device = VK_NULL_HANDLE;
+		surface = VK_NULL_HANDLE;
+
+		graphicsCmdPool = VK_NULL_HANDLE;
+		computeCmdPool = VK_NULL_HANDLE;
+
+		graphicsQueue = VK_NULL_HANDLE;
+		presentQueue = VK_NULL_HANDLE;
+		transferQueue = VK_NULL_HANDLE;
+		computeQueue = VK_NULL_HANDLE;
+
+		showAvailableExtensions = false;
+
+		deviceFeatures = {};
+		deviceProperties = {};
+		gpuMemoryProperties = {};
+
+		singleTimeCmdBuffer = {};
 	}
 
 	VKBase::~VKBase()
@@ -36,9 +58,11 @@ namespace Engine
 			return false;
 		if (!CreatePhysicalDevice())
 			return false;
-		if (!CreateLogicalDevice())
+		if (!CreateDevice())
 			return false;
-		if (!CreateCommandPool())
+		if (!CreateGraphicsCommandPool())
+			return false;
+		if (!CreateComputeCommandPool())
 			return false;
 
 		vkAllocator = new VKAllocator(this);
@@ -48,12 +72,18 @@ namespace Engine
 
 	void VKBase::Dispose()
 	{
-		vkDestroyCommandPool(device, cmdPool, nullptr);
-		vkDestroyCommandPool(device, computeCmdPool, nullptr);
-		vkDestroyDevice(device, nullptr);
-		vkDestroySurfaceKHR(instance, surface, nullptr);
-		vkdebug::DestroyDebugReportCallbackEXT(instance, callback, nullptr);
-		vkDestroyInstance(instance, nullptr);
+		if(graphicsCmdPool != VK_NULL_HANDLE)
+			vkDestroyCommandPool(device, graphicsCmdPool, nullptr);
+		if (computeCmdPool != VK_NULL_HANDLE)
+			vkDestroyCommandPool(device, computeCmdPool, nullptr);
+		if (device != VK_NULL_HANDLE)
+			vkDestroyDevice(device, nullptr);
+		if (surface != VK_NULL_HANDLE)
+			vkDestroySurfaceKHR(instance, surface, nullptr);
+		if (debugCallback != VK_NULL_HANDLE)
+			vkdebug::DestroyDebugReportCallbackEXT(instance, debugCallback, nullptr);
+		if (instance != VK_NULL_HANDLE)
+			vkDestroyInstance(instance, nullptr);
 
 		if (vkAllocator)
 		{
@@ -92,7 +122,7 @@ namespace Engine
 	{
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = cmdPool;
+		allocInfo.commandPool = graphicsCmdPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = 1;
 
@@ -129,7 +159,7 @@ namespace Engine
 
 		VkCommandBufferAllocateInfo allocInfo = {};
 		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = cmdPool;
+		allocInfo.commandPool = graphicsCmdPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
@@ -143,12 +173,12 @@ namespace Engine
 
 	void VKBase::FreeCommandBuffer(VkCommandBuffer commandBuffer)
 	{
-		vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(device, graphicsCmdPool, 1, &commandBuffer);
 	}
 
 	void VKBase::FreeCommandBuffers(const std::vector<VkCommandBuffer>& commandBuffers)
 	{
-		vkFreeCommandBuffers(device, cmdPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+		vkFreeCommandBuffers(device, graphicsCmdPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 	}
 
 	void VKBase::FreeComputeCommandBuffers(VkCommandBuffer commandBuffer)
@@ -229,7 +259,7 @@ namespace Engine
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.oldLayout = oldLayout;									// Could be VK_IMAGE_LAYOUT_UNDEFINED if we don't care about the existing contents of the image
 		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;			// If transfering queue family ownership this should be their indices
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = texture->GetImage();
 		barrier.subresourceRange.aspectMask = texture->GetAspectFlags();
@@ -472,13 +502,13 @@ namespace Engine
 	{
 		VkApplicationInfo appInfo = {};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = "Test";
+		appInfo.pApplicationName = "CedrusEngine";
 		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "Engine";
+		appInfo.pEngineName = "CedrusEngine";
 		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		appInfo.apiVersion = VK_API_VERSION_1_0;
 
-		auto requiredExtentions = vkutils::GetRequiredExtensions(enableValidationLayers);
+		const std::vector<const char*> requiredExtentions = vkutils::GetRequiredExtensions(enableValidationLayers);
 
 		VkInstanceCreateInfo instanceInfo = {};
 		instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -502,6 +532,23 @@ namespace Engine
 			return false;
 		}
 
+		if (showAvailableExtensions)
+		{
+			uint32_t extensionCount = 0;
+			vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+			std::vector<VkExtensionProperties> extensions(extensionCount);
+			vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+			std::cout << "Available Extensions:\n";
+			for (const auto& extension : extensions)
+			{
+				std::cout << '\t' << extension.extensionName << '\n';
+			}
+		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Created instance\n");
+
 		return true;
 	}
 
@@ -513,30 +560,30 @@ namespace Engine
 		callbackInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
 		callbackInfo.pfnCallback = vkdebug::DebugCallback;
 
-		if (vkdebug::CreateDebugReportCallbackEXT(instance, &callbackInfo, nullptr, &callback) != VK_SUCCESS)
+		if (vkdebug::CreateDebugReportCallbackEXT(instance, &callbackInfo, nullptr, &debugCallback) != VK_SUCCESS)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create debug report callback!\n");
 			return false;
 		}
+		Log::Print(LogLevel::LEVEL_INFO, "Created debug report callback\n");
 
 		return true;
 	}
 
 	bool VKBase::CreateSurface(GLFWwindow *window)
 	{
-		// SURFACE CREATION
 		if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create window surface!\n");
 			return false;
 		}
+		Log::Print(LogLevel::LEVEL_INFO, "Created surface\n");
 
 		return true;
 	}
 
 	bool VKBase::CreatePhysicalDevice()
 	{
-		// No need to destroy the physical device because it is implicitly destroyed when destroying the instance
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -549,18 +596,11 @@ namespace Engine
 		std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
 		vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices.data());
 
-		for (const auto &gpu : physicalDevices)
-		{
-			if (vkutils::IsPhysicalDeviceSuitable(gpu, surface, deviceExtensions))
-			{
-				physicalDevice = gpu;
-				break;
-			}
-		}
+		physicalDevice = vkutils::ChoosePhysicalDevice(physicalDevices, deviceExtensions, surface);
 
 		if (physicalDevice == VK_NULL_HANDLE)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find suitable GPU!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to find suitable physical device");
 			return false;
 		}
 
@@ -568,13 +608,14 @@ namespace Engine
 		vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &gpuMemoryProperties);
 
-		Log::Print(LogLevel::LEVEL_INFO, "Non coherent atom size: %d", deviceProperties.limits.nonCoherentAtomSize);
+		Log::Print(LogLevel::LEVEL_INFO, "GPU: %s\n", deviceProperties.deviceName);
+		Log::Print(LogLevel::LEVEL_INFO, "Non coherent atom size: %d\n", deviceProperties.limits.nonCoherentAtomSize);
 		Log::Print(LogLevel::LEVEL_INFO, "Max allocations: %d\n", deviceProperties.limits.maxMemoryAllocationCount);
 		Log::Print(LogLevel::LEVEL_INFO, "Memory heaps: %d\n", gpuMemoryProperties.memoryHeapCount);
 
 		for (uint32_t i = 0; i < gpuMemoryProperties.memoryHeapCount; i++)
 		{			
-			if (gpuMemoryProperties.memoryHeaps[i].flags == 1)
+			if (gpuMemoryProperties.memoryHeaps[i].flags == VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
 				Log::Print(LogLevel::LEVEL_INFO, "\tSize: %d mib  - Device Local\n", gpuMemoryProperties.memoryHeaps[i].size >> 20);
 			else
 				Log::Print(LogLevel::LEVEL_INFO, "\tSize: %d mib\n", gpuMemoryProperties.memoryHeaps[i].size >> 20);
@@ -601,12 +642,17 @@ namespace Engine
 		return true;
 	}
 
-	bool VKBase::CreateLogicalDevice()
+	bool VKBase::CreateDevice()
 	{
-		indices = vkutils::FindQueueFamilies(physicalDevice, surface);
+		queueIndices = vkutils::FindQueueFamilies(physicalDevice, surface, false, false);
+
+		std::cout << "Graphics queue index: " << queueIndices.graphicsFamilyIndex << '\n';
+		std::cout << "Present queue index: " << queueIndices.presentFamilyIndex << '\n';
+		std::cout << "Transfer queue index: " << queueIndices.transferFamilyIndex << '\n';
+		std::cout << "Compute queue index: " << queueIndices.computeFamilyIndex << '\n';
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-		std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily, indices.transferFamily };		// If the graphics family and the present family are the same, which is likely
+		std::set<int> uniqueQueueFamilies = { queueIndices.graphicsFamilyIndex, queueIndices.presentFamilyIndex, queueIndices.transferFamilyIndex, queueIndices.computeFamilyIndex };
 
 		float queuePriority = 1.0f;
 
@@ -649,41 +695,49 @@ namespace Engine
 
 		if (vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Logical Device\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Device\n");
 			return false;
 		}
+		Log::Print(LogLevel::LEVEL_INFO, "Created Device\n");
 
-		// QUEUES
-		// No need to destroy the queues because it is implicitly destroyed when the logical device is destroyed
-		vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
-		vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
-		vkGetDeviceQueue(device, indices.transferFamily, 0, &transferQueue);
-		vkGetDeviceQueue(device, indices.computeFamily, 0, &computeQueue);
+		vkGetDeviceQueue(device, queueIndices.graphicsFamilyIndex, 0, &graphicsQueue);
+		vkGetDeviceQueue(device, queueIndices.presentFamilyIndex, 0, &presentQueue);
+		vkGetDeviceQueue(device, queueIndices.transferFamilyIndex, 0, &transferQueue);
+		vkGetDeviceQueue(device, queueIndices.computeFamilyIndex, 0, &computeQueue);
 
 		return true;
 	}
 
-	bool VKBase::CreateCommandPool()
+	bool VKBase::CreateGraphicsCommandPool()
 	{
-		// Command Pool
-		VkCommandPoolCreateInfo poolInfo = {};
-		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		poolInfo.queueFamilyIndex = indices.graphicsFamily;
-		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;			// Command buffers can be rerecorded. Possible flags are VK_COMMAND_POOL_CREATE_TRANSIENT_BIT and VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+		VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
+		cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolCreateInfo.queueFamilyIndex = queueIndices.graphicsFamilyIndex;
+		cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-		if (vkCreateCommandPool(device, &poolInfo, nullptr, &cmdPool) != VK_SUCCESS)
+		if (vkCreateCommandPool(device, &cmdPoolCreateInfo, nullptr, &graphicsCmdPool) != VK_SUCCESS)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create Command Pool!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create graphics command pool");
 			return false;
 		}
+		Log::Print(LogLevel::LEVEL_INFO, "Graphics command pool created");
 
-		poolInfo.queueFamilyIndex = indices.computeFamily;
+		return true;
+	}
 
-		if (vkCreateCommandPool(device, &poolInfo, nullptr, &computeCmdPool) != VK_SUCCESS)
+	bool VKBase::CreateComputeCommandPool()
+	{
+		VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
+		cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolCreateInfo.queueFamilyIndex = queueIndices.computeFamilyIndex;
+		cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+		if (vkCreateCommandPool(device, &cmdPoolCreateInfo, nullptr, &computeCmdPool) != VK_SUCCESS)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute command pool\n");
 			return false;
 		}
+		Log::Print(LogLevel::LEVEL_INFO, "Compute command pool created");
 
 		return true;
 	}

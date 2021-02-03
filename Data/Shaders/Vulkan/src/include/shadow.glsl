@@ -29,7 +29,7 @@ float calcShadow(float clipSpaceDepth, float NdotL)
 	projCoords.xy = projCoords.xy * 0.5 + 0.5;
 
 	vec3 uv = projCoords.xyz;
-	uv.y=1.0 - uv.y;		// Flip the y because Vulkan is top left instead of bottom left like OpenGL
+	uv.y = 1.0 - uv.y;		// Flip the y because Vulkan is top left instead of bottom left like OpenGL
 	uv.x = uv.x * ONE_OVER_CASCADE_COUNT + ONE_OVER_CASCADE_COUNT * cascadeIndex;
 
 	//float bias = max(0.002 * (1.0 - NdotL), 0.00065);
