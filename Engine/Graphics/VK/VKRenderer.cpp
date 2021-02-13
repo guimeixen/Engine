@@ -1699,19 +1699,49 @@ namespace Engine
 		blit.dstSubresource.layerCount = 1;
 		blit.dstSubresource.mipLevel = 0;
 
+		VkCommandBuffer cmdBuffer = frameResources[currentFrame].frameCmdBuffer;
 
 		// Transition the srcTex from SHADER_READ to TRANSFER_SRC
-		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, srcTex, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1);
+		// Transition the dstTex to TRANSFER_DST
+		VkImageMemoryBarrier barriers[2] = {};
+		barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barriers[0].oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barriers[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barriers[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barriers[0].image = srcTex->GetImage();
+		barriers[0].subresourceRange.aspectMask = srcTex->GetAspectFlags();
+		barriers[0].subresourceRange.levelCount = 1;
+		barriers[0].subresourceRange.layerCount = 1;
 
-		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, dstTex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1);
+		barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barriers[1].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barriers[1].srcAccessMask = 0;
+		barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barriers[1].image = dstTex->GetImage();
+		barriers[1].subresourceRange.aspectMask = dstTex->GetAspectFlags();
+		barriers[1].subresourceRange.levelCount = 1;
+		barriers[1].subresourceRange.layerCount = 1;
+
+		vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 2, barriers);
 
 		//vkCmdCopyImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 		vkCmdBlitImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
 
-		// Transition both images now to SHADER_READ
-		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, srcTex, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
-		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, dstTex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
+		// Transition both images to SHADER_READ
+		barriers[0].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barriers[0].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barriers[0].srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barriers[0].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		barriers[1].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barriers[1].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		barriers[1].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barriers[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 2, barriers);
 	}
 
 	void VKRenderer::ClearImage(Texture *tex)
