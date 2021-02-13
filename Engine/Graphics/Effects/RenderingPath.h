@@ -113,7 +113,6 @@ namespace Engine
 		float baseLightShaftsIntensity = 0.0f;
 		bool lockMainLightToTOD = true;
 
-		Buffer *frameUBO;
 		Buffer *mainLightUBO;
 		FrameUBO frameData;
 		DirLight mainDirectionalLight;

@@ -21,11 +21,6 @@ namespace Engine
 		COMPUTE,
 	};
 
-	struct CameraDynamicUBO
-	{
-		glm::mat4 *camerasData = nullptr;
-	};
-
 	struct VKBufferInfo
 	{
 		VkBuffer buffer;
@@ -51,6 +46,7 @@ namespace Engine
 		void PostLoad() override;
 		void Resize(unsigned int width, unsigned int height) override;
 		void SetCamera(Camera *camera, const glm::vec4 &clipPlane = glm::vec4(0.0f)) override;
+		void UpdateFrameDataUBO(const FrameUBO& frameData) override;
 
 		void BeginFrame() override;
 		void Present() override;
@@ -143,6 +139,7 @@ namespace Engine
 			//VkFence computeFence;
 			VkCommandBuffer frameCmdBuffer;
 			//VkCommandBuffer computeCmdBuffer;
+			VkDescriptorSet globalBuffersSet;
 		};
 		struct DescriptorsInfo
 		{
@@ -179,11 +176,16 @@ namespace Engine
 		//std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
 		//std::vector<VkWriteDescriptorSet> globalSetWrites;
 		
-		VKUniformBuffer *camDynamicUBO = nullptr;
-		CameraDynamicUBO camDynamicUBOData;
-		uint32_t dynamicAlignment = 0;
-		uint32_t minUBOAlignment = 0;
-		int32_t curDynamicCameraOffset = -1;
+		VKUniformBuffer* cameraUBO;
+		VKUniformBuffer* frameDataUBO;
+
+		glm::mat4* cameraUBOData;
+		unsigned int currentCamera;
+		unsigned int singleCameraAlignedSize;
+		unsigned int allCamerasAlignedSize;
+
+		FrameUBO frameData;
+		unsigned int singleFrameUBOAlignedSize;
 
 		VKSSBO *instanceDataSSBO;
 		unsigned int instanceDataOffset = 0;
@@ -193,26 +195,23 @@ namespace Engine
 		VkPipelineLayout graphicsPipelineLayout;
 		std::vector<VkPipelineLayout> computePipelineLayouts;
 		std::vector<VkDescriptorSetLayout> computeSecondsSetLayouts;
-		//VkDescriptorSetLayout globalSetLayout;	
-		//VkDescriptorSet globalSet;
 
-		std::vector<VkDescriptorSetLayoutBinding> buffersSetLayoutBindings;
-		std::vector<VkDescriptorSetLayoutBinding> texturesSetLayoutBindings;
-		VkDescriptorSetLayout buffersSetLayout;
-		VkDescriptorSetLayout texturesSetLayout;
+		VkDescriptorPool descriptorPool;
+		std::vector<VkDescriptorSetLayoutBinding> globalBuffersSetLayoutBindings;
+		std::vector<VkDescriptorSetLayoutBinding> globalTexturesSetLayoutBindings;
+		VkDescriptorSetLayout globalBuffersSetLayout;
+		VkDescriptorSetLayout globalTexturesSetLayout;
 		VkDescriptorSetLayout userSetLayout;
-		std::vector<VkWriteDescriptorSet> buffersSetWrites;
-		std::vector<VkWriteDescriptorSet> texturesSetWrites;
-		VkDescriptorSet buffersSet;
-		VkDescriptorSet texturesSet;
+		std::vector<VkWriteDescriptorSet> globalBuffersSetWrites;
+		std::vector<VkWriteDescriptorSet> globalTexturesSetWrites;
+		VkDescriptorSet globalTexturesSet;
 
 		std::vector<VKBufferInfo> bufferInfos;
 		std::vector<VKImageInfo> imagesInfo;
 
 		uint32_t curMeshParamsOffset = 0;
 
-		VkDescriptorPool descriptorPool;
-
+		
 		GLFWwindow *window;
 		unsigned int textureID = 0;
 	};

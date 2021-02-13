@@ -2,7 +2,6 @@
 
 #include "Application.h"
 
-
 class MyApplication : public Engine::Application
 {
 public:

@@ -36,11 +36,7 @@
 #endif
 
 
-// set 0	-> UBOs
-// set 1	-> SSBOs
-// set 2	-> Global Textures/Images (shadow map, voxel texture, etc)
-// 
-
-// set 0	-> UBOs and SSBOs
-// set 1	-> Global Textures/Images
-// set 2	-> User Textures
+// set 0	-> Camera dynamic UBO
+// set 1	-> UBOs and SSBOs
+// set 2	-> Global Textures/Images
+// set 3	-> User Textures

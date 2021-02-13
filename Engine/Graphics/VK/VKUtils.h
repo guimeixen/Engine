@@ -10,14 +10,14 @@
 namespace Engine
 {
 	struct QueueFamilyIndices {
-		int graphicsFamily = -1;
-		int presentFamily = -1;
-		int transferFamily = -1;
-		int computeFamily = -1;
+		int graphicsFamilyIndex = -1;
+		int presentFamilyIndex = -1;
+		int transferFamilyIndex = -1;
+		int computeFamilyIndex = -1;
 
 		bool IsComplete()
 		{
-			return graphicsFamily >= 0 && presentFamily >= 0 && transferFamily >= 0 && computeFamily >= 0;
+			return graphicsFamilyIndex >= 0 && presentFamilyIndex >= 0 && transferFamilyIndex >= 0 && computeFamilyIndex >= 0;
 		}
 	};
 
@@ -32,10 +32,10 @@ namespace Engine
 		bool ValidationLayersSupported(const std::vector<const char*> &validationLayers);
 		std::vector<const char*> GetRequiredExtensions(bool enableValidationLayers);
 
-		// Physical device selection
-		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface, bool tryFindTransferOnlyQueue, bool tryFindComputeOnlyQueue);
 		SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
-		bool IsPhysicalDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR surface, const std::vector<const char*> &deviceExtensions);
+		VkPhysicalDevice ChoosePhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices, const std::vector<const char*>& deviceExtensions, VkSurfaceKHR surface);
+		bool CheckPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice, const std::vector<const char*>& deviceExtensions);
 
 		// Swap chain support
 		VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);

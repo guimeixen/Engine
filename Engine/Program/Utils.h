@@ -19,6 +19,8 @@ namespace Engine
 		bool CheckAABBPoint(const AABB &aabb, const glm::vec3 &point);
 		bool AABBABBBIntersection(const AABB &a, const AABB &b);
 
+		unsigned int Align(unsigned int value, unsigned int alignment);
+
 		// It's necessary to clear the vector before calling the function if you don't want the values from a previous find to remain in the vector
 		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension, bool includeSubDirectories = true, bool addPathToFileName = true);
 		bool CreateDir(const char *folderPath);

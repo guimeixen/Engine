@@ -106,17 +106,19 @@ namespace Engine
 		swapChainInfo.clipped = VK_TRUE;		// If true then we don't care about the color of pixels that are obscured, eg. because another window is in front of them. Best performance with it enabled
 		swapChainInfo.oldSwapchain = VK_NULL_HANDLE;
 
-		QueueFamilyIndices indices = vkutils::FindQueueFamilies(physicalDevice, surface);
+		QueueFamilyIndices queueIndices = vkutils::FindQueueFamilies(physicalDevice, surface, false, false);
 
-		uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsFamily, (uint32_t)indices.presentFamily };
+		uint32_t queueFamilyIndices[] = { (uint32_t)queueIndices.graphicsFamilyIndex, (uint32_t)queueIndices.presentFamilyIndex };
 
-		if (indices.graphicsFamily != indices.presentFamily)
+		// Handle ownership transition instead
+		if (queueIndices.graphicsFamilyIndex != queueIndices.presentFamilyIndex)
 		{
 			swapChainInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 			swapChainInfo.queueFamilyIndexCount = 2;
 			swapChainInfo.pQueueFamilyIndices = queueFamilyIndices;
 		}
-		else {
+		else
+		{
 			swapChainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;		// Best performance
 			swapChainInfo.queueFamilyIndexCount = 0;
 			swapChainInfo.pQueueFamilyIndices = nullptr;
@@ -173,7 +175,7 @@ namespace Engine
 
 	void VKSwapChain::CreateFramebuffers(VkDevice device, VkRenderPass renderPass)
 	{
-		// Frambuffer
+		// Framebuffer
 		framebuffers.resize(imageViews.size());
 
 		for (size_t i = 0; i < imageViews.size(); i++)

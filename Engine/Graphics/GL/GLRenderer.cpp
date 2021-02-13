@@ -158,6 +158,10 @@ namespace Engine
 		viewUniformBuffer->Update(&ubo, sizeof(ubo), 0);
 	}
 
+	void GLRenderer::UpdateFrameDataUBO(const FrameUBO& frameData)
+	{
+	}
+
 	VertexArray *GLRenderer::CreateVertexArray(const VertexInputDesc &desc, Buffer *vertexBuffer, Buffer *indexBuffer)
 	{
 		return new GLVertexArray(desc, vertexBuffer, indexBuffer);

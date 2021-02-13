@@ -92,11 +92,10 @@ namespace Engine
 			SetupRefractionPass();
 		}
 
-		frameUBO = renderer->CreateUniformBuffer(nullptr, sizeof(FrameUBO));
 		mainLightUBO = renderer->CreateUniformBuffer(nullptr, sizeof(DirLightUBO));
 
 		// Slot 0 is reserved for the camera ubo and slot 1 for the instance/transform data ssbo
-		renderer->AddBufferResourceToSlot(FRAME_UBO, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
+		//renderer->AddBufferResourceToSlot(FRAME_UBO, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
 		renderer->AddBufferResourceToSlot(DIR_LIGHT_UBO, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
 		renderer->AddBufferResourceToSlot(DEBUG_VOXELS_INDIRECT_DRAW, vctgi.GetIndirectBuffer(), PipelineStage::COMPUTE);
 		renderer->AddBufferResourceToSlot(DEBUG_VOXELS_POSITION_SSBO, vctgi.GetVoxelPositionsBuffer(), PipelineStage::VERTEX | PipelineStage::COMPUTE);
@@ -113,8 +112,6 @@ namespace Engine
 
 		if (mainLightUBO)
 			delete mainLightUBO;
-		if (frameUBO)
-			delete frameUBO;
 
 		frameGraph.Dispose();
 		font.Dispose();
@@ -283,7 +280,8 @@ namespace Engine
 
 		frameData.deltaTime = game->GetDeltaTime();
 
-		frameUBO->Update(&frameData, sizeof(FrameUBO), 0);
+		//frameUBO->Update(&frameData, sizeof(FrameUBO), 0);
+		renderer->UpdateFrameDataUBO(frameData);
 	}
 
 	void RenderingPath::EnableTerrainEditing()

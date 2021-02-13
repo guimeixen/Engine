@@ -205,6 +205,11 @@ namespace Engine
 			return true;		// Intersecting on all 3 axes
 		}
 
+		unsigned int Align(unsigned int value, unsigned int alignment)
+		{
+			return (value + alignment - 1) & ~(alignment - 1);
+		}
+
 		void FindFilesInDirectory(std::vector<std::string> &files, const std::string &dir, const char *extension, bool includeSubDirectories, bool addPathToFileName)
 		{
 #ifdef _WIN32

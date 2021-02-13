@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <LibraryPath>$(SolutionDir)Debug;$(SolutionDir)lib;C:\VulkanSDK\1.2.135.0\Lib32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Debug;$(SolutionDir)lib;C:\VulkanSDK\1.2.154.1\Lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

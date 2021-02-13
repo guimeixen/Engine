@@ -21,6 +21,7 @@ namespace Engine
 		void PostLoad() override;
 		void Resize(unsigned int width, unsigned int height) override;
 		void SetCamera(Camera *camera, const glm::vec4 &clipPlane = glm::vec4(0.0f)) override;
+		void UpdateFrameDataUBO(const FrameUBO& frameData) override;
 
 		VertexArray *CreateVertexArray(const VertexInputDesc &desc, Buffer *vertexBuffer, Buffer *indexBuffer) override;
 		VertexArray *CreateVertexArray(const VertexInputDesc *descs, unsigned int descCount, const std::vector<Buffer*> &vertexBuffers, Buffer *indexBuffer) override;

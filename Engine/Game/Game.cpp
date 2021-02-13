@@ -76,7 +76,7 @@ namespace Engine
 #ifdef VITA
 		renderingPath = new PSVitaRenderer();
 #else
-		renderingPath = new ForwardPlusRenderer();
+		renderingPath = new ForwardRenderer();
 #endif
 		renderingPath->Init(this);
 		lightManager.Init(this, &transformManager);

@@ -74,8 +74,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)include;C:\VulkanSDK\1.2.135.0\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)lib;C:\VulkanSDK\1.2.135.0\Lib32;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)include;C:\VulkanSDK\1.2.154.1\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)lib;C:\VulkanSDK\1.2.154.1\Lib32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

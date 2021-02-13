@@ -67,7 +67,7 @@ namespace Engine
 
 		unsigned int cloudsFBWidth;
 		unsigned int cloudsFBHeight;
-		unsigned int cloudUpdateBlockSize = 4;
+		unsigned int cloudUpdateBlockSize;
 		unsigned int frameNumbers[16];
 		unsigned int frameNumber;
 		unsigned int frameCount = 0;

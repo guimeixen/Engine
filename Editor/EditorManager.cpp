@@ -206,7 +206,7 @@ void EditorManager::Update(float dt)
 				ImGUI_ImplVulkan_SetGameViewTexture(game->GetRenderingPath()->GetFinalFBForEditor()->GetColorTexture(), true);
 			}
 
-			std::cout << "resize" << availableSize.x << "  " << availableSize.y <<  "\n";
+			std::cout << "resize x: " << availableSize.x << "  y: " << availableSize.y <<  "\n";
 		}
 	}
 }

@@ -236,6 +236,10 @@ namespace Engine
 		cameraUBO->Update(&ubo, sizeof(CameraUBO), 0);
 	}
 
+	void D3D11Renderer::UpdateFrameDataUBO(const FrameUBO& frameData)
+	{
+	}
+
 	void D3D11Renderer::BeginFrame()
 	{
 	}

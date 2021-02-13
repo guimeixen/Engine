@@ -44,7 +44,27 @@ namespace Engine
 		descriptorPool = VK_NULL_HANDLE;
 		defaultRenderPass = VK_NULL_HANDLE;
 		curPipeline = VK_NULL_HANDLE;
+		userSetLayout = VK_NULL_HANDLE;
+		globalTexturesSet = VK_NULL_HANDLE;
+		globalTexturesSetLayout = VK_NULL_HANDLE;
+		globalBuffersSetLayout = VK_NULL_HANDLE;
+		graphicsPipelineLayout = VK_NULL_HANDLE;
+		transferCommandBuffer = VK_NULL_HANDLE;
+		backBufferRenderPassInfos = {};	
+		currentFB = nullptr;
+		instanceDataSSBO = nullptr;
+		mappedInstanceData = nullptr;
 		currentFrame = 0;
+		currentCamera = 0;
+		cameraUBOData = nullptr;
+		singleCameraAlignedSize = 0;
+		allCamerasAlignedSize = 0;
+		singleFrameUBOAlignedSize = 0;
+
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			frameResources[i] = {};
+		}
 	}
 
 	VKRenderer::~VKRenderer()
@@ -72,8 +92,6 @@ namespace Engine
 
 		// Swap chain framebuffers created here because we need the render pass
 		swapChain.CreateFramebuffers(device, defaultRenderPass);
-
-		//cmdBuffers = base.AllocateCommandBuffers(swapChain.GetImageCount());
 
 		transferCommandBuffer = base.AllocateCommandBuffer();		// If using dedicated transfer queue, create another command pool
 
@@ -121,51 +139,57 @@ namespace Engine
 
 
 		VkDescriptorSetLayoutBinding cameraLayoutBinding = {};
-		cameraLayoutBinding.binding = 0;
+		cameraLayoutBinding.binding = CAMERA_UBO;
 		cameraLayoutBinding.descriptorCount = 1;
 		cameraLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		cameraLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
 
 		VkDescriptorSetLayoutBinding instanceDataBinding = {};
-		instanceDataBinding.binding = 1;
+		instanceDataBinding.binding = INSTANCE_DATA_SSBO;
 		instanceDataBinding.descriptorCount = 1;
 		instanceDataBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		instanceDataBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-		buffersSetLayoutBindings.push_back(cameraLayoutBinding);
-		buffersSetLayoutBindings.push_back(instanceDataBinding);
+		VkDescriptorSetLayoutBinding frameUBOBinding = {};
+		frameUBOBinding.binding = FRAME_UBO;
+		frameUBOBinding.descriptorCount = 1;
+		frameUBOBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		frameUBOBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
+
+		globalBuffersSetLayoutBindings.push_back(cameraLayoutBinding);
+		globalBuffersSetLayoutBindings.push_back(instanceDataBinding);
+		globalBuffersSetLayoutBindings.push_back(frameUBOBinding);
 
 		// Dynamic ubo for cameras
-		minUBOAlignment = (uint32_t)base.GetDeviceLimits().minUniformBufferOffsetAlignment;
-		dynamicAlignment = sizeof(CameraUBO);
+		unsigned int minUBOAlignment = (unsigned int)base.GetDeviceLimits().minUniformBufferOffsetAlignment;
+		singleCameraAlignedSize = utils::Align(sizeof(CameraUBO), minUBOAlignment);
+		allCamerasAlignedSize = utils::Align(sizeof(CameraUBO) * MAX_CAMERAS, minUBOAlignment);
 
-		if (minUBOAlignment > 0)
-			dynamicAlignment = (dynamicAlignment + minUBOAlignment - 1) & ~(minUBOAlignment - 1);
+		singleFrameUBOAlignedSize = utils::Align(sizeof(FrameUBO), minUBOAlignment);
 
-		size_t bufferSize = MAX_CAMERAS * dynamicAlignment;
+		unsigned int cameraUBOBufferSize = singleCameraAlignedSize * MAX_CAMERAS * MAX_FRAMES_IN_FLIGHT;
+		unsigned int frameUBOBufferSize = utils::Align(sizeof(FrameUBO) * MAX_FRAMES_IN_FLIGHT, minUBOAlignment);
 
+		cameraUBOData = (glm::mat4*)malloc(size_t(cameraUBOBufferSize));
+	
+		cameraUBO = new VKUniformBuffer(&base, nullptr, cameraUBOBufferSize);
+		frameDataUBO = new VKUniformBuffer(&base, nullptr, frameUBOBufferSize);
+		instanceDataSSBO = new VKSSBO(&base, nullptr, 1024 * 512, BufferUsage::DYNAMIC);		// 512 kib	
+		//frameUBO.Create(&base, sizeof(FrameUBO) * MAX_FRAMES_IN_FLIGHT, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-		camDynamicUBOData = {};
-		camDynamicUBOData.camerasData = (glm::mat4*)malloc(bufferSize);
-
-		std::cout << "Min ubo offset alignment: " << minUBOAlignment << '\n';
-		std::cout << "Dynamic alignment: " << dynamicAlignment << '\n';
-
-		camDynamicUBO = new VKUniformBuffer(&base, nullptr, bufferSize);
-		instanceDataSSBO = new VKSSBO(&base, nullptr, 1024 * 512, BufferUsage::DYNAMIC);		// 512 kib
+		Log::Print(LogLevel::LEVEL_INFO, "Min ubo offset alignment: %u\n", minUBOAlignment);
 
 		//currentBinding = 2;		// Camera use the 0 binding, Instance/Transform Data SSBO uses the 1 binding 
 
-
 		VkDescriptorPoolSize poolSize[5] = {};
 		poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSize[0].descriptorCount = 5;
+		poolSize[0].descriptorCount = 7;
 
 		poolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		poolSize[1].descriptorCount = 300;									// Good value? How to choose ? Right now is a random value
 
 		poolSize[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		poolSize[2].descriptorCount = 1;
+		poolSize[2].descriptorCount = 2;
 
 		poolSize[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		poolSize[3].descriptorCount = 7;
@@ -185,34 +209,79 @@ namespace Engine
 			return false;
 		}
 
+		/*VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = cameraUBO->GetBuffer();
+		bufferInfo.range = VK_WHOLE_SIZE;
 
-		VkWriteDescriptorSet camWrite = {};
-		camWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		camWrite.descriptorCount = 1;
-		camWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		camWrite.dstArrayElement = 0;
-		camWrite.dstBinding = CAMERA_UBO;
+		VkWriteDescriptorSet write = {};
+		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write.dstBinding = CAMERA_UBO;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		write.descriptorCount = 1;
+
+		for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			bufferInfo.offset = VkDeviceSize(i * allCamerasAlignedSize);
+
+			write.dstSet = frameResources[i].camerasSet;
+			write.pBufferInfo = &bufferInfo;
+
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+		}
+		
+		bufferInfo.buffer = frameDataUBO->GetBuffer();
+		bufferInfo.range = sizeof(FrameUBO);
+
+		for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			bufferInfo.offset = i * singleFrameUBOAlignedSize;
+
+			write.dstSet = frameResources[i].globalBuffersSet;
+			write.dstBinding = FRAME_UBO;
+			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			write.descriptorCount = 1;
+			write.pBufferInfo = &bufferInfo;
+
+			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+		}*/
+
+		VkWriteDescriptorSet cameraUBOWrite = {};
+		cameraUBOWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		cameraUBOWrite.descriptorCount = 1;
+		cameraUBOWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		cameraUBOWrite.dstBinding = CAMERA_UBO;
 
 		VkWriteDescriptorSet instanceDataWrite = {};
 		instanceDataWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		instanceDataWrite.descriptorCount = 1;
 		instanceDataWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		instanceDataWrite.dstArrayElement = 0;
 		instanceDataWrite.dstBinding = INSTANCE_DATA_SSBO;
 
-		VKBufferInfo camInfo = {};
-		camInfo.binding = CAMERA_UBO;
-		camInfo.buffer = camDynamicUBO->GetBuffer();
+		VkWriteDescriptorSet frameUBOWrite = {};
+		frameUBOWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		frameUBOWrite.descriptorCount = 1;
+		frameUBOWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		frameUBOWrite.dstBinding = FRAME_UBO;
+
+		VKBufferInfo cameraUBOInfo = {};
+		cameraUBOInfo.binding = CAMERA_UBO;
+		cameraUBOInfo.buffer = cameraUBO->GetBuffer();
 
 		VKBufferInfo instanceBufInfo = {};
 		instanceBufInfo.binding = INSTANCE_DATA_SSBO;
 		instanceBufInfo.buffer = instanceDataSSBO->GetBuffer();
 
-		buffersSetWrites.push_back(camWrite);
-		buffersSetWrites.push_back(instanceDataWrite);
+		VKBufferInfo frameUBOInfo = {};
+		frameUBOInfo.binding = FRAME_UBO;
+		frameUBOInfo.buffer = frameDataUBO->GetBuffer();
 
-		bufferInfos.push_back(camInfo);
+		globalBuffersSetWrites.push_back(cameraUBOWrite);
+		globalBuffersSetWrites.push_back(instanceDataWrite);
+		globalBuffersSetWrites.push_back(frameUBOWrite);
+
+		bufferInfos.push_back(cameraUBOInfo);
 		bufferInfos.push_back(instanceBufInfo);
+		bufferInfos.push_back(frameUBOInfo);
 
 		return true;
 	}
@@ -622,16 +691,14 @@ namespace Engine
 	{
 		this->camera = camera;
 
-		curDynamicCameraOffset++;
-
 		// Check for camera limits here
-		if (curDynamicCameraOffset >= (int32_t)MAX_CAMERAS)
+		if (currentCamera >= MAX_CAMERAS)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Too many cameras!\n");
 			return;
 		}
 	
-		CameraUBO *ubo = (CameraUBO*)(((uint64_t)camDynamicUBOData.camerasData + (curDynamicCameraOffset * dynamicAlignment)));
+		CameraUBO *ubo = (CameraUBO*)(((uint64_t)cameraUBOData + (currentCamera * singleCameraAlignedSize)));
 		ubo->proj = camera->GetProjectionMatrix();
 		ubo->proj[1][1] *= -1;
 		ubo->proj[3][1] *= -1;		// For orthographic cameras
@@ -643,9 +710,15 @@ namespace Engine
 		ubo->camPos = glm::vec4(camera->GetPosition(), 0.0f);
 		ubo->nearFarPlane = glm::vec2(camera->GetNearPlane(), camera->GetFarPlane());
 
-		uint32_t dynamicOffset = static_cast<uint32_t>(curDynamicCameraOffset) * dynamicAlignment;
-		VkDescriptorSet s[] = { buffersSet, texturesSet };
-		vkCmdBindDescriptorSets(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 0, 2, s, 1, &dynamicOffset);
+		uint32_t dynamicOffset = static_cast<uint32_t>(currentCamera) * singleCameraAlignedSize;
+		vkCmdBindDescriptorSets(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 0, 1, &frameResources[currentFrame].globalBuffersSet, 1, &dynamicOffset);
+
+		currentCamera++;
+	}
+
+	void VKRenderer::UpdateFrameDataUBO(const FrameUBO& frameData)
+	{
+		this->frameData = frameData;
 	}
 
 	void VKRenderer::SetDefaultRenderTarget()
@@ -918,9 +991,9 @@ namespace Engine
 
 		// Only bind once on compute when the camera changes
 		// On setcamera()  changed=true     and here   if(changed) change set
-		uint32_t dynamicOffset = static_cast<uint32_t>(curDynamicCameraOffset) * dynamicAlignment;
+		uint32_t dynamicOffset = static_cast<uint32_t>(currentCamera) * singleCameraAlignedSize;
 
-		VkDescriptorSet s[] = {buffersSet, texturesSet};
+		VkDescriptorSet s[] = { frameResources[currentFrame].globalBuffersSet, globalTexturesSet };
 		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computeLayout, 0, 2, s, 1, &dynamicOffset);
 
 		if (item.matInstance->computeSetID < sets.size())
@@ -985,13 +1058,13 @@ namespace Engine
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
 
-			texturesSetLayoutBindings.push_back(b);
-			texturesSetWrites.push_back(write);
+			globalTexturesSetLayoutBindings.push_back(b);
+			globalTexturesSetWrites.push_back(write);
 
 			VKImageInfo info = {};
 			info.layout = layout;
 			info.imageViews.push_back(tex->GetImageView());
-			info.index = static_cast<unsigned int>(texturesSetWrites.size() - 1);
+			info.index = static_cast<unsigned int>(globalTexturesSetWrites.size() - 1);
 
 			if (useStorage)
 				info.sampler = VK_NULL_HANDLE;
@@ -1063,10 +1136,10 @@ namespace Engine
 			else
 				write.descriptorCount = 1;
 
-			texturesSetLayoutBindings.push_back(b);
-			texturesSetWrites.push_back(write);
+			globalTexturesSetLayoutBindings.push_back(b);
+			globalTexturesSetWrites.push_back(write);
 
-			info.index = static_cast<unsigned int>(texturesSetWrites.size() - 1);
+			info.index = static_cast<unsigned int>(globalTexturesSetWrites.size() - 1);
 
 			imagesInfo.push_back(info);
 		}
@@ -1105,12 +1178,12 @@ namespace Engine
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
 
-			buffersSetLayoutBindings.push_back(b);
-			buffersSetWrites.push_back(write);			
+			globalBuffersSetLayoutBindings.push_back(b);
+			globalBuffersSetWrites.push_back(write);			
 
 			VKBufferInfo info = {};
 			info.buffer = ubo->GetBuffer();
-			info.binding = static_cast<unsigned int>(buffersSetWrites.size() - 1);
+			info.binding = static_cast<unsigned int>(globalBuffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
 		}
@@ -1131,12 +1204,12 @@ namespace Engine
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
 
-			buffersSetLayoutBindings.push_back(b);
-			buffersSetWrites.push_back(write);
+			globalBuffersSetLayoutBindings.push_back(b);
+			globalBuffersSetWrites.push_back(write);
 
 			VKBufferInfo info = {};
 			info.buffer = ssbo->GetBuffer();
-			info.binding = static_cast<unsigned int>(buffersSetWrites.size() - 1);
+			info.binding = static_cast<unsigned int>(globalBuffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
 		}
@@ -1157,12 +1230,12 @@ namespace Engine
 			write.dstArrayElement = 0;
 			write.dstBinding = binding;
 
-			buffersSetLayoutBindings.push_back(b);
-			buffersSetWrites.push_back(write);
+			globalBuffersSetLayoutBindings.push_back(b);
+			globalBuffersSetWrites.push_back(write);
 
 			VKBufferInfo info = {};
 			info.buffer = indBuffer->GetBuffer();
-			info.binding = static_cast<unsigned int>(buffersSetWrites.size() - 1);
+			info.binding = static_cast<unsigned int>(globalBuffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
 		}
@@ -1172,10 +1245,10 @@ namespace Engine
 	{
 		VkDescriptorSetLayoutCreateInfo buffersSetLayoutInfo = {};
 		buffersSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		buffersSetLayoutInfo.bindingCount = static_cast<uint32_t>(buffersSetLayoutBindings.size());
-		buffersSetLayoutInfo.pBindings = buffersSetLayoutBindings.data();
+		buffersSetLayoutInfo.bindingCount = static_cast<uint32_t>(globalBuffersSetLayoutBindings.size());
+		buffersSetLayoutInfo.pBindings = globalBuffersSetLayoutBindings.data();
 
-		if (vkCreateDescriptorSetLayout(base.GetDevice(), &buffersSetLayoutInfo, nullptr, &buffersSetLayout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(base.GetDevice(), &buffersSetLayoutInfo, nullptr, &globalBuffersSetLayout) != VK_SUCCESS)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create buffers descriptor set layout!\n");
 			return;
@@ -1183,17 +1256,17 @@ namespace Engine
 
 		VkDescriptorSetLayoutCreateInfo texturesSetLayoutInfo = {};
 		texturesSetLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		texturesSetLayoutInfo.bindingCount = static_cast<uint32_t>(texturesSetLayoutBindings.size());
-		texturesSetLayoutInfo.pBindings = texturesSetLayoutBindings.data();
+		texturesSetLayoutInfo.bindingCount = static_cast<uint32_t>(globalTexturesSetLayoutBindings.size());
+		texturesSetLayoutInfo.pBindings = globalTexturesSetLayoutBindings.data();
 
-		if (vkCreateDescriptorSetLayout(base.GetDevice(), &texturesSetLayoutInfo, nullptr, &texturesSetLayout) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(base.GetDevice(), &texturesSetLayoutInfo, nullptr, &globalTexturesSetLayout) != VK_SUCCESS)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create textures descriptor set layout!\n");
 			return;
 		}
 
 
-		// We use a single pipeline layout with the desc set layout above and another one with a max of 8 textures
+		// User textures
 		VkDescriptorSetLayoutBinding setBindings[8];
 		for (size_t i = 0; i < 8; i++)
 		{
@@ -1217,7 +1290,7 @@ namespace Engine
 			return;
 		}
 
-		VkDescriptorSetLayout graphicsSetLayouts[] = { buffersSetLayout, texturesSetLayout, userSetLayout };
+		VkDescriptorSetLayout graphicsSetLayouts[] = { globalBuffersSetLayout, globalTexturesSetLayout, userSetLayout };
 
 		VkPushConstantRange pushConstantRange = {};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -1239,47 +1312,64 @@ namespace Engine
 		setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		setAllocInfo.descriptorPool = descriptorPool;
 		setAllocInfo.descriptorSetCount = 1;
-		setAllocInfo.pSetLayouts = &buffersSetLayout;
+		setAllocInfo.pSetLayouts = &globalBuffersSetLayout;
 
-		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &buffersSet) != VK_SUCCESS)
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate buffers descriptor set\n");
-			return;
+			if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &frameResources[i].globalBuffersSet) != VK_SUCCESS)
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate buffers descriptor set\n");
+				return;
+			}
 		}
 
-		setAllocInfo.pSetLayouts = &texturesSetLayout;
+		setAllocInfo.pSetLayouts = &globalTexturesSetLayout;
 
-		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &texturesSet) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(base.GetDevice(), &setAllocInfo, &globalTexturesSet) != VK_SUCCESS)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to allocate textures descriptor set\n");
 			return;
 		}
 
-		for (size_t i = 0; i < buffersSetWrites.size(); i++)
+		/*for (size_t i = 0; i < globalBuffersSetWrites.size(); i++)
 		{
-			buffersSetWrites[i].dstSet = buffersSet;
-		}
-		for (size_t i = 0; i < texturesSetWrites.size(); i++)
+			for (int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
+			{
+				globalBuffersSetWrites[i].dstSet = buffersSet;
+			}
+			
+		}*/
+		for (size_t i = 0; i < globalTexturesSetWrites.size(); i++)
 		{
-			texturesSetWrites[i].dstSet = texturesSet;
+			globalTexturesSetWrites[i].dstSet = globalTexturesSet;
 		}
-
-		// Create this to hold the buffer infos otherwise when we exit the loop pBufferInfo will point to garbage
-		//std::vector<VkDescriptorBufferInfo> bufInfos(bufferInfos.size());
-		//std::vector<VkDescriptorImageInfo> imgInfos(imagesInfo.size());
 
 		for (size_t i = 0; i < bufferInfos.size(); i++)
 		{
-			const VKBufferInfo &bi = bufferInfos[i];
+			const VKBufferInfo& bi = bufferInfos[i];
 
 			VkDescriptorBufferInfo info = {};
 			info.buffer = bi.buffer;
 			info.offset = 0;
 			info.range = VK_WHOLE_SIZE;
 
-			buffersSetWrites[bi.binding].pBufferInfo = &info;
+			for (int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
+			{
+				if (bi.binding == CAMERA_UBO)
+				{
+					info.offset = VkDeviceSize(j * allCamerasAlignedSize);
+				}
+				else if (bi.binding == FRAME_UBO)
+				{
+					info.range = sizeof(FrameUBO);
+					info.offset = VkDeviceSize(j * singleFrameUBOAlignedSize);
+				}
+				
+				globalBuffersSetWrites[bi.binding].pBufferInfo = &info;
+				globalBuffersSetWrites[bi.binding].dstSet = frameResources[j].globalBuffersSet;
 
-			vkUpdateDescriptorSets(base.GetDevice(), 1, &buffersSetWrites[bi.binding], 0, nullptr);
+				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalBuffersSetWrites[bi.binding], 0, nullptr);
+			}		
 		}
 
 		for (size_t i = 0; i < imagesInfo.size(); i++)
@@ -1296,9 +1386,9 @@ namespace Engine
 					infos[j].imageView = imgInfo.imageViews[j];
 				}
 
-				texturesSetWrites[imgInfo.index].pImageInfo = infos.data();
+				globalTexturesSetWrites[imgInfo.index].pImageInfo = infos.data();
 
-				vkUpdateDescriptorSets(base.GetDevice(), 1, &texturesSetWrites[imgInfo.index], 0, nullptr);
+				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalTexturesSetWrites[imgInfo.index], 0, nullptr);
 			}
 			else
 			{
@@ -1307,18 +1397,18 @@ namespace Engine
 				info.imageView = imgInfo.imageViews[0];
 				info.sampler = imgInfo.sampler;
 
-				texturesSetWrites[imgInfo.index].pImageInfo = &info;
+				globalTexturesSetWrites[imgInfo.index].pImageInfo = &info;
 
-				vkUpdateDescriptorSets(base.GetDevice(), 1, &texturesSetWrites[imgInfo.index], 0, nullptr);
+				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalTexturesSetWrites[imgInfo.index], 0, nullptr);
 			}		
 		}
 
 		//vkUpdateDescriptorSets(base.GetDevice(), static_cast<uint32_t>(globalSetWrites.size()), globalSetWrites.data(), 0, nullptr);
 
-		buffersSetWrites.clear();
-		texturesSetWrites.clear();
-		buffersSetLayoutBindings.clear();
-		texturesSetLayoutBindings.clear();
+		globalBuffersSetWrites.clear();
+		globalTexturesSetWrites.clear();
+		globalBuffersSetLayoutBindings.clear();
+		globalTexturesSetLayoutBindings.clear();
 		bufferInfos.clear();
 		imagesInfo.clear();
 	}
@@ -1393,7 +1483,7 @@ namespace Engine
 		write.descriptorType = type;
 		write.dstArrayElement = 0;
 		write.dstBinding = binding;
-		write.dstSet = texturesSet;
+		write.dstSet = globalTexturesSet;
 		write.pImageInfo = infos.data();
 
 		vkUpdateDescriptorSets(base.GetDevice(), 1, &write, 0, nullptr);
@@ -1592,14 +1682,35 @@ namespace Engine
 		region.extent.height = srcTex->GetHeight();
 		region.extent.depth = 1;
 
+		VkOffset3D blitSize;
+		blitSize.x = srcTex->GetWidth();
+		blitSize.y = srcTex->GetHeight();
+		blitSize.z = 1;
+
+		VkImageBlit blit = {};
+		blit.srcOffsets[1] = blitSize;
+		blit.dstOffsets[1] = blitSize;
+		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.layerCount = 1;
+		blit.srcSubresource.mipLevel = 0;
+		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.layerCount = 1;
+		blit.dstSubresource.mipLevel = 0;
+
+
 		// Transition the srcTex from SHADER_READ to TRANSFER_SRC
 		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, srcTex, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 1);
 
 		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, dstTex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1);
 
-		vkCmdCopyImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+		//vkCmdCopyImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		// The copy is done so transition the dstTex from TRANSFER_DST to SHADER_READ
+		vkCmdBlitImage(frameResources[currentFrame].frameCmdBuffer, srcTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstTex->GetImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
+
+		// Transition both images now to SHADER_READ
+		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, srcTex, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
 		base.TransitionImageLayout(frameResources[currentFrame].frameCmdBuffer, dstTex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1);
 	}
 
@@ -1630,6 +1741,8 @@ namespace Engine
 
 	void VKRenderer::BeginFrame()
 	{
+		currentCamera = 0;
+
 		VkDevice device = base.GetDevice();
 
 		if (needsTransfers)
@@ -1674,6 +1787,8 @@ namespace Engine
 		vkBeginCommandBuffer(frameResources[currentFrame].frameCmdBuffer, &beginInfo);
 		//vkBeginCommandBuffer(frameResources[currentFrame].computeCmdBuffer, &beginInfo);
 
+		vkCmdBindDescriptorSets(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &globalTexturesSet, 0, nullptr);
+
 		instanceDataOffset = 0;
 		mappedInstanceData = (char*)instanceDataSSBO->GetMappedPtr();
 	}
@@ -1687,7 +1802,8 @@ namespace Engine
 
 		VkDevice device = base.GetDevice();
 
-		camDynamicUBO->Update(camDynamicUBOData.camerasData, static_cast<unsigned int>(curDynamicCameraOffset + 1) * dynamicAlignment, 0);
+		cameraUBO->Update(cameraUBOData, currentCamera * singleCameraAlignedSize, currentFrame * allCamerasAlignedSize);
+		frameDataUBO->Update(&frameData, sizeof(FrameUBO), currentFrame * singleFrameUBOAlignedSize);
 
 		instanceDataSSBO->Flush();
 
@@ -1718,6 +1834,7 @@ namespace Engine
 			wasResized = false;
 			//return;
 		}
+		// TODO:Recreate swapchain
 		if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
 			std::cout << "out of date\n";
 
@@ -1753,7 +1870,7 @@ namespace Engine
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &frameResources[currentFrame].frameCmdBuffer;
-		submitInfo.pWaitSemaphores = &frameResources[currentFrame].imageAvailableSemaphore;				// Wait for present to finish
+		submitInfo.pWaitSemaphores = &frameResources[currentFrame].imageAvailableSemaphore;
 		submitInfo.pSignalSemaphores = &frameResources[currentFrame].renderFinishedSemaphore;
 		
 		if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, frameResources[currentFrame].frameFence) != VK_SUCCESS)
@@ -1780,7 +1897,6 @@ namespace Engine
 		//vkQueueWaitIdle(base.GetPresentQueue());
 		//WaitIdle();
 		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-		curDynamicCameraOffset = -1;
 	}
 
 	void VKRenderer::WaitIdle()
@@ -1891,12 +2007,14 @@ namespace Engine
 			ubos[i]->RemoveReference();
 		}
 
-		if (camDynamicUBO)
-			delete camDynamicUBO;
+		if (cameraUBO)
+			delete cameraUBO;
+		if (frameDataUBO)
+			delete frameDataUBO;
 		if (instanceDataSSBO)
 			delete instanceDataSSBO;
-		if (camDynamicUBOData.camerasData)
-			free(camDynamicUBOData.camerasData);
+		if (cameraUBOData)
+			free(cameraUBOData);
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -1920,8 +2038,8 @@ namespace Engine
 		}
 
 		vkDestroyPipelineLayout(device, graphicsPipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(device, buffersSetLayout, nullptr);
-		vkDestroyDescriptorSetLayout(device, texturesSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device, globalBuffersSetLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device, globalTexturesSetLayout, nullptr);
 		vkDestroyDescriptorSetLayout(device, userSetLayout, nullptr);
 		vkDestroyRenderPass(device, defaultRenderPass, nullptr);
 
@@ -2076,7 +2194,7 @@ namespace Engine
 
 			computeSecondsSetLayouts.push_back(setLayout);			
 
-			VkDescriptorSetLayout computeSetLayouts[] = { buffersSetLayout, texturesSetLayout, setLayout };
+			VkDescriptorSetLayout computeSetLayouts[] = { globalBuffersSetLayout, globalTexturesSetLayout, setLayout };
 
 			VkPushConstantRange pushConstantRange = {};
 			pushConstantRange.offset = 0;
@@ -2091,13 +2209,13 @@ namespace Engine
 
 			if (mat->buffers.size() > 0 || mat->textures.size() > 0)
 			{
-				VkDescriptorSetLayout computeSetLayouts[] = { buffersSetLayout, texturesSetLayout, setLayout };
+				VkDescriptorSetLayout computeSetLayouts[] = { globalBuffersSetLayout, globalTexturesSetLayout, setLayout };
 				pipelineLayoutInfo.setLayoutCount = 3;
 				pipelineLayoutInfo.pSetLayouts = computeSetLayouts;
 			}
 			else
 			{
-				VkDescriptorSetLayout computeSetLayouts[] = { buffersSetLayout, texturesSetLayout };
+				VkDescriptorSetLayout computeSetLayouts[] = { globalBuffersSetLayout, globalTexturesSetLayout };
 				pipelineLayoutInfo.setLayoutCount = 2;
 				pipelineLayoutInfo.pSetLayouts = computeSetLayouts;
 			}

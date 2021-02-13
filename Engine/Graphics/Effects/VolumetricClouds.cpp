@@ -14,6 +14,7 @@ namespace Engine
 		this->quadMesh = quadMesh;
 		cloudsFBWidth = renderer->GetWidth() / 2;
 		cloudsFBHeight = renderer->GetHeight() / 2;
+		cloudUpdateBlockSize = 4;
 
 		// Make sure the clouds texture is divisible by the block size
 		while (cloudsFBWidth % cloudUpdateBlockSize != 0)
@@ -90,6 +91,7 @@ namespace Engine
 		FILE *file = nullptr;
 		file = fopen("Data/Resources/Textures/clouds/noise.data", "rb");
 
+		// When we don't have the file we generate it below, but it is really slow
 		if (file == nullptr)
 		{
 			// Generate the noise if the file doesn't exist and save it to file

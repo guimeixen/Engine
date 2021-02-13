@@ -43,8 +43,7 @@ namespace Engine
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.size = size;
 		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		// Buffers can be owned by a specific queue family or be shared between multiple at the same time.
-																// This will only be used from the graphics queue, so we use exclusive access.
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 		{
@@ -78,9 +77,8 @@ namespace Engine
 		VkMappedMemoryRange memoryRange = {};
 		memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 		memoryRange.memory = alloc.memory;
-		//memoryRange.size = size;
 		memoryRange.size = VK_WHOLE_SIZE;
-		memoryRange.offset = 0;
+		memoryRange.offset = offset;
 
 		vkFlushMappedMemoryRanges(device, 1, &memoryRange);
 	}
@@ -95,7 +93,7 @@ namespace Engine
 	{
 		if (mapped)
 		{
-			vkUnmapMemory(device, alloc.memory);		// Does not return a result as it can't fail
+			vkUnmapMemory(device, alloc.memory);
 			mapped = nullptr;
 		}
 	}
