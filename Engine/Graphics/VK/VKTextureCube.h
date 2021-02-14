@@ -27,7 +27,7 @@ namespace Engine
 
 		void Clear() override;
 
-		void Load(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device);
+		void Load(VKBase* base);
 		void Dispose();
 		void DisposeStagingBuffer();
 
@@ -53,6 +53,7 @@ namespace Engine
 
 	private:
 		VkDevice device;
+		VKAllocator* allocator;
 		std::vector<std::string> faces;
 		uint32_t width;
 		uint32_t height;

@@ -284,22 +284,13 @@
     <ClCompile Include="..\Engine\Graphics\VK\VKDebug.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKDrawIndirectBuffer.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\Graphics\VK\VKFramebuffer.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKIndexBuffer.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Graphics\VK\VKRenderer.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Graphics\VK\VKShader.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKSSBO.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Graphics\VK\VKSwapChain.cpp">
@@ -312,9 +303,6 @@
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Graphics\VK\VKTextureCube.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\VK\VKUniformBuffer.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="..\Engine\Graphics\VK\VKUtils.cpp">

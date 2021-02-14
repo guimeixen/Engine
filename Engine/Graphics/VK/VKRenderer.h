@@ -10,10 +10,6 @@
 namespace Engine
 {
 	class VKTexture2D;
-	class VKIndexBuffer;
-	class VKUniformBuffer;
-	class VKSSBO;
-	class VKDrawIndirectBuffer;
 
 	enum class PipelineType
 	{
@@ -167,17 +163,17 @@ namespace Engine
 		
 		std::vector<VKFramebuffer*> framebuffers;
 		std::vector<VKBuffer*> vertexBuffers;
-		std::vector<VKIndexBuffer*> indexBuffers;
-		std::vector<VKUniformBuffer*> ubos;
-		std::vector<VKDrawIndirectBuffer*> drawIndirectBufs;
-		std::vector<VKSSBO*> ssbos;
+		std::vector<VKBuffer*> indexBuffers;
+		std::vector<VKBuffer*> ubos;
+		std::vector<VKBuffer*> drawIndirectBufs;
+		std::vector<VKBuffer*> ssbos;
 		std::vector<VkPipeline> pipelines;
 
 		//std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
 		//std::vector<VkWriteDescriptorSet> globalSetWrites;
 		
-		VKUniformBuffer* cameraUBO;
-		VKUniformBuffer* frameDataUBO;
+		VKBuffer* cameraUBO;
+		VKBuffer* frameDataUBO;
 
 		glm::mat4* cameraUBOData;
 		unsigned int currentCamera;
@@ -187,7 +183,7 @@ namespace Engine
 		FrameUBO frameData;
 		unsigned int singleFrameUBOAlignedSize;
 
-		VKSSBO *instanceDataSSBO;
+		VKBuffer* instanceDataSSBO;
 		unsigned int instanceDataOffset = 0;
 		char *mappedInstanceData;
 		
@@ -211,7 +207,6 @@ namespace Engine
 
 		uint32_t curMeshParamsOffset = 0;
 
-		
 		GLFWwindow *window;
 		unsigned int textureID = 0;
 	};

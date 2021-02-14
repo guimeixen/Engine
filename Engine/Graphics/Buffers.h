@@ -10,12 +10,14 @@ namespace Engine
 		IndexBuffer,
 		UniformBuffer,
 		DrawIndirectBuffer,
-		ShaderStorageBuffer
+		ShaderStorageBuffer,
+		StagingBuffer
 	};
 
 	class Buffer
 	{
 	public:
+		Buffer() {}
 		Buffer(BufferType type) { this->type = type; }
 		virtual ~Buffer() {}
 
@@ -29,8 +31,8 @@ namespace Engine
 		BufferType GetType() const { return type; }
 
 	protected:
-		unsigned int size;
-		BufferUsage usage;
+		unsigned int size = 0;
+		BufferUsage usage = BufferUsage::STATIC;
 		BufferType type;
 	private:
 		unsigned int refCount = 0;

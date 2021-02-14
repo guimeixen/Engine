@@ -8,17 +8,17 @@
 
 namespace Engine
 {
-	VKTexture3D::VKTexture3D(VKBase *context, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params, const void *data)
+	VKTexture3D::VKTexture3D(VKBase *base, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params, const void *data)
 	{
 		AddReference();
-		allocator = context->GetAllocator();
+		allocator = base->GetAllocator();
 		this->data = nullptr;
 		this->params = params;
 		this->width = width;
 		this->height = height;
 		this->depth = depth;
 		storeTextureData = false;
-		device = context->GetDevice();
+		device = base->GetDevice();
 		isAttachment = false;
 		type = TextureType::TEXTURE3D;
 		aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -52,7 +52,7 @@ namespace Engine
 		if (params.usedAsStorageInCompute || params.usedAsStorageInGraphics)
 		{
 			VkFormatProperties formatProps = {};
-			vkGetPhysicalDeviceFormatProperties(context->GetPhysicalDevice(), format, &formatProps);
+			vkGetPhysicalDeviceFormatProperties(base->GetPhysicalDevice(), format, &formatProps);
 			if ((formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) == false)
 			{
 				std::cout << "Missing support for storage image bit\n";
@@ -100,8 +100,9 @@ namespace Engine
 					newData[counter++] = half_float::half_cast<half_float::half>(oldData[counterOld++]);
 				}
 
-				stagingBuffer = new VKBuffer();
-				stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				//stagingBuffer = new VKBuffer();
+				//stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 				stagingBuffer->Map();
 				stagingBuffer->Update(newData, (unsigned int)size, 0);
 				stagingBuffer->Unmap();
@@ -111,8 +112,9 @@ namespace Engine
 			else if ((numChannels == 1 || numChannels == 2 || numChannels == 4) && params.type == TextureDataType::UNSIGNED_BYTE)
 			{
 				// No need to modify, copy straight to staging buffer
-				stagingBuffer = new VKBuffer();
-				stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				//stagingBuffer = new VKBuffer();
+				//stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 				stagingBuffer->Map();
 				stagingBuffer->Update(data, (unsigned int)size, 0);
 				stagingBuffer->Unmap();
@@ -132,7 +134,7 @@ namespace Engine
 			bufferCopyRegions.push_back(region);
 		}
 
-		CreateImage(context->GetPhysicalDevice());
+		CreateImage(base->GetPhysicalDevice());
 
 		if ((!params.usedAsStorageInCompute && !params.usedAsStorageInGraphics) || params.sampled)
 			CreateSampler();

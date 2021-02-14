@@ -255,17 +255,13 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Graphics\VK\VKBase.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKBuffer.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKDebug.cpp" />
-    <ClCompile Include="..\Engine\Graphics\VK\VKDrawIndirectBuffer.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKFramebuffer.cpp" />
-    <ClCompile Include="..\Engine\Graphics\VK\VKIndexBuffer.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKRenderer.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKShader.cpp" />
-    <ClCompile Include="..\Engine\Graphics\VK\VKSSBO.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKSwapChain.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKTexture2D.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKTexture3D.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKTextureCube.cpp" />
-    <ClCompile Include="..\Engine\Graphics\VK\VKUniformBuffer.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKUtils.cpp" />
     <ClCompile Include="..\Engine\Graphics\VK\VKVertexArray.cpp" />
     <ClCompile Include="..\Engine\Physics\Collider.cpp" />

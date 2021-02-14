@@ -126,18 +126,14 @@
     <ClCompile Include="PSVitaApplication.cpp" />
     <ClCompile Include="Graphics\Effects\PSVitaRenderer.cpp" />
     <ClCompile Include="Sound\SoundSource.cpp" />
-    <ClCompile Include="Graphics\VK\VKIndexBuffer.cpp" />
     <ClCompile Include="Graphics\VK\VKVertexArray.cpp" />
-    <ClCompile Include="Graphics\VK\VKUniformBuffer.cpp" />
     <ClCompile Include="Graphics\VK\VKTextureCube.cpp" />
     <ClCompile Include="stb.cpp" />
     <ClCompile Include="Graphics\Effects\TimeOfDayManager.cpp" />
     <ClCompile Include="Graphics\Effects\VCTGI.cpp" />
     <ClCompile Include="Graphics\VK\VKAllocator.cpp" />
     <ClCompile Include="Graphics\VK\VKTexture3D.cpp" />
-    <ClCompile Include="Graphics\VK\VKSSBO.cpp" />
     <ClCompile Include="Graphics\Effects\VolumetricClouds.cpp" />
-    <ClCompile Include="Graphics\VK\VKDrawIndirectBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AI\AIObject.h" />
@@ -258,17 +254,13 @@
     <ClInclude Include="Graphics\Effects\PSVitaRenderer.h" />
     <ClInclude Include="Sound\SoundSource.h" />
     <ClInclude Include="Game\ComponentManagers\SoundManager.h" />
-    <ClInclude Include="Graphics\VK\VKIndexBuffer.h" />
     <ClInclude Include="Graphics\VK\VKVertexArray.h" />
-    <ClInclude Include="Graphics\VK\VKUniformBuffer.h" />
     <ClInclude Include="Graphics\VK\VKTextureCube.h" />
     <ClInclude Include="Graphics\Effects\TimeOfDayManager.h" />
     <ClInclude Include="Graphics\Effects\VCTGI.h" />
     <ClInclude Include="Graphics\VK\VKAllocator.h" />
     <ClInclude Include="Graphics\VK\VKTexture3D.h" />
-    <ClInclude Include="Graphics\VK\VKSSBO.h" />
     <ClInclude Include="Graphics\Effects\VolumetricClouds.h" />
-    <ClInclude Include="Graphics\VK\VKDrawIndirectBuffer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7EA2B1D8-42E4-43A4-B80A-856E4419DB53}</ProjectGuid>

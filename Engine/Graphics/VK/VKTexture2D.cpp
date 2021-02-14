@@ -22,11 +22,11 @@ namespace Engine
 		data = nullptr;
 	}
 
-	VKTexture2D::VKTexture2D(VKBase *context, unsigned int width, unsigned int height, const TextureParams &params, const void *data)
+	VKTexture2D::VKTexture2D(VKBase *base, unsigned int width, unsigned int height, const TextureParams &params, const void *data)
 	{
 		AddReference();
 		this->data = nullptr;
-		this->allocator = context->GetAllocator();
+		this->allocator = base->GetAllocator();
 		this->width = width;
 		this->height = height;
 		this->params = params;
@@ -40,10 +40,12 @@ namespace Engine
 		filter = vkutils::GetFilter(params.filter);
 		format = vkutils::GetFormat(params.internalFormat);
 
+		device = base->GetDevice();
+
 		if (params.usedAsStorageInCompute || params.usedAsStorageInGraphics)
 		{
 			VkFormatProperties formatProps = {};
-			vkGetPhysicalDeviceFormatProperties(context->GetPhysicalDevice(), format, &formatProps);
+			vkGetPhysicalDeviceFormatProperties(base->GetPhysicalDevice(), format, &formatProps);
 			if ((formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) == false)
 			{
 				std::cout << "Missing support for storage image bit\n";
@@ -73,8 +75,6 @@ namespace Engine
 			size = width * height * numChannels * sizeof(unsigned char);
 		}		
 
-		this->device = context->GetDevice();
-
 		if (data)
 		{
 			// Because Vulkan doesn't support formats with 24 bits we convert to 32 bits
@@ -99,8 +99,9 @@ namespace Engine
 					newData[counter++] = half_float::half_cast<half_float::half>(0.0f);
 				}
 
-				stagingBuffer = new VKBuffer();
-				stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				//stagingBuffer = new VKBuffer();
+				stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
+				//stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
 				stagingBuffer->Map();
 				stagingBuffer->Update(newData, (unsigned int)size, 0);
 				stagingBuffer->Unmap();
@@ -109,8 +110,9 @@ namespace Engine
 			}
 			else
 			{
-				stagingBuffer = new VKBuffer();
-				stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				//stagingBuffer = new VKBuffer();
+				//stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 				stagingBuffer->Map();
 				stagingBuffer->Update(data, (unsigned int)size, 0);
 				stagingBuffer->Unmap();
@@ -130,10 +132,10 @@ namespace Engine
 			bufferCopyRegions.push_back(region);
 		}
 
-		CreateImage(allocator, context->GetPhysicalDevice(), device);		
+		CreateImage(base->GetPhysicalDevice());
 	}
 
-	VKTexture2D::VKTexture2D(VKBase *context, const std::string &path, const TextureParams &params, bool storeTextureData)
+	VKTexture2D::VKTexture2D(VKBase *base, const std::string &path, const TextureParams &params, bool storeTextureData)
 	{
 		AddReference();
 		data = nullptr;
@@ -148,10 +150,13 @@ namespace Engine
 		sampler = VK_NULL_HANDLE;
 		format = vkutils::GetFormat(params.internalFormat);
 
+		device = base->GetDevice();
+		allocator = base->GetAllocator();
+
 		if (params.usedAsStorageInCompute || params.usedAsStorageInGraphics)
 		{
 			VkFormatProperties formatProps = {};
-			vkGetPhysicalDeviceFormatProperties(context->GetPhysicalDevice(), format, &formatProps);
+			vkGetPhysicalDeviceFormatProperties(base->GetPhysicalDevice(), format, &formatProps);
 			if ((formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) == false)
 			{
 				std::cout << "Missing support for storage image bit\n";
@@ -190,14 +195,11 @@ namespace Engine
 	{
 	}
 
-	void VKTexture2D::Load(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device)
-	{
-		this->device = device;
-		this->allocator = allocator;
-		
+	void VKTexture2D::Load(VKBase* base)
+	{	
 		if ((std::strstr(path.c_str(), ".png") > 0) || (std::strstr(path.c_str(), ".jpg") > 0))
 		{
-			LoadPNGJPG(allocator, physicalDevice, device);
+			LoadPNGJPG(base);
 			return;
 		}
 
@@ -257,13 +259,14 @@ namespace Engine
 		}
 
 
-		stagingBuffer = new VKBuffer();
-		stagingBuffer->Create(allocator, physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+		//stagingBuffer = new VKBuffer();
+		//stagingBuffer->Create(allocator, physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+		stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 		stagingBuffer->Map();
 		stagingBuffer->Update(tex2D.data(), tex2D.size(), 0);
 		stagingBuffer->Unmap();
 
-		CreateImage(allocator, physicalDevice, device);
+		CreateImage(base->GetPhysicalDevice());
 
 		uint32_t offset = 0;
 
@@ -310,9 +313,9 @@ namespace Engine
 		addressMode = vkutils::GetAddressMode(params.wrap);
 		format = vkutils::GetFormat(params.internalFormat);
 
-		CreateImage(allocator, physicalDevice, device);
-		CreateImageView(device);
-		CreateSampler(device);
+		CreateImage(physicalDevice);
+		CreateImageView();
+		CreateSampler();
 	}
 
 	void VKTexture2D::CreateDepthStencilAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params, bool useInShader, bool useStencil)
@@ -348,11 +351,11 @@ namespace Engine
 		else
 			aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		CreateImage(allocator, physicalDevice, device);
-		CreateImageView(device);
+		CreateImage(physicalDevice);
+		CreateImageView();
 
 		if (useInShader)
-			CreateSampler(device);
+			CreateSampler();
 	}
 
 	void VKTexture2D::Dispose()
@@ -381,7 +384,7 @@ namespace Engine
 		}
 	}
 
-	void VKTexture2D::CreateImage(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device)
+	void VKTexture2D::CreateImage(VkPhysicalDevice physicalDevice)
 	{
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -393,15 +396,11 @@ namespace Engine
 		imageInfo.mipLevels = mipLevels;
 		imageInfo.usage = usageFlags;
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		// Sharing mode exclusive means that ownership of the image does not need to be explicitly transferred between the compute and graphics queue
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		imageInfo.flags = 0;
-		imageInfo.format = format;			// We should use the same format as the pixels in the buffer above
-		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;				// Texels are laid out in an implementation defined order for optimal access. More efficient when accessing in the shader
-																// Tiling mode cannot b changed at a later time. To directly access texles in the memory of the image, then we must use VK_IMAGE_TILING_LINEAR
-																// We will be using a staging buffer instead of a staging image, so this won't be necessary
-
-		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;		//  LAYOUT_UNDEFINED if we were using it as a color attachment which would probably be cleared anyway
-																	// PREINITIALIZED will preserve the texels on the first transition
+		imageInfo.format = format;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 		if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
 		{
@@ -416,7 +415,7 @@ namespace Engine
 		vkBindImageMemory(device, image, alloc.memory, alloc.offset);
 	}
 
-	void VKTexture2D::LoadPNGJPG(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device)
+	void VKTexture2D::LoadPNGJPG(VKBase* base)
 	{
 		unsigned char* image = nullptr;
 		int width, height, nChannels;
@@ -441,7 +440,7 @@ namespace Engine
 		{
 			std::cout << "Failed to load texture : " << path << std::endl;
 			path = "Data/Resources/Textures/white.dds";
-			Load(allocator, physicalDevice, device);
+			Load(base);
 			return;
 		}
 		
@@ -480,7 +479,7 @@ namespace Engine
 		size = width * height * nChannels * sizeof(unsigned char);
 
 		VkFormatProperties formatProps;
-		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);	// We need to check if this format supports blits
+		vkGetPhysicalDeviceFormatProperties(base->GetPhysicalDevice(), format, &formatProps);	// We need to check if this format supports blits
 
 		if (params.useMipmapping && (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_SRC_BIT) == VK_FORMAT_FEATURE_BLIT_SRC_BIT && (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_BLIT_DST_BIT) == VK_FORMAT_FEATURE_BLIT_DST_BIT)
 		{
@@ -492,13 +491,14 @@ namespace Engine
 			mipLevels = 1;
 		}
 
-		stagingBuffer = new VKBuffer();
-		stagingBuffer->Create(allocator, physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, false);
+		//stagingBuffer = new VKBuffer();
+		//stagingBuffer->Create(allocator, physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, false);
+		stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 		stagingBuffer->Map();
 		stagingBuffer->Update(image, (unsigned int)size, 0);
 		stagingBuffer->Unmap();
 
-		CreateImage(allocator, physicalDevice, device);
+		CreateImage(base->GetPhysicalDevice());
 
 		// Setup buffer copy regions
 		// We only use one here because we only have the base texture and not the whole mip chain
@@ -517,7 +517,7 @@ namespace Engine
 		stbi_image_free(image);
 	}
 
-	void VKTexture2D::CreateImageView(VkDevice device)
+	void VKTexture2D::CreateImageView()
 	{
 		// Textures are not directly accessed by the shaders and
 		// are abstracted by image views containing additional
@@ -545,7 +545,7 @@ namespace Engine
 		}
 	}
 
-	void VKTexture2D::CreateSampler(VkDevice device)
+	void VKTexture2D::CreateSampler()
 	{
 		// Here we're using a sampler per texture but they can be applied to any texture we want. So we could create the necessary samplers and then reuse them
 		VkSamplerCreateInfo samplerInfo = {};

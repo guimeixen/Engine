@@ -6,15 +6,11 @@
 #include "VKTextureCube.h"
 #include "Graphics/ResourcesLoader.h"
 #include "VKShader.h"
-#include "VKIndexBuffer.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
 #include "Graphics/VertexArray.h"
 #include "VKBuffer.h"
-#include "VKUniformBuffer.h"
 #include "VKVertexArray.h"
-#include "VKSSBO.h"
-#include "VKDrawIndirectBuffer.h"
 
 #include "Program/Utils.h"
 #include "Program/StringID.h"
@@ -57,6 +53,9 @@ namespace Engine
 		currentFrame = 0;
 		currentCamera = 0;
 		cameraUBOData = nullptr;
+		cameraUBO = nullptr;
+		frameDataUBO = nullptr;
+		frameData = {};
 		singleCameraAlignedSize = 0;
 		allCamerasAlignedSize = 0;
 		singleFrameUBOAlignedSize = 0;
@@ -172,9 +171,10 @@ namespace Engine
 
 		cameraUBOData = (glm::mat4*)malloc(size_t(cameraUBOBufferSize));
 	
-		cameraUBO = new VKUniformBuffer(&base, nullptr, cameraUBOBufferSize);
-		frameDataUBO = new VKUniformBuffer(&base, nullptr, frameUBOBufferSize);
-		instanceDataSSBO = new VKSSBO(&base, nullptr, 1024 * 512, BufferUsage::DYNAMIC);		// 512 kib	
+		cameraUBO = new VKBuffer(&base, nullptr, cameraUBOBufferSize, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
+		frameDataUBO = new VKBuffer(&base, nullptr, frameUBOBufferSize, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
+		instanceDataSSBO = new VKBuffer(&base, nullptr, 1024 * 512, BufferType::ShaderStorageBuffer, BufferUsage::DYNAMIC);
+		//instanceDataSSBO = new VKSSBO(&base, nullptr, 1024 * 512, BufferUsage::DYNAMIC);		// 512 kib	
 		//frameUBO.Create(&base, sizeof(FrameUBO) * MAX_FRAMES_IN_FLIGHT, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		Log::Print(LogLevel::LEVEL_INFO, "Min ubo offset alignment: %u\n", minUBOAlignment);
@@ -303,7 +303,7 @@ namespace Engine
 
 	Buffer *VKRenderer::CreateVertexBuffer(const void *data, unsigned int size, BufferUsage usage)
 	{
-		VKBuffer *vb = new VKBuffer(&base, data, size, usage);
+		VKBuffer *vb = new VKBuffer(&base, data, size, BufferType::VertexBuffer, usage);
 		vb->AddReference();
 		vertexBuffers.push_back(vb);
 
@@ -324,7 +324,8 @@ namespace Engine
 
 	Buffer *VKRenderer::CreateIndexBuffer(const void *data, unsigned int size, BufferUsage usage)
 	{
-		VKIndexBuffer *ib = new VKIndexBuffer(&base, data, size, usage);
+		//VKIndexBuffer *ib = new VKIndexBuffer(&base, data, size, usage);
+		VKBuffer* ib = new VKBuffer(&base, data, size, BufferType::IndexBuffer, usage);
 		ib->AddReference();
 		indexBuffers.push_back(ib);
 
@@ -345,7 +346,8 @@ namespace Engine
 
 	Buffer *VKRenderer::CreateUniformBuffer(const void *data, unsigned int size)
 	{
-		VKUniformBuffer *ubo = new VKUniformBuffer(&base, data, size);
+		//VKUniformBuffer *ubo = new VKUniformBuffer(&base, data, size);
+		VKBuffer* ubo = new VKBuffer(&base, data, size, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
 		ubo->AddReference();
 		ubos.push_back(ubo);
 		return ubo;
@@ -353,7 +355,8 @@ namespace Engine
 
 	Buffer *VKRenderer::CreateDrawIndirectBuffer(unsigned int size, const void *data)
 	{
-		VKDrawIndirectBuffer *buf = new VKDrawIndirectBuffer(&base, data, size);
+		//VKDrawIndirectBuffer *buf = new VKDrawIndirectBuffer(&base, data, size);
+		VKBuffer* buf = new VKBuffer(&base, data, size, BufferType::DrawIndirectBuffer, BufferUsage::DYNAMIC);
 		buf->AddReference();
 		drawIndirectBufs.push_back(buf);
 		return buf;
@@ -361,7 +364,8 @@ namespace Engine
 
 	Buffer *VKRenderer::CreateSSBO(unsigned int size, const void *data, unsigned int stride, BufferUsage usage)
 	{
-		VKSSBO *ssbo = new VKSSBO(&base, data, size, usage);
+		//VKSSBO *ssbo = new VKSSBO(&base, data, size, usage);
+		VKBuffer* ssbo = new VKBuffer(&base, data, size, BufferType::ShaderStorageBuffer, usage);
 		ssbo->AddReference();
 		ssbos.push_back(ssbo);
 		return ssbo;
@@ -534,7 +538,7 @@ namespace Engine
 
 		VKTexture2D *tex = new VKTexture2D(&base, path, params, storeTextureData);
 		tex->AddReference();
-		tex->Load(base.GetAllocator(), base.GetPhysicalDevice(), base.GetDevice());
+		tex->Load(&base);
 
 		textures[id] = tex;
 
@@ -557,8 +561,6 @@ namespace Engine
 			return textures[id];
 		}
 
-
-
 		return nullptr;
 	}
 
@@ -576,7 +578,7 @@ namespace Engine
 
 		VKTextureCube *tex = new VKTextureCube(faces, params);
 		tex->AddReference();
-		tex->Load(base.GetAllocator(), base.GetPhysicalDevice(), base.GetDevice());
+		tex->Load(&base);
 		textures[id] = tex;
 
 		base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -606,7 +608,7 @@ namespace Engine
 
 		VKTextureCube *tex = new VKTextureCube(path, params);
 		tex->AddReference();
-		tex->Load(base.GetAllocator(), base.GetPhysicalDevice(), base.GetDevice());
+		tex->Load(&base);
 		textures[id] = tex;
 
 		base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -852,7 +854,7 @@ namespace Engine
 	void VKRenderer::Submit(const RenderItem &renderItem)
 	{
 		const std::vector<Buffer*> &vbs = renderItem.mesh->vao->GetVertexBuffers();
-		VKIndexBuffer *ib = static_cast<VKIndexBuffer*>(renderItem.mesh->vao->GetIndexBuffer());
+		VKBuffer* ib = static_cast<VKBuffer*>(renderItem.mesh->vao->GetIndexBuffer());
 
 		std::vector<VkBuffer> vertexBuffers(vbs.size());
 		std::vector<VkDeviceSize> vbOffsets(vbs.size());
@@ -938,7 +940,7 @@ namespace Engine
 	void VKRenderer::SubmitIndirect(const RenderItem &renderItem, Buffer *indirectBuffer)
 	{
 		const std::vector<Buffer*> &vbs = renderItem.mesh->vao->GetVertexBuffers();
-		VKIndexBuffer *ib = static_cast<VKIndexBuffer*>(renderItem.mesh->vao->GetIndexBuffer());
+		VKBuffer* ib = static_cast<VKBuffer*>(renderItem.mesh->vao->GetIndexBuffer());
 
 		std::vector<VkBuffer> vertexBuffers(vbs.size());
 		std::vector<VkDeviceSize> vbOffsets(vbs.size());
@@ -964,7 +966,8 @@ namespace Engine
 			vkCmdPushConstants(cb, graphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, renderItem.materialDataSize, renderItem.materialData);
 		}
 
-		VKDrawIndirectBuffer *indBuffer = static_cast<VKDrawIndirectBuffer*>(indirectBuffer);
+		//VKDrawIndirectBuffer *indBuffer = static_cast<VKDrawIndirectBuffer*>(indirectBuffer);
+		VKBuffer* indBuffer = static_cast<VKBuffer*>(indirectBuffer);
 
 		if (ib)
 		{
@@ -1163,7 +1166,7 @@ namespace Engine
 
 		if (buffer->GetType() == BufferType::UniformBuffer)
 		{
-			VKUniformBuffer *ubo = static_cast<VKUniformBuffer*>(buffer);
+			VKBuffer *ubo = static_cast<VKBuffer*>(buffer);
 
 			VkDescriptorSetLayoutBinding b = {};
 			b.binding = binding;
@@ -1189,7 +1192,7 @@ namespace Engine
 		}
 		else if (buffer->GetType() == BufferType::ShaderStorageBuffer)
 		{
-			VKSSBO *ssbo = static_cast<VKSSBO*>(buffer);
+			VKBuffer* ssbo = static_cast<VKBuffer*>(buffer);
 
 			VkDescriptorSetLayoutBinding b = {};
 			b.binding = binding;
@@ -1215,7 +1218,7 @@ namespace Engine
 		}
 		else if (buffer->GetType()==BufferType::DrawIndirectBuffer)
 		{
-			VKDrawIndirectBuffer *indBuffer = static_cast<VKDrawIndirectBuffer*>(buffer);
+			VKBuffer*indBuffer = static_cast<VKBuffer*>(buffer);
 
 			VkDescriptorSetLayoutBinding b = {};
 			b.binding = binding;
@@ -1583,7 +1586,7 @@ namespace Engine
 
 			if (b->GetType() == BufferType::DrawIndirectBuffer)
 			{
-				VKDrawIndirectBuffer *buf = static_cast<VKDrawIndirectBuffer*>(b);
+				VKBuffer* buf = static_cast<VKBuffer*>(b);
 
 				if (barrier.buffers[i].readToWrite)
 				{
@@ -1602,7 +1605,7 @@ namespace Engine
 			}
 			else if (b->GetType() == BufferType::ShaderStorageBuffer)
 			{
-				VKSSBO *buf = static_cast<VKSSBO*>(b);
+				VKBuffer* buf = static_cast<VKBuffer*>(b);
 
 				if (barrier.buffers[i].readToWrite)
 				{
@@ -1820,7 +1823,7 @@ namespace Engine
 		vkCmdBindDescriptorSets(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &globalTexturesSet, 0, nullptr);
 
 		instanceDataOffset = 0;
-		mappedInstanceData = (char*)instanceDataSSBO->GetMappedPtr();
+		mappedInstanceData = (char*)instanceDataSSBO->Mapped();
 	}
 
 	void VKRenderer::Present()
@@ -2094,13 +2097,13 @@ namespace Engine
 
 		for (size_t i = 0; i < vertexBuffers.size(); i++)
 		{
-			VKBuffer *vb = vertexBuffers[i];
+			VKBuffer* vb = vertexBuffers[i];
 			vb->DisposeStagingBuffer();
 		}
 
 		for (size_t i = 0; i < indexBuffers.size(); i++)
 		{
-			VKIndexBuffer *ib = indexBuffers[i];
+			VKBuffer* ib = indexBuffers[i];
 			ib->DisposeStagingBuffer();
 		}
 
@@ -2560,8 +2563,8 @@ namespace Engine
 			base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, tex->GetMipLevels(), 0);
 		}
 
-		tex->CreateImageView(base.GetDevice());
-		tex->CreateSampler(base.GetDevice());
+		tex->CreateImageView();
+		tex->CreateSampler();
 	}
 
 	void VKRenderer::PrepareTexture3D(VKTexture3D *tex)
@@ -2680,7 +2683,7 @@ namespace Engine
 				write.dstBinding = static_cast<uint32_t>(j + info.matInst->textures.size());
 				write.dstSet = info.set;
 
-				VKSSBO *buffer = static_cast<VKSSBO*>(buf);
+				VKBuffer* buffer = static_cast<VKBuffer*>(buf);
 
 				VkDescriptorBufferInfo bufferInfo = {};
 				bufferInfo.buffer = buffer->GetBuffer();

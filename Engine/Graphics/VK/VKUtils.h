@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Graphics\MaterialInfo.h"
-#include "Graphics\Texture.h"
+#include "Graphics/MaterialInfo.h"
+#include "Graphics/Texture.h"
 
-#include <vulkan\vulkan.h>
+#include <vulkan/vulkan.h>
 
 #include <vector>
 

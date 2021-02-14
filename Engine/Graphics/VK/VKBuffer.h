@@ -11,13 +11,10 @@ namespace Engine
 	class VKBuffer : public Buffer
 	{
 	public:
-		VKBuffer();
-		VKBuffer(VKBase *context, const void *data, unsigned int size, BufferUsage usage);
-		VKBuffer(const void *data, unsigned int size, BufferUsage usage);
+		VKBuffer(VKBase *base, const void *data, unsigned int size, BufferType type, BufferUsage usage);
 		~VKBuffer();
-
-		void Create(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool exclusiveAlloc);
-		void Dispose(VkDevice device);
+		
+		void Dispose();
 		void DisposeStagingBuffer();
 
 		void BindTo(unsigned int bindingIndex) override;
@@ -25,14 +22,18 @@ namespace Engine
 
 		void Map();
 		void Unmap();
+		void Flush();
 
 		VkBuffer GetBuffer() const { return buffer; }
-		VkDeviceMemory GetDeviceMemory() const { return deviceAlloc.memory; }
+		VkDeviceMemory GetDeviceMemory() const { return alloc.memory; }
 		VkBuffer GetStagingBuffer() const { return stagingBuffer; }
 		VkDeviceMemory GetStagingDeviceMemory() const { return stagingAlloc.memory; }
 		void *Mapped() { return mapped; }
 		VkDeviceSize GetSize() const { return size; }
-		VkBufferUsageFlags GetUsage() const { return usage; }
+		VkBufferUsageFlags GetUsage() const { return vkUsage; }
+
+	private:
+		void Create(VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags properties, bool exclusiveAlloc);
 
 	private:
 		VkDevice device;
@@ -40,12 +41,11 @@ namespace Engine
 		VkBuffer buffer;
 		VkBuffer stagingBuffer;
 		
-		Allocation stagingAlloc;
-		Allocation deviceAlloc;
+		Allocation alloc;
+		Allocation stagingAlloc;	
 
-		VkDeviceSize size;
 		void *mapped;
-		VkBufferUsageFlags usage;
+		VkBufferUsageFlags vkUsage;
 		VkMemoryPropertyFlags memProps;
 	};
 }

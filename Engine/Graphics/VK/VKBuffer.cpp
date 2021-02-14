@@ -1,139 +1,217 @@
 #include "VKBuffer.h"
 
 #include "VKUtils.h"
-//#include "VKRenderer.h"
 #include "VKBase.h"
+#include "Program/Log.h"
 
 #include <iostream>
 
 namespace Engine
 {
-	VKBuffer::VKBuffer() : Buffer(BufferType::VertexBuffer)
+	VKBuffer::VKBuffer(VKBase *base, const void *data, unsigned int size, BufferType type, BufferUsage usage)
 	{
-		device = VK_NULL_HANDLE;
-		mapped = nullptr;
-		size = 0;
-		buffer = VK_NULL_HANDLE;
-		stagingBuffer = VK_NULL_HANDLE;
-		deviceAlloc = {};
-		stagingAlloc = {};
-	}
-
-	VKBuffer::VKBuffer(VKBase *context, const void *data, unsigned int size, BufferUsage usage) : Buffer(BufferType::VertexBuffer)
-	{
-		mapped = nullptr;
 		this->size = size;
+		this->usage = usage;
+		this->type = type;
+		mapped = nullptr;	
 		buffer = VK_NULL_HANDLE;
 		stagingBuffer = VK_NULL_HANDLE;
-		deviceAlloc = {};
+		alloc = {};
 		stagingAlloc = {};
+		memProps = {};		
+		vkUsage = 0;
+		device = base->GetDevice();		
+		allocator = base->GetAllocator();
 
-		VkDevice device = context->GetDevice();
-		this->device = device;
-		VkPhysicalDevice physicalDevice = context->GetPhysicalDevice();
-		allocator = context->GetAllocator();
+		VkPhysicalDevice physicalDevice = base->GetPhysicalDevice();
 
-		if (usage == BufferUsage::STATIC)
+		if (type == BufferType::VertexBuffer)
 		{
-			VkBufferCreateInfo bufferInfo = {};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = size;
-			bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		// Buffers can be owned by a specific queue family or be shared between multiple at the same time.
-																	// This will only be used from the graphics queue, so we use exclusive access.
-
-			if (vkCreateBuffer(device, &bufferInfo, nullptr, &stagingBuffer) != VK_SUCCESS)
+			if (usage == BufferUsage::STATIC)
 			{
-				std::cout << "Error -> Failed to create vertex buffer!\n";
+				VkBufferCreateInfo bufferInfo = {};
+				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+				bufferInfo.size = size;
+				bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+				bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+				if (vkCreateBuffer(device, &bufferInfo, nullptr, &stagingBuffer) != VK_SUCCESS)
+				{
+					std::cout << "Error -> Failed to create vertex buffer!\n";
+				}
+
+				VkMemoryRequirements memReqs;
+				vkGetBufferMemoryRequirements(device, stagingBuffer, &memReqs);
+
+				this->size = memReqs.size;
+
+				allocator->Allocate(stagingAlloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), false);
+
+				vkBindBufferMemory(device, stagingBuffer, stagingAlloc.memory, stagingAlloc.offset);			// If offset non-zero then it's required to be divisible by memReqs.alignment
+
+				void* mappedData;
+				vkMapMemory(device, stagingAlloc.memory, stagingAlloc.offset, stagingAlloc.size, 0, &mappedData);
+				memcpy(mappedData, data, size);
+				vkUnmapMemory(device, stagingAlloc.memory);
+
+				Create(physicalDevice, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
 			}
+			else if (usage == BufferUsage::DYNAMIC || usage == BufferUsage::STREAM)
+			{
+				if (data)
+				{
+					Create(physicalDevice, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
 
-			// Buffer memory requirements
-			VkMemoryRequirements memReqs;
-			vkGetBufferMemoryRequirements(device, stagingBuffer, &memReqs);
-
-			this->size = memReqs.size;
-
-			allocator->Allocate(stagingAlloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), false);
-
-			// Associate memory with the buffer
-			vkBindBufferMemory(device, stagingBuffer, stagingAlloc.memory, stagingAlloc.offset);			// If offset non-zero then it's required to be divisible by memReqs.alignment
-
-			void *mappedData;
-			vkMapMemory(device, stagingAlloc.memory, stagingAlloc.offset, stagingAlloc.size, 0, &mappedData);
-			memcpy(mappedData, data, size);
-			vkUnmapMemory(device, stagingAlloc.memory);		// Does not return a result as it can't fail
-
-
-			Create(allocator, physicalDevice, device, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+					Map();
+					Update(data, size, 0);
+					//Unmap();*/
+				}
+				else
+				{
+					Create(physicalDevice, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, true);
+					Map();
+				}
+			}
 		}
-		else if (usage == BufferUsage::DYNAMIC || usage == BufferUsage::STREAM)
+		else if (type == BufferType::IndexBuffer)
+		{
+			if (usage == BufferUsage::STATIC)
+			{
+				VkBufferCreateInfo bufferInfo = {};
+				bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+				bufferInfo.size = size;
+				bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+				bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+				if (vkCreateBuffer(device, &bufferInfo, nullptr, &stagingBuffer) != VK_SUCCESS)
+				{
+					Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create staging index buffer!\n");
+				}
+
+				VkMemoryRequirements memReqs;
+				vkGetBufferMemoryRequirements(device, stagingBuffer, &memReqs);
+
+				this->size = memReqs.size;
+
+				allocator->Allocate(stagingAlloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), false);
+
+				vkBindBufferMemory(device, stagingBuffer, stagingAlloc.memory, stagingAlloc.offset);			// If offset non-zero then it's required to be divisible by memReqs.alignment
+
+				void* mappedData;
+				vkMapMemory(device, stagingAlloc.memory, stagingAlloc.offset, stagingAlloc.size, 0, &mappedData);
+				memcpy(mappedData, data, size);
+				vkUnmapMemory(device, stagingAlloc.memory);
+
+				Create(physicalDevice, (VkDeviceSize)size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false);
+			}
+			else if (usage == BufferUsage::DYNAMIC || usage == BufferUsage::STREAM)
+			{
+				if (data)
+				{
+					Create(physicalDevice, (VkDeviceSize)size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+
+					Map();
+					Update(data, size, 0);
+					Unmap();
+				}
+				else
+				{
+					Create(physicalDevice, (VkDeviceSize)size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, false);
+					Map();
+				}
+			}
+		}
+		else if (type == BufferType::UniformBuffer)
 		{
 			if (data)
 			{
-				Create(allocator, physicalDevice, device, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+				Create(physicalDevice, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
 
 				Map();
 				Update(data, size, 0);
-				//Unmap(device);*/
+				Unmap();
 			}
 			else
 			{
-				Create(allocator, physicalDevice, device, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, true);
+				Create(physicalDevice, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, true);
 				Map();
 			}
 		}
-	}
+		else if (type == BufferType::StagingBuffer)
+		{
+			Create(physicalDevice, (VkDeviceSize)size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
+		}
+		else if (type == BufferType::DrawIndirectBuffer)
+		{
+			Create(physicalDevice, (VkDeviceSize)size, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, true);
 
-	VKBuffer::VKBuffer(const void *data, unsigned int size, BufferUsage usage) : Buffer(BufferType::VertexBuffer)
-	{
-		mapped = nullptr;
-		this->size = size;
+			if (data)
+			{
+				Map();
+				Update(data, size, 0);		// TODO: Use staging buffer for buffers that won't be updated on the cpu
+				Unmap();
+			}
+		}
+		else if (type == BufferType::ShaderStorageBuffer)
+		{
+			// IF DATA IS NOT NULL USE HOST_COHERENT. ADD STAGING BUFFER INSTEAD TO UPLOAD TO DEVICE_LOCAL
+			if (usage == BufferUsage::DYNAMIC || data != nullptr)
+			{
+				Create(physicalDevice, (VkDeviceSize)size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, true);
+				Map();
+				if (data)
+				{
+					Update(data, size, 0);		// TODO: Use staging buffer for buffers that won't be updated on the cpu
+					Unmap();
+				}
+			}
+			else if (usage == BufferUsage::STATIC)
+			{
+				Create(physicalDevice, (VkDeviceSize)size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, true);
+			}
+		}
 	}
 
 	VKBuffer::~VKBuffer()
 	{
-		Dispose(device);
+		Dispose();
 	}
 
-	void VKBuffer::Create(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool exclusiveAlloc)
+	void VKBuffer::Create(VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags properties, bool exclusiveAlloc)
 	{
-		this->usage = usage;
-		this->device = device;
-		this->allocator = allocator;
+		vkUsage = usageFlags;
 		memProps = properties;
 
 		VkBufferCreateInfo bufferInfo = {};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.size = size;
-		bufferInfo.usage = usage;
-		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;		// Buffers can be owned by a specific queue family or be shared between multiple at the same time.
-																// This will only be used from the graphics queue, so we use exclusive access.
+		bufferInfo.usage = usageFlags;
+		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 		if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
 		{
-			std::cout << "Error -> Failed to create vertex buffer!\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create buffer!\n");
+			return;
 		}
 
-		// Buffer memory requirements
 		VkMemoryRequirements memReqs;
 		vkGetBufferMemoryRequirements(device, buffer, &memReqs);
 
 		this->size = memReqs.size;
 
-		allocator->Allocate(deviceAlloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, properties), exclusiveAlloc);
+		allocator->Allocate(alloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, properties), exclusiveAlloc);
 
 		// Associate memory with the buffer
-		vkBindBufferMemory(device, buffer, deviceAlloc.memory, deviceAlloc.offset);			// If offset non-zero then it's required to be divisible by memReqs.alignment
+		vkBindBufferMemory(device, buffer, alloc.memory, alloc.offset);			// If offset non-zero then it's required to be divisible by memReqs.alignment
 	}
 
-	void VKBuffer::Dispose(VkDevice device)
+	void VKBuffer::Dispose()
 	{
-		if (device != VK_NULL_HANDLE)
+		if (buffer != VK_NULL_HANDLE)
 		{
 			vkDestroyBuffer(device, buffer, nullptr);
-			allocator->Free(deviceAlloc);
+			allocator->Free(alloc);
 		}
-		device = VK_NULL_HANDLE;
 	}
 
 	void VKBuffer::DisposeStagingBuffer()
@@ -152,37 +230,52 @@ namespace Engine
 
 	void VKBuffer::Update(const void *data, unsigned int size, int offset)
 	{
-		if ((memProps & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+		// If we have HOST_COHERENT we don't need to manually flush, otherwise we do
+		if ((memProps & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0)
 		{
 			void *ptr = (char*)mapped + offset;
 			memcpy(ptr, data, size);
 		}
-		else if ((memProps & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+		else
 		{
 			void *ptr = (char*)mapped + offset;
 			memcpy(ptr, data, size);
 
 			VkMappedMemoryRange memoryRange = {};
 			memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-			memoryRange.memory = deviceAlloc.memory;
-			//memoryRange.size = size;
+			memoryRange.memory = alloc.memory;
 			memoryRange.size = VK_WHOLE_SIZE;
-			memoryRange.offset = deviceAlloc.offset + static_cast<VkDeviceSize>(offset);
+			memoryRange.offset = alloc.offset + static_cast<VkDeviceSize>(offset);
+
 			vkFlushMappedMemoryRanges(device, 1, &memoryRange);
+
+			// We could store the mapped memory range and then the renderer would flush all of them
 		}	
 	}
 
 	void VKBuffer::Map()
 	{
-		vkMapMemory(device, deviceAlloc.memory, deviceAlloc.offset, deviceAlloc.size, 0, &mapped);
+		if (!mapped)
+			vkMapMemory(device, alloc.memory, alloc.offset, alloc.size, 0, &mapped);
 	}
 
 	void VKBuffer::Unmap()
 	{
 		if (mapped)
 		{
-			vkUnmapMemory(device, deviceAlloc.memory);		// Does not return a result as it can't fail
+			vkUnmapMemory(device, alloc.memory);
 			mapped = nullptr;
 		}
+	}
+
+	void VKBuffer::Flush()
+	{
+		VkMappedMemoryRange memoryRange = {};
+		memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+		memoryRange.memory = alloc.memory;
+		memoryRange.size = VK_WHOLE_SIZE;
+		memoryRange.offset = alloc.offset;
+
+		vkFlushMappedMemoryRanges(device, 1, &memoryRange);
 	}
 }

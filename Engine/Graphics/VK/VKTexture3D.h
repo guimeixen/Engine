@@ -8,7 +8,7 @@ namespace Engine
 	class VKTexture3D : public Texture
 	{
 	public:
-		VKTexture3D(VKBase *context, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params, const void* data);
+		VKTexture3D(VKBase *base, unsigned int width, unsigned int height, unsigned int depth, const TextureParams &params, const void* data);
 		~VKTexture3D();
 
 		void Bind(unsigned int slot) const override {}

@@ -1,7 +1,6 @@
 #include "VKVertexArray.h"
 
 #include "VKBuffer.h"
-#include "VKIndexBuffer.h"
 
 namespace Engine
 {
@@ -12,7 +11,7 @@ namespace Engine
 
 		if (indexBuffer)
 		{
-			if ((static_cast<VKIndexBuffer*>(indexBuffer)->GetUsage() & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) == VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+			if ((static_cast<VKBuffer*>(indexBuffer)->GetUsage() & VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
 				this->indexBuffer = indexBuffer;
 		}
 
@@ -29,7 +28,7 @@ namespace Engine
 
 		if (indexBuffer)
 		{
-			if ((static_cast<VKIndexBuffer*>(indexBuffer)->GetUsage() & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) == VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+			if ((static_cast<VKBuffer*>(indexBuffer)->GetUsage() & VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
 				this->indexBuffer = indexBuffer;
 		}
 

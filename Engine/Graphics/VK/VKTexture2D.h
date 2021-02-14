@@ -13,8 +13,8 @@ namespace Engine
 	{
 	public:
 		VKTexture2D();
-		VKTexture2D(VKBase *context, unsigned int width, unsigned int height, const TextureParams &params, const void *data);
-		VKTexture2D(VKBase *context, const std::string &path, const TextureParams &params, bool storeTextureData);
+		VKTexture2D(VKBase *base, unsigned int width, unsigned int height, const TextureParams &params, const void *data);
+		VKTexture2D(VKBase *base, const std::string &path, const TextureParams &params, bool storeTextureData);
 		~VKTexture2D();
 
 		void Bind(unsigned int slot) const override;
@@ -27,7 +27,7 @@ namespace Engine
 
 		void Clear() override;
 
-		void Load(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device);
+		void Load(VKBase* base);
 
 		void CreateColorAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params);
 		void CreateDepthStencilAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params, bool useInShader, bool useStencil);
@@ -35,8 +35,8 @@ namespace Engine
 		void Dispose();
 		void DisposeStagingBuffer();
 
-		void CreateImageView(VkDevice device);
-		void CreateSampler(VkDevice device);
+		void CreateImageView();
+		void CreateSampler();
 
 		VkBuffer GetStagingBuffer() const { if (stagingBuffer) return stagingBuffer->GetBuffer(); else return VK_NULL_HANDLE; }
 		VkImage GetImage() const { return image; }
@@ -53,8 +53,8 @@ namespace Engine
 		bool HasMipmaps() const { return mipmapsGenerated; }
 
 	private:
-		void CreateImage(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device);
-		void LoadPNGJPG(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device);
+		void CreateImage(VkPhysicalDevice physicalDevice);
+		void LoadPNGJPG(VKBase* base);
 
 	private:
 		VkDevice device;

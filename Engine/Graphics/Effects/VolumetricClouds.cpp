@@ -278,7 +278,6 @@ namespace Engine
 
 		frameCount++;
 		frameNumber = frameNumbers[frameCount % (cloudUpdateBlockSize * cloudUpdateBlockSize)];
-		//frameNumber = (frameNumber + 1) % (cloudUpdateBlockSize * cloudUpdateBlockSize);
 	}
 
 	glm::mat4 VolumetricClouds::GetJitterMatrix() const
