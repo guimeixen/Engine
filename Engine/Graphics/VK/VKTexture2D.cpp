@@ -99,9 +99,7 @@ namespace Engine
 					newData[counter++] = half_float::half_cast<half_float::half>(0.0f);
 				}
 
-				//stagingBuffer = new VKBuffer();
 				stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
-				//stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
 				stagingBuffer->Map();
 				stagingBuffer->Update(newData, (unsigned int)size, 0);
 				stagingBuffer->Unmap();
@@ -110,8 +108,6 @@ namespace Engine
 			}
 			else
 			{
-				//stagingBuffer = new VKBuffer();
-				//stagingBuffer->Create(allocator, context->GetPhysicalDevice(), device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
 				stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 				stagingBuffer->Map();
 				stagingBuffer->Update(data, (unsigned int)size, 0);

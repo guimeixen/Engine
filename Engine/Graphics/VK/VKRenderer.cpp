@@ -2129,6 +2129,7 @@ namespace Engine
 		}
 	}
 
+
 	void VKRenderer::CreateVertexInputState(const std::vector<VertexInputDesc> &descs, std::vector<VkVertexInputBindingDescription> &bindings, std::vector<VkVertexInputAttributeDescription> &attribs)
 	{
 		bindings.resize(descs.size());
@@ -2557,10 +2558,14 @@ namespace Engine
 					base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tex->GetMipLevels());
 			}
 		}
-		// Used as storage, so transition to GENERAL
 		else
 		{
-			base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, tex->GetMipLevels(), 0);
+			const TextureParams& params = tex->GetTextureParams();
+
+			if (params.usedAsStorageInGraphics || params.usedAsStorageInCompute)
+				base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, tex->GetMipLevels(), 0);
+			else
+				base.TransitionImageLayout(transferCommandBuffer, tex, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, tex->GetMipLevels(), 0);
 		}
 
 		tex->CreateImageView();
