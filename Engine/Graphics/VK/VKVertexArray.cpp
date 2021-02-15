@@ -13,6 +13,8 @@ namespace Engine
 		{
 			if ((static_cast<VKBuffer*>(indexBuffer)->GetUsage() & VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
 				this->indexBuffer = indexBuffer;
+
+			indexBuffer->AddReference();
 		}
 
 		vertexBuffer->AddReference();
@@ -30,6 +32,8 @@ namespace Engine
 		{
 			if ((static_cast<VKBuffer*>(indexBuffer)->GetUsage() & VK_BUFFER_USAGE_INDEX_BUFFER_BIT))
 				this->indexBuffer = indexBuffer;
+
+			indexBuffer->AddReference();
 		}
 
 		for (size_t i = 0; i < vertexBuffers.size(); i++)

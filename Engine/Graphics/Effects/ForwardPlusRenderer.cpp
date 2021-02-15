@@ -46,6 +46,11 @@ namespace Engine
 		opaqueLightIndexListSSBO = renderer->CreateSSBO(avgLightsPerTile * numTiles * sizeof(unsigned int), nullptr, sizeof(unsigned int), BufferUsage::STATIC);
 		opaqueLightIndexCounterSSBO = renderer->CreateSSBO(sizeof(unsigned int), nullptr, 0, BufferUsage::STATIC);
 
+		frustumsSSBO->AddReference();
+		lightListSSBO->AddReference();
+		opaqueLightIndexListSSBO->AddReference();
+		opaqueLightIndexCounterSSBO->AddReference();
+
 		TextureParams params = {};
 		params.filter = TextureFilter::NEAREST;
 		params.format = TextureFormat::RG;
@@ -96,6 +101,12 @@ namespace Engine
 			opaqueLightIndexListSSBO->RemoveReference();
 		if (lightGrid)
 			lightGrid->RemoveReference();
+
+		frustumsSSBO = nullptr;
+		lightListSSBO = nullptr;
+		opaqueLightIndexListSSBO = nullptr;
+		opaqueLightIndexCounterSSBO = nullptr;
+		lightGrid = nullptr;
 	}
 
 	void ForwardPlusRenderer::Resize(unsigned int width, unsigned int height)

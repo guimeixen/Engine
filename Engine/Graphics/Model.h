@@ -65,7 +65,7 @@ namespace Engine
 		void Deserialize(Serializer &s, Game *game, bool reload = false);
 
 		void AddReference() { refCount++; }
-		void RemoveReference() { refCount--; }
+		void RemoveReference() { if (refCount > 1) { refCount--; } else { delete this; } }
 		unsigned int GetRefCount() const { return refCount; }
 
 	protected:

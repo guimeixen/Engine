@@ -14,6 +14,7 @@ namespace Engine
 	ForwardRenderer::ForwardRenderer()
 	{
 		renderingPathType = RenderingPathType::FORWARD;
+		pointLightsUBO = nullptr;
 	}
 
 	void ForwardRenderer::Init(Game *game)
@@ -21,6 +22,7 @@ namespace Engine
 		RenderingPath::Init(game);
 
 		pointLightsUBO = renderer->CreateUniformBuffer(nullptr, sizeof(PointLights));
+		pointLightsUBO->AddReference();
 
 		SetupHDRPass();
 		SetupPostProcessPass();
@@ -37,6 +39,12 @@ namespace Engine
 
 	void ForwardRenderer::Dispose()
 	{
+		if (pointLightsUBO)
+		{
+			pointLightsUBO->RemoveReference();
+			pointLightsUBO = nullptr;
+		}
+
 		RenderingPath::Dispose();
 	}
 

@@ -60,7 +60,9 @@ namespace Engine
 
 		voxelTexture = renderer->CreateTexture3DFromData(VOXEL_RES, VOXEL_RES, VOXEL_RES, params, nullptr);
 		voxelsPositionsBuffer = renderer->CreateSSBO(VOXEL_RES * VOXEL_RES * VOXEL_RES * sizeof(glm::vec4), nullptr, sizeof(glm::vec4), BufferUsage::STATIC);
+		voxelsPositionsBuffer->AddReference();
 		indirectBuffer = renderer->CreateDrawIndirectBuffer(sizeof(cmd), &cmd);
+		indirectBuffer->AddReference();
 
 		SetupFillPositionsPass(frameGraph);
 		SetupMipMapPass(frameGraph);
@@ -102,14 +104,23 @@ namespace Engine
 	{
 		if (cube.vao)
 			delete cube.vao;
-		if (indirectBuffer)
-			indirectBuffer->RemoveReference();
-		if (voxelsPositionsBuffer)
-			voxelsPositionsBuffer->RemoveReference();
-		if (voxelTexture)
-			voxelTexture->RemoveReference();
 
-		Log::Print(LogLevel::LEVEL_INFO, "Disposing vctgi\n");
+		if (indirectBuffer)
+		{
+			indirectBuffer->RemoveReference();
+			indirectBuffer = nullptr;
+		}
+		if (voxelsPositionsBuffer)
+		{
+			voxelsPositionsBuffer->RemoveReference();
+			voxelsPositionsBuffer = nullptr;
+		}
+		if (voxelTexture)
+		{
+			voxelTexture->RemoveReference();
+			voxelTexture = nullptr;
+		}
+		Log::Print(LogLevel::LEVEL_INFO, "Disposed VCTGI\n");
 	}
 
 	void VCTGI::UpdateProjection(const glm::vec3 &camPos)

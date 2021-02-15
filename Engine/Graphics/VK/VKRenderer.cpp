@@ -2039,6 +2039,20 @@ namespace Engine
 		{
 			ubos[i]->RemoveReference();
 		}
+		for (size_t i = 0; i < drawIndirectBufs.size(); i++)
+		{
+			drawIndirectBufs[i]->RemoveReference();
+		}
+		for (size_t i = 0; i < ssbos.size(); i++)
+		{
+			ssbos[i]->RemoveReference();
+		}
+
+		vertexBuffers.clear();
+		indexBuffers.clear();
+		ubos.clear();
+		drawIndirectBufs.clear();
+		ssbos.clear();
 
 		if (cameraUBO)
 			delete cameraUBO;

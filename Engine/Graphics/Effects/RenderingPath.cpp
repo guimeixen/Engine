@@ -93,6 +93,7 @@ namespace Engine
 		}
 
 		mainLightUBO = renderer->CreateUniformBuffer(nullptr, sizeof(DirLightUBO));
+		mainLightUBO->AddReference();
 
 		// Slot 0 is reserved for the camera ubo and slot 1 for the instance/transform data ssbo
 		//renderer->AddBufferResourceToSlot(FRAME_UBO, frameUBO, PipelineStage::VERTEX | PipelineStage::GEOMETRY | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);
@@ -111,7 +112,10 @@ namespace Engine
 			delete quadMesh.vao;
 
 		if (mainLightUBO)
-			delete mainLightUBO;
+		{
+			mainLightUBO->RemoveReference();
+			mainLightUBO = nullptr;
+		}
 
 		frameGraph.Dispose();
 		font.Dispose();
