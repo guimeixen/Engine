@@ -186,7 +186,7 @@ namespace Engine
 		poolSize[0].descriptorCount = 7;
 
 		poolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSize[1].descriptorCount = 300;									// Good value? How to choose ? Right now is a random value
+		poolSize[1].descriptorCount = 320;									// Good value? How to choose ? Right now is a random value
 
 		poolSize[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 		poolSize[2].descriptorCount = 2;

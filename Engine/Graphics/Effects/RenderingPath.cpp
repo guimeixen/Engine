@@ -26,6 +26,8 @@ namespace Engine
 		debugSettings.enableVoxelVis = false;
 		debugSettings.enableDebugDraw = true;
 
+		debugMatData = {};
+
 		mainDirectionalLight = {};
 		mainDirectionalLight.intensity = 1.4f;
 		mainDirectionalLight.direction = glm::vec3(1.0f, 0.5f, -0.3f);

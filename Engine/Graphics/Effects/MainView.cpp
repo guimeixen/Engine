@@ -30,24 +30,6 @@ namespace Engine
 
 		enableUI = true;
 		wireframe = false;
-
-		/*Serializer s;
-		s.OpenForReading("Data/post_process.data");
-		if (s.IsOpen())
-		{
-			s.Read(mainDirectionalLight.direction);
-			s.Read(mainDirectionalLight.color);
-			s.Read(mainDirectionalLight.intensity);
-			s.Read(mainDirectionalLight.ambient);
-			s.Read(ppd.lightShaftsColor);
-			s.Read(ppd.lightShaftsIntensity);
-			s.Read(ppd.bloomIntensity);
-			s.Read(ppd.bloomThreshold);
-			s.Read(ppd.fogParams);
-			s.Read(ppd.fogInscatteringColor);
-			s.Read(ppd.lightInscatteringColor);
-			s.Close();
-		}*/
 	}
 
 	MainView::~MainView()
@@ -209,92 +191,6 @@ namespace Engine
 		ri.matInstance = quadMat;
 		ri.shaderPass = postProcPassID;
 		renderer->Submit(ri);*/
-
-
-
-
-		// AFTER UI
-
-		// Debug quad
-		/*if (debugSettings.enable)
-		{
-			debugMatData = {};
-
-			if (debugSettings.type == DebugType::CSM_SHADOW_MAP)
-			{
-				debugMatData.isShadowMap = 1;
-				if (debugMatInstance->textures[0] != csmFB->GetDepthTexture())
-				{
-					debugMatInstance->textures[0] = csmFB->GetDepthTexture();
-					renderer->UpdateMaterialInstance(debugMatInstance);
-				}
-			}
-			else if (debugSettings.type == DebugType::BRIGHT_PASS)
-			{
-				if (debugMatInstance->textures[0] != brightPassFB->GetColorTexture())
-				{
-					debugMatInstance->textures[0] = brightPassFB->GetColorTexture();
-					renderer->UpdateMaterialInstance(debugMatInstance);
-				}
-			}
-			else if (debugSettings.type == DebugType::REFLECTION)
-			{
-				if (debugMatInstance->textures[0] != reflectionFB->GetColorTexture())
-				{
-					debugMatInstance->textures[0] = reflectionFB->GetColorTexture();
-					renderer->UpdateMaterialInstance(debugMatInstance);
-				}
-			}
-			else if (debugSettings.type == DebugType::REFRACTION)
-			{
-				if (debugMatInstance->textures[0] != refractionFB->GetColorTexture())
-				{
-					debugMatInstance->textures[0] = refractionFB->GetColorTexture();
-					renderer->UpdateMaterialInstance(debugMatInstance);
-				}
-			}
-			
-			RenderItem ri = {};
-			//ri.mesh = &quadMesh;
-			ri.matInstance = debugMatInstance;
-			ri.shaderPass = 0;
-			ri.materialData = &debugMatData;
-			ri.materialDataSize = sizeof(DebugMaterialData);
-
-			renderer->Submit(ri);
-		}*/
-		/*
-		struct data
-		{
-		int isShadowMap;
-		int isVoxelTexture;
-		float voxelZSlice;
-		int mipLevel;
-		int voxelRes;
-		};
-
-		data d = {};
-
-		if (debugSettings.type == DebugType::CSM_SHADOW_MAP)
-		{
-		d.isShadowMap = 1;
-		debugMatInstance->textures[0] = csmInfo.rt->GetDepthTexture();
-		}
-		else if (debugSettings.type == DebugType::BRIGHT_PASS)
-		debugMatInstance->textures[0] = brightPassFBO->GetColorTexture();
-		else if (debugSettings.type == DebugType::REFLECTION)
-		debugMatInstance->textures[0] = reflectionFBO->GetColorTexture();
-		else if (debugSettings.type == DebugType::VOXEL_TEXTURE)
-		{
-		d.mipLevel = debugSettings.mipLevel;
-		d.voxelZSlice = (float)debugSettings.zSlice;
-		d.isVoxelTexture = 1;
-		d.voxelRes = 128 >> d.mipLevel;
-		debugMatInstance->textures[1] = vctgi.GetVoxelTexture();
-		}
-
-		renderer->Render(ri, &d, sizeof(d));
-		}*/
 	}
 
 	void MainView::GenerateLightning()

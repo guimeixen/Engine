@@ -180,5 +180,14 @@ namespace Engine
 		MaterialInstance *terrainEditMat;
 		bool isTerrainEditingEnabled = false;
 
+		// Debug
+		MaterialInstance* debugMat;
+		struct DebugMaterialData
+		{
+			//glm::vec2 translation;
+			//float scale;
+			int isShadowMap;
+		};
+		DebugMaterialData debugMatData;
 	};
 }

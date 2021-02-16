@@ -119,10 +119,11 @@ namespace Engine
 
 		instanceData.resize(2048 * 4);
 
-		viewUniformBuffer = new GLUniformBuffer(nullptr, sizeof(CameraUBO));
-		viewUniformBuffer->BindTo(CAMERA_UBO);
+		cameraUBO = new GLUniformBuffer(nullptr, sizeof(CameraUBO));
+		cameraUBO->BindTo(CAMERA_UBO);
 
-		//currentBinding = 2;
+		frameDataUBO = new GLUniformBuffer(nullptr, sizeof(FrameUBO));
+		frameDataUBO->BindTo(FRAME_UBO);
 
 		materialUBO = new GLUniformBuffer(nullptr, 128);
 		materialUBO->BindTo(MAT_PROPERTIES_UBO_BINDING);
@@ -155,11 +156,12 @@ namespace Engine
 		ubo.camPos = glm::vec4(camera->GetPosition(), 0.0f);
 		ubo.nearFarPlane = glm::vec2(camera->GetNearPlane(), camera->GetFarPlane());
 		
-		viewUniformBuffer->Update(&ubo, sizeof(ubo), 0);
+		cameraUBO->Update(&ubo, sizeof(ubo), 0);
 	}
 
 	void GLRenderer::UpdateFrameDataUBO(const FrameUBO& frameData)
 	{
+		frameDataUBO->Update(&frameData, sizeof(FrameUBO), 0);
 	}
 
 	VertexArray *GLRenderer::CreateVertexArray(const VertexInputDesc &desc, Buffer *vertexBuffer, Buffer *indexBuffer)
@@ -859,15 +861,16 @@ namespace Engine
 		}
 		materialInstances.clear();
 
-		if (viewUniformBuffer)
-		{
-			delete viewUniformBuffer;
-			viewUniformBuffer = nullptr;
-		}
+		if (cameraUBO)
+			delete cameraUBO;
+		if (frameDataUBO)
+			delete frameDataUBO;
 		if (materialUBO)
-		{
 			delete materialUBO;
-		}
+
+		cameraUBO = nullptr;
+		frameDataUBO = nullptr;
+		materialUBO = nullptr;
 
 		/*if (meshParamsUBO)
 		{

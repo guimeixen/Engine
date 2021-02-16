@@ -80,11 +80,6 @@ namespace Engine
 				models[i].model->RemoveReference();
 		}
 
-		for (auto it = uniqueModels.begin(); it != uniqueModels.end(); it++)
-		{
-			delete it->second;
-		}
-
 		for (size_t i = 0; i < animatedModels.size(); i++)
 		{
 			delete animatedModels[i];
@@ -984,8 +979,11 @@ namespace Engine
 		if (type == ModelType::PRIMITIVE_CUBE)
 		{
 			// Instead of always loading the mesh, reuse these meshes
+			// Add reference because we are reusing the vao, otherwise it would cause problems when deleting because various models use the same vao
 			if (!cubePrimitive.vao)
 				cubePrimitive = MeshDefaults::CreateCube(game->GetRenderer(), 0.5f);
+
+			cubePrimitive.vao->AddReference();
 
 			mesh = cubePrimitive;
 		}
@@ -993,6 +991,8 @@ namespace Engine
 		{
 			if (!spherePrimitive.vao)
 				spherePrimitive = MeshDefaults::CreateSphere(game->GetRenderer(), 0.5f);
+
+			spherePrimitive.vao->AddReference();
 
 			mesh = spherePrimitive;
 		}

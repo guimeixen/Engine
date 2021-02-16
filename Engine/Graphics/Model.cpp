@@ -51,8 +51,12 @@ namespace Engine
 		{
 			MeshMaterial &meshMat = meshesAndMaterials[i];
 
+			// Remove reference because one vao could be shared between models, eg. various cube primivite models will al use the cube vao so we don't repeat vertex and index buffers
 			if (meshMat.mesh.vao)
-				delete meshMat.mesh.vao;
+			{
+				meshMat.mesh.vao->RemoveReference();
+				meshMat.mesh.vao = nullptr;
+			}
 
 			for (size_t j = 0; j < meshMat.mat->textures.size(); j++)
 			{
@@ -135,6 +139,7 @@ namespace Engine
 			desc.attribs = { attribs[0], attribs[1], attribs[2] };
 
 			m.vao = renderer->CreateVertexArray(&desc, 1, { vb }, ib);
+			m.vao->AddReference();
 
 			MeshMaterial mm = {};
 			mm.mesh = m;

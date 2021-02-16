@@ -63,6 +63,7 @@ namespace Engine
 		renderer->UpdateMaterialInstance(downsample16MatInstance);
 		renderer->UpdateMaterialInstance(upsample8MatInstance);
 		renderer->UpdateMaterialInstance(upsample4MatInstance);
+		//renderer->UpdateMaterialInstance(debugMat);
 		if (fxaaMat)
 			renderer->UpdateMaterialInstance(fxaaMat);
 	}
@@ -210,6 +211,10 @@ namespace Engine
 			renderer->UpdateMaterialInstance(postProcMatInstance);
 			postProcPassID = postProcMatInstance->baseMaterial->GetShaderPassIndex("postProcessPass");
 
+			debugMat = renderer->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Materials/debug_mat.lua", quadMesh.vao->GetVertexInputDescs());
+			debugMat->textures[0] = csmFB->GetDepthTexture();
+			renderer->UpdateMaterialInstance(debugMat);
+
 			// Text
 			font.Init(this->renderer, this->game->GetScriptManager(), "Data/Resources/Textures/jorvik.fnt", "Data/Resources/Textures/jorvik.png");
 			font.Resize(width, height);
@@ -225,6 +230,8 @@ namespace Engine
 			postProcMatInstance->textures[0] = hdrFB->GetColorTextureByIndex(0);
 			postProcMatInstance->textures[1] = hdrFB->GetDepthTexture();
 			postProcMatInstance->textures[2] = upsampleFB[1]->GetColorTexture();
+
+			//debugMat->textures[0] = csmFB->GetDepthTexture();
 		});
 		postPass.OnExecute([this]() { PerformPostProcessPass(); });
 	}
@@ -254,6 +261,39 @@ namespace Engine
 		ri.shaderPass = postProcPassID;
 
 		renderer->Submit(ri);
+
+		// Debug quad
+		if (debugSettings.enable)
+		{
+			debugMatData.isShadowMap = 0;
+
+			if (debugSettings.type == DebugType::CSM_SHADOW_MAP)
+			{
+				debugMatData.isShadowMap = 1;
+				if (debugMat->textures[0] != csmFB->GetDepthTexture())
+				{
+					debugMat->textures[0] = csmFB->GetDepthTexture();
+					renderer->UpdateMaterialInstance(debugMat);
+				}
+			}
+			else if (debugSettings.type == DebugType::BRIGHT_PASS)
+			{
+				if (debugMat->textures[0] != brightPassFB->GetColorTexture())
+				{
+					debugMat->textures[0] = brightPassFB->GetColorTexture();
+					renderer->UpdateMaterialInstance(debugMat);
+				}
+			}
+
+			RenderItem ri = {};
+			ri.mesh = &quadMesh;
+			ri.matInstance = debugMat;
+			ri.shaderPass = postProcPassID;
+			ri.materialData = &debugMatData;
+			ri.materialDataSize = sizeof(DebugMaterialData);
+
+			renderer->Submit(ri);
+		}
 
 		// UI
 		if (enableUI)
@@ -309,5 +349,79 @@ namespace Engine
 			}
 			font.EndTextUpdate();
 		}
+
+		// AFTER UI
+
+		// Debug quad
+		if (debugSettings.enable)
+		{
+			/*debugMatData = {};
+
+			if (debugSettings.type == DebugType::CSM_SHADOW_MAP)
+			{
+				debugMatData.isShadowMap = 1;
+				if (debugMatInstance->textures[0] != csmFB->GetDepthTexture())
+				{
+					debugMatInstance->textures[0] = csmFB->GetDepthTexture();
+					renderer->UpdateMaterialInstance(debugMatInstance);
+				}
+			}
+			else if (debugSettings.type == DebugType::BRIGHT_PASS)
+			{
+				if (debugMatInstance->textures[0] != brightPassFB->GetColorTexture())
+				{
+					debugMatInstance->textures[0] = brightPassFB->GetColorTexture();
+					renderer->UpdateMaterialInstance(debugMatInstance);
+				}
+			}
+			else if (debugSettings.type == DebugType::REFLECTION)
+			{
+				if (debugMatInstance->textures[0] != reflectionFB->GetColorTexture())
+				{
+					debugMatInstance->textures[0] = reflectionFB->GetColorTexture();
+					renderer->UpdateMaterialInstance(debugMatInstance);
+				}
+			}
+			else if (debugSettings.type == DebugType::REFRACTION)*/
+
+			/*RenderItem ri = {};
+			ri.mesh = &quadMesh;
+			ri.matInstance = debugMat;
+			ri.shaderPass = postProcPassID;
+
+			renderer->Submit(ri);*/
+		}
+		/*
+		struct data
+		{
+		int isShadowMap;
+		int isVoxelTexture;
+		float voxelZSlice;
+		int mipLevel;
+		int voxelRes;
+		};
+
+		data d = {};
+
+		if (debugSettings.type == DebugType::CSM_SHADOW_MAP)
+		{
+		d.isShadowMap = 1;
+		debugMatInstance->textures[0] = csmInfo.rt->GetDepthTexture();
+		}
+		else if (debugSettings.type == DebugType::BRIGHT_PASS)
+		debugMatInstance->textures[0] = brightPassFBO->GetColorTexture();
+		else if (debugSettings.type == DebugType::REFLECTION)
+		debugMatInstance->textures[0] = reflectionFBO->GetColorTexture();
+		else if (debugSettings.type == DebugType::VOXEL_TEXTURE)
+		{
+		d.mipLevel = debugSettings.mipLevel;
+		d.voxelZSlice = (float)debugSettings.zSlice;
+		d.isVoxelTexture = 1;
+		d.voxelRes = 128 >> d.mipLevel;
+		debugMatInstance->textures[1] = vctgi.GetVoxelTexture();
+		}
+
+		renderer->Render(ri, &d, sizeof(d));
+		}*/
 	}
 }

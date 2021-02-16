@@ -89,7 +89,8 @@ namespace Engine
 
 	private:
 		unsigned int uboMinOffsetAlignment;
-		GLUniformBuffer *viewUniformBuffer = nullptr;
+		GLUniformBuffer *cameraUBO;
+		GLUniformBuffer *frameDataUBO;
 		GLUniformBuffer *materialUBO;
 
 		GLuint instanceDataSSBO;

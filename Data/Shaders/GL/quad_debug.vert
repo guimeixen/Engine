@@ -4,13 +4,11 @@ layout(location = 0) in vec4 posuv;
 
 layout (location = 0) out vec2 uv;
 
-layout(std140, binding = 1) uniform MaterialUBO
+/*layout(std140, binding = 1) uniform MaterialUBO
 {
 	float scale;
 	vec2 trans;
-};
-
-#include include/ubos.glsl
+};*/
 
 void main()
 {

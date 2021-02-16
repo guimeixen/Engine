@@ -141,6 +141,7 @@ namespace Engine
 
 			Mesh m = {};
 			m.vao = renderer->CreateVertexArray(desc, vb, ib);
+			m.vao->AddReference();
 			m.vertexOffset = 0;
 			m.indexCount = indices.size();
 			m.indexOffset = 0;
