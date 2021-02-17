@@ -2,6 +2,7 @@
 
 #include "VKBase.h"
 #include "Program/Log.h"
+#include "VKBuffer.h"
 #include "include/half.hpp"
 
 #include <iostream>
@@ -26,6 +27,7 @@ namespace Engine
 		addressMode = vkutils::GetAddressMode(params.wrap);
 		filter = vkutils::GetFilter(params.filter);
 		format = vkutils::GetFormat(params.internalFormat);
+		stagingBuffer = nullptr;
 
 		if (params.useMipmapping)
 		{
@@ -172,6 +174,14 @@ namespace Engine
 			delete stagingBuffer;
 			stagingBuffer = nullptr;
 		}
+	}
+
+	VkBuffer VKTexture3D::GetStagingBuffer() const
+	{
+		if (stagingBuffer)
+			return stagingBuffer->GetBuffer();
+		
+		return VK_NULL_HANDLE;
 	}
 
 	void VKTexture3D::CreateImage(VkPhysicalDevice physicalDevice)

@@ -3,6 +3,7 @@
 #include "VKUtils.h"
 #include "VKBase.h"
 #include "Program/Log.h"
+#include "Program/Utils.h"
 
 #include <iostream>
 
@@ -20,6 +21,7 @@ namespace Engine
 		stagingAlloc = {};
 		memProps = {};		
 		vkUsage = 0;
+		alignedSize = 0;
 		device = base->GetDevice();		
 		allocator = base->GetAllocator();
 
@@ -42,8 +44,6 @@ namespace Engine
 
 				VkMemoryRequirements memReqs;
 				vkGetBufferMemoryRequirements(device, stagingBuffer, &memReqs);
-
-				this->size = memReqs.size;
 
 				allocator->Allocate(stagingAlloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), false);
 
@@ -91,8 +91,6 @@ namespace Engine
 				VkMemoryRequirements memReqs;
 				vkGetBufferMemoryRequirements(device, stagingBuffer, &memReqs);
 
-				this->size = memReqs.size;
-
 				allocator->Allocate(stagingAlloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), false);
 
 				vkBindBufferMemory(device, stagingBuffer, stagingAlloc.memory, stagingAlloc.offset);			// If offset non-zero then it's required to be divisible by memReqs.alignment
@@ -123,6 +121,10 @@ namespace Engine
 		}
 		else if (type == BufferType::UniformBuffer)
 		{
+			// Align the size to min ubo offset alignment so we can use offsets
+			//unsigned int minUBOAlignment = (unsigned int)base->GetDeviceLimits().minUniformBufferOffsetAlignment;
+			//alignedSize = utils::Align(size, minUBOAlignment);
+
 			if (data)
 			{
 				Create(physicalDevice, static_cast<VkDeviceSize>(size), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, true);
@@ -197,7 +199,8 @@ namespace Engine
 		VkMemoryRequirements memReqs;
 		vkGetBufferMemoryRequirements(device, buffer, &memReqs);
 
-		this->size = memReqs.size;
+		//this->size = memReqs.size;
+		alignedSize = memReqs.size;
 
 		allocator->Allocate(alloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, properties), exclusiveAlloc);
 

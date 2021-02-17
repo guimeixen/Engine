@@ -1,9 +1,9 @@
 #include "VKTextureCube.h"
 
-#include "VKUtils.h"
 #include "VKBase.h"
+#include "VKBuffer.h"
 
-#include "include\gli\gli.hpp"
+#include "include/gli/gli.hpp"
 
 #include <iostream>
 
@@ -17,6 +17,7 @@ namespace Engine
 		this->type = TextureType::TEXTURE_CUBE;
 		faces.push_back(path);
 		this->params = params;
+		stagingBuffer = nullptr;
 
 		filter = vkutils::GetFilter(params.filter);
 		addressMode = vkutils::GetAddressMode(params.wrap);
@@ -33,6 +34,7 @@ namespace Engine
 		height = 0;
 		this->params = params;
 		this->type = TextureType::TEXTURE_CUBE;
+		stagingBuffer = nullptr;
 
 		filter = vkutils::GetFilter(params.filter);
 		addressMode = vkutils::GetAddressMode(params.wrap);
@@ -243,5 +245,12 @@ namespace Engine
 		{
 			std::cout << "Error -> Failed to create sampler!\n";
 		}
+	}
+	VkBuffer VKTextureCube::GetStagingBuffer() const
+	{
+		if (stagingBuffer)
+			return stagingBuffer->GetBuffer();
+
+		return VK_NULL_HANDLE;
 	}
 }

@@ -2,10 +2,11 @@
 
 #include "VKBase.h"
 #include "Program/Log.h"
+#include "VKBuffer.h"
 
-#include "include\gli\gli.hpp"
-#include "include\stb_image.h"
-#include "include\half.hpp"
+#include "include/gli/gli.hpp"
+#include "include/stb_image.h"
+#include "include/half.hpp"
 
 #include <iostream>
 
@@ -20,6 +21,7 @@ namespace Engine
 		isAttachment = false;
 		mipmapsGenerated = false;
 		data = nullptr;
+		stagingBuffer = nullptr;
 	}
 
 	VKTexture2D::VKTexture2D(VKBase *base, unsigned int width, unsigned int height, const TextureParams &params, const void *data)
@@ -39,6 +41,7 @@ namespace Engine
 		addressMode = vkutils::GetAddressMode(params.wrap);
 		filter = vkutils::GetFilter(params.filter);
 		format = vkutils::GetFormat(params.internalFormat);
+		stagingBuffer = nullptr;
 
 		device = base->GetDevice();
 
@@ -145,6 +148,7 @@ namespace Engine
 		aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 		sampler = VK_NULL_HANDLE;
 		format = vkutils::GetFormat(params.internalFormat);
+		stagingBuffer = nullptr;
 
 		device = base->GetDevice();
 		allocator = base->GetAllocator();
@@ -578,5 +582,12 @@ namespace Engine
 		{
 			std::cout << "Error -> Failed to create sampler!\n";
 		}
+	}
+	VkBuffer VKTexture2D::GetStagingBuffer() const
+	{
+		if (stagingBuffer)
+			return stagingBuffer->GetBuffer();
+
+		return VK_NULL_HANDLE;
 	}
 }

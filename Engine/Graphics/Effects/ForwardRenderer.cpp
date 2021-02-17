@@ -73,7 +73,8 @@ namespace Engine
 		RenderingPath::Render();
 
 		const PointLightUBO plUBO = game->GetLightManager().GetPointLightsUBO();
-		pointLightsUBO->Update(&plUBO, sizeof(plUBO), 0);
+		//pointLightsUBO->Update(&plUBO, sizeof(plUBO), 0);
+		renderer->UpdateUBO(pointLightsUBO, &plUBO, sizeof(plUBO), 0);
 
 
 		unsigned int queueIDs[] = { csmQueueID, csmQueueID, csmQueueID, voxelizationQueueID, opaqueQueueID, transparentQueueID, uiQueueID };
@@ -284,6 +285,22 @@ namespace Engine
 					renderer->UpdateMaterialInstance(debugMat);
 				}
 			}
+			else if (debugSettings.type == DebugType::REFLECTION)
+			{
+				if (debugMat->textures[0] != reflectionFB->GetColorTexture())
+				{
+					debugMat->textures[0] = reflectionFB->GetColorTexture();
+					renderer->UpdateMaterialInstance(debugMat);
+				}
+			}
+			else if (debugSettings.type == DebugType::REFRACTION)
+			{
+				if (debugMat->textures[0] != refractionFB->GetColorTexture())
+				{
+					debugMat->textures[0] = refractionFB->GetColorTexture();
+					renderer->UpdateMaterialInstance(debugMat);
+				}
+			}
 
 			RenderItem ri = {};
 			ri.mesh = &quadMesh;
@@ -353,44 +370,7 @@ namespace Engine
 		// AFTER UI
 
 		// Debug quad
-		if (debugSettings.enable)
-		{
-			/*debugMatData = {};
 
-			if (debugSettings.type == DebugType::CSM_SHADOW_MAP)
-			{
-				debugMatData.isShadowMap = 1;
-				if (debugMatInstance->textures[0] != csmFB->GetDepthTexture())
-				{
-					debugMatInstance->textures[0] = csmFB->GetDepthTexture();
-					renderer->UpdateMaterialInstance(debugMatInstance);
-				}
-			}
-			else if (debugSettings.type == DebugType::BRIGHT_PASS)
-			{
-				if (debugMatInstance->textures[0] != brightPassFB->GetColorTexture())
-				{
-					debugMatInstance->textures[0] = brightPassFB->GetColorTexture();
-					renderer->UpdateMaterialInstance(debugMatInstance);
-				}
-			}
-			else if (debugSettings.type == DebugType::REFLECTION)
-			{
-				if (debugMatInstance->textures[0] != reflectionFB->GetColorTexture())
-				{
-					debugMatInstance->textures[0] = reflectionFB->GetColorTexture();
-					renderer->UpdateMaterialInstance(debugMatInstance);
-				}
-			}
-			else if (debugSettings.type == DebugType::REFRACTION)*/
-
-			/*RenderItem ri = {};
-			ri.mesh = &quadMesh;
-			ri.matInstance = debugMat;
-			ri.shaderPass = postProcPassID;
-
-			renderer->Submit(ri);*/
-		}
 		/*
 		struct data
 		{
@@ -403,15 +383,6 @@ namespace Engine
 
 		data d = {};
 
-		if (debugSettings.type == DebugType::CSM_SHADOW_MAP)
-		{
-		d.isShadowMap = 1;
-		debugMatInstance->textures[0] = csmInfo.rt->GetDepthTexture();
-		}
-		else if (debugSettings.type == DebugType::BRIGHT_PASS)
-		debugMatInstance->textures[0] = brightPassFBO->GetColorTexture();
-		else if (debugSettings.type == DebugType::REFLECTION)
-		debugMatInstance->textures[0] = reflectionFBO->GetColorTexture();
 		else if (debugSettings.type == DebugType::VOXEL_TEXTURE)
 		{
 		d.mipLevel = debugSettings.mipLevel;

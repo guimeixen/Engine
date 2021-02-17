@@ -166,24 +166,21 @@ namespace Engine
 
 		singleFrameUBOAlignedSize = utils::Align(sizeof(FrameUBO), minUBOAlignment);
 
-		unsigned int cameraUBOBufferSize = singleCameraAlignedSize * MAX_CAMERAS * MAX_FRAMES_IN_FLIGHT;
-		unsigned int frameUBOBufferSize = utils::Align(sizeof(FrameUBO) * MAX_FRAMES_IN_FLIGHT, minUBOAlignment);
+		//unsigned int cameraUBOBufferSize = singleCameraAlignedSize * MAX_CAMERAS * MAX_FRAMES_IN_FLIGHT;
+		//unsigned int frameUBOBufferSize = utils::Align(sizeof(FrameUBO) * MAX_FRAMES_IN_FLIGHT, minUBOAlignment);
 
-		cameraUBOData = (glm::mat4*)malloc(size_t(cameraUBOBufferSize));
-	
-		cameraUBO = new VKBuffer(&base, nullptr, cameraUBOBufferSize, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
-		frameDataUBO = new VKBuffer(&base, nullptr, frameUBOBufferSize, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
-		instanceDataSSBO = new VKBuffer(&base, nullptr, 1024 * 512, BufferType::ShaderStorageBuffer, BufferUsage::DYNAMIC);
-		//instanceDataSSBO = new VKSSBO(&base, nullptr, 1024 * 512, BufferUsage::DYNAMIC);		// 512 kib	
-		//frameUBO.Create(&base, sizeof(FrameUBO) * MAX_FRAMES_IN_FLIGHT, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		// The buffer creation takes care of alignment
+		cameraUBO = new VKBuffer(&base, nullptr, singleCameraAlignedSize * MAX_CAMERAS * MAX_FRAMES_IN_FLIGHT, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
+		frameDataUBO = new VKBuffer(&base, nullptr, singleFrameUBOAlignedSize * MAX_FRAMES_IN_FLIGHT, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
+		instanceDataSSBO = new VKBuffer(&base, nullptr, 1024 * 512, BufferType::ShaderStorageBuffer, BufferUsage::DYNAMIC);				// 512 kib	
+
+		cameraUBOData = (glm::mat4*)malloc(size_t(cameraUBO->GetAlignedSize()));
 
 		Log::Print(LogLevel::LEVEL_INFO, "Min ubo offset alignment: %u\n", minUBOAlignment);
 
-		//currentBinding = 2;		// Camera use the 0 binding, Instance/Transform Data SSBO uses the 1 binding 
-
 		VkDescriptorPoolSize poolSize[5] = {};
 		poolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSize[0].descriptorCount = 7;
+		poolSize[0].descriptorCount = 9;
 
 		poolSize[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		poolSize[1].descriptorCount = 320;									// Good value? How to choose ? Right now is a random value
@@ -265,15 +262,15 @@ namespace Engine
 
 		VKBufferInfo cameraUBOInfo = {};
 		cameraUBOInfo.binding = CAMERA_UBO;
-		cameraUBOInfo.buffer = cameraUBO->GetBuffer();
+		cameraUBOInfo.buffer = cameraUBO;
 
 		VKBufferInfo instanceBufInfo = {};
 		instanceBufInfo.binding = INSTANCE_DATA_SSBO;
-		instanceBufInfo.buffer = instanceDataSSBO->GetBuffer();
+		instanceBufInfo.buffer = instanceDataSSBO;
 
 		VKBufferInfo frameUBOInfo = {};
 		frameUBOInfo.binding = FRAME_UBO;
-		frameUBOInfo.buffer = frameDataUBO->GetBuffer();
+		frameUBOInfo.buffer = frameDataUBO;
 
 		globalBuffersSetWrites.push_back(cameraUBOWrite);
 		globalBuffersSetWrites.push_back(instanceDataWrite);
@@ -346,8 +343,9 @@ namespace Engine
 
 	Buffer *VKRenderer::CreateUniformBuffer(const void *data, unsigned int size)
 	{
-		//VKUniformBuffer *ubo = new VKUniformBuffer(&base, data, size);
-		VKBuffer* ubo = new VKBuffer(&base, data, size, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
+		unsigned int alignedSize = utils::Align(size, base.GetDeviceLimits().minUniformBufferOffsetAlignment);
+
+		VKBuffer* ubo = new VKBuffer(&base, data, alignedSize * MAX_FRAMES_IN_FLIGHT, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
 		ubo->AddReference();
 		ubos.push_back(ubo);
 		return ubo;
@@ -721,6 +719,15 @@ namespace Engine
 	void VKRenderer::UpdateFrameDataUBO(const FrameUBO& frameData)
 	{
 		this->frameData = frameData;
+	}
+
+	void VKRenderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
+	{
+		VKBuffer* b = static_cast<VKBuffer*>(ubo);
+
+		b->Update(data, size, currentFrame * (b->GetAlignedSize() / MAX_FRAMES_IN_FLIGHT));
+
+		//ubo->Update(data, size, currentFrame * singleFrameUBOAlignedSize);
 	}
 
 	void VKRenderer::SetDefaultRenderTarget()
@@ -1185,7 +1192,7 @@ namespace Engine
 			globalBuffersSetWrites.push_back(write);			
 
 			VKBufferInfo info = {};
-			info.buffer = ubo->GetBuffer();
+			info.buffer = ubo;
 			info.binding = static_cast<unsigned int>(globalBuffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
@@ -1211,7 +1218,7 @@ namespace Engine
 			globalBuffersSetWrites.push_back(write);
 
 			VKBufferInfo info = {};
-			info.buffer = ssbo->GetBuffer();
+			info.buffer = ssbo;
 			info.binding = static_cast<unsigned int>(globalBuffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
@@ -1237,7 +1244,7 @@ namespace Engine
 			globalBuffersSetWrites.push_back(write);
 
 			VKBufferInfo info = {};
-			info.buffer = indBuffer->GetBuffer();
+			info.buffer = indBuffer;
 			info.binding = static_cast<unsigned int>(globalBuffersSetWrites.size() - 1);
 
 			bufferInfos.push_back(info);
@@ -1352,12 +1359,20 @@ namespace Engine
 			const VKBufferInfo& bi = bufferInfos[i];
 
 			VkDescriptorBufferInfo info = {};
-			info.buffer = bi.buffer;
+			info.buffer = bi.buffer->GetBuffer();
 			info.offset = 0;
 			info.range = VK_WHOLE_SIZE;
 
 			for (int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
 			{
+				VkWriteDescriptorSet& write = globalBuffersSetWrites[bi.binding];
+
+				if (write.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+				{
+					// Right now range is aligned, should we put the actual size?
+					info.range = VkDeviceSize(bi.buffer->GetSize() / MAX_FRAMES_IN_FLIGHT);
+					info.offset = VkDeviceSize(j * utils::Align(bi.buffer->GetSize() / MAX_FRAMES_IN_FLIGHT, base.GetDeviceLimits().minUniformBufferOffsetAlignment));
+				}			
 				if (bi.binding == CAMERA_UBO)
 				{
 					info.offset = VkDeviceSize(j * allCamerasAlignedSize);
@@ -1366,10 +1381,10 @@ namespace Engine
 				{
 					info.range = sizeof(FrameUBO);
 					info.offset = VkDeviceSize(j * singleFrameUBOAlignedSize);
-				}
-				
-				globalBuffersSetWrites[bi.binding].pBufferInfo = &info;
-				globalBuffersSetWrites[bi.binding].dstSet = frameResources[j].globalBuffersSet;
+				}				
+
+				write.pBufferInfo = &info;
+				write.dstSet = frameResources[j].globalBuffersSet;
 
 				vkUpdateDescriptorSets(base.GetDevice(), 1, &globalBuffersSetWrites[bi.binding], 0, nullptr);
 			}		
@@ -1907,7 +1922,10 @@ namespace Engine
 		submitInfo.pSignalSemaphores = &frameResources[currentFrame].renderFinishedSemaphore;
 		
 		if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, frameResources[currentFrame].frameFence) != VK_SUCCESS)
-			throw std::runtime_error("Failed to submit!\n");
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to submit!\n");
+			return;
+		}
 
 		
 		// Present
@@ -2142,7 +2160,6 @@ namespace Engine
 			}
 		}
 	}
-
 
 	void VKRenderer::CreateVertexInputState(const std::vector<VertexInputDesc> &descs, std::vector<VkVertexInputBindingDescription> &bindings, std::vector<VkVertexInputAttributeDescription> &attribs)
 	{

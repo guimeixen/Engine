@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Graphics\Texture.h"
-#include "VKBuffer.h"
-
-#include <vector>
+#include "Graphics/Texture.h"
+#include "VKAllocator.h"
 
 namespace Engine
 {
 	class VKBase;
+	class VKBuffer;
 
 	class VKTexture2D : public Texture
 	{
@@ -38,7 +37,7 @@ namespace Engine
 		void CreateImageView();
 		void CreateSampler();
 
-		VkBuffer GetStagingBuffer() const { if (stagingBuffer) return stagingBuffer->GetBuffer(); else return VK_NULL_HANDLE; }
+		VkBuffer GetStagingBuffer() const;
 		VkImage GetImage() const { return image; }
 		VkImageView GetImageView() const { return imageView; }
 		VkSampler GetSampler() const { return sampler; }
@@ -63,7 +62,7 @@ namespace Engine
 		uint32_t width;
 		uint32_t height;
 
-		VKBuffer *stagingBuffer = nullptr;
+		VKBuffer *stagingBuffer;
 
 		VkImage image;
 		VkImageView imageView;

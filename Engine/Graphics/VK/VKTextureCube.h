@@ -1,15 +1,13 @@
 #pragma once
 
-#include "Graphics\Texture.h"
-#include "VKBuffer.h"
-
-#include <vulkan\vulkan.h>
-
-#include <string>
-#include <vector>
+#include "Graphics/Texture.h"
+#include "VKAllocator.h"
 
 namespace Engine
 {
+	class VKBase;
+	class VKBuffer;
+
 	class VKTextureCube : public Texture
 	{
 	public:
@@ -34,7 +32,7 @@ namespace Engine
 		void CreateImageView(VkDevice device);
 		void CreateSampler(VkDevice device);
 
-		VkBuffer GetStagingBuffer() const { if (stagingBuffer) return stagingBuffer->GetBuffer(); else return VK_NULL_HANDLE; }
+		VkBuffer GetStagingBuffer() const;
 		VkImage GetImage() const { return image; }
 		VkImageView GetImageView() const { return imageView; }
 		VkSampler GetSampler() const { return sampler; }
@@ -59,7 +57,7 @@ namespace Engine
 		uint32_t height;
 		uint32_t mipLevels;
 
-		VKBuffer *stagingBuffer = nullptr;
+		VKBuffer *stagingBuffer;
 
 		VkImage image;
 		VkImageView imageView;

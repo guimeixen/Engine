@@ -8,5 +8,5 @@ void main()
 {
 	uv = vec2(posuv.z, 1.0 - posuv.w);
 	//gl_Position = vec4(posuv.x * scale + trans.x, posuv.y * scale + trans.y, 0.0, 1.0);
-	gl_Position = vec4(posuv.x, (posuv.y * 0.45 - 0.45) * -1.0, 1.0, 1.0);
+	gl_Position = vec4(posuv.x * 0.45 + 0.45, (posuv.y * 0.45 - 0.45) * -1.0, 1.0, 1.0);
 }

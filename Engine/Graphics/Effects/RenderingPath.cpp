@@ -222,7 +222,9 @@ namespace Engine
 			ubo.lightSpaceMatrix[2] = glm::transpose(ubo.lightSpaceMatrix[2]);
 			//ubo.lightSpaceMatrix[3] = glm::transpose(ubo.lightSpaceMatrix[3]);
 		}
-		mainLightUBO->Update(&ubo, sizeof(DirLightUBO), 0);
+		//mainLightUBO->Update(&ubo, sizeof(DirLightUBO), 0);
+		renderer->UpdateUBO(mainLightUBO, &ubo, sizeof(DirLightUBO), 0);
+
 
 
 		vctgi.UpdateProjection(mainCamera->GetPosition());

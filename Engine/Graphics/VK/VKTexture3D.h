@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Graphics\Texture.h"
-#include "VKBuffer.h"
+#include "Graphics/Texture.h"
+#include "VKAllocator.h"
 
 namespace Engine
 {
+	class VKBase;
+	class VKBuffer;
+
 	class VKTexture3D : public Texture
 	{
 	public:
@@ -25,7 +28,7 @@ namespace Engine
 		void Dispose();
 		void DisposeStagingBuffer();		
 
-		VkBuffer GetStagingBuffer() const { if (stagingBuffer) return stagingBuffer->GetBuffer(); else return VK_NULL_HANDLE; }
+		VkBuffer GetStagingBuffer() const;
 		VkImage GetImage() const { return image; }
 		VkImageView GetImageViewForAllMips() const { return imageViews[0]; }
 		VkImageView GetImageViewForMip(unsigned int mip) const { return imageViews[mip + 1]; }
@@ -50,14 +53,13 @@ namespace Engine
 		uint32_t height;
 		uint32_t depth;
 
-		VKBuffer *stagingBuffer = nullptr;
+		VKBuffer *stagingBuffer;
 
 		VkImage image;
 		
 		std::vector<VkImageView> imageViews;
 		VkDeviceSize size;
 		Allocation alloc;
-
 
 		VkSampler sampler;
 		VkFormat format;

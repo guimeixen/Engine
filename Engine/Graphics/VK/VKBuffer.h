@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics\Buffers.h"
+#include "Graphics/Buffers.h"
 #include "VKAllocator.h"
 
 namespace Engine
@@ -30,6 +30,7 @@ namespace Engine
 		VkDeviceMemory GetStagingDeviceMemory() const { return stagingAlloc.memory; }
 		void *Mapped() { return mapped; }
 		VkDeviceSize GetSize() const { return size; }
+		unsigned int GetAlignedSize() const { return alignedSize; }
 		VkBufferUsageFlags GetUsage() const { return vkUsage; }
 
 	private:
@@ -47,5 +48,7 @@ namespace Engine
 		void *mapped;
 		VkBufferUsageFlags vkUsage;
 		VkMemoryPropertyFlags memProps;
+
+		unsigned int alignedSize;
 	};
 }

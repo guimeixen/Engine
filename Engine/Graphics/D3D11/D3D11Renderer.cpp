@@ -240,6 +240,10 @@ namespace Engine
 	{
 	}
 
+	void D3D11Renderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
+	{
+	}
+
 	void D3D11Renderer::BeginFrame()
 	{
 	}
