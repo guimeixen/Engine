@@ -957,7 +957,7 @@ void EditorManager::HandleProjectCreation()
 				if (canCreateFolder)
 				{
 					curLevelDir = "Data/Levels/";
-					
+
 					if (!Engine::utils::DirectoryExists(curLevelDir))
 						Engine::utils::CreateDir(curLevelDir.c_str());
 
@@ -966,7 +966,7 @@ void EditorManager::HandleProjectCreation()
 					Engine::utils::CreateDir(curLevelDir.c_str());
 
 					game->AddScene("main");		// Add default main scene
-					game->Save(curLevelDir + '/', std::string(projectName));			
+					game->Save(curLevelDir + '/', std::string(projectName));
 
 					firstLevelSave = false;
 					needsProjectCreation = false;
@@ -990,44 +990,65 @@ void EditorManager::HandleProjectCreation()
 		{
 			if (ImGui::Selectable(folderInLevelFolder[i].c_str()))
 			{
-				std::strcpy(projectName, folderInLevelFolder[i].c_str());		// Make the current level name equal to the current folder name
-
-				std::string projectNameStr = folderInLevelFolder[i];
-				curLevelDir = "Data/Levels/" + projectNameStr;
-
 				std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-				game->Load(folderInLevelFolder[i]);
+				bool loaded = game->Load(folderInLevelFolder[i]);
 				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
 				auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Level load time: %lld ms\n", duration);
 
-				assetsBrowserWindow.SetFiles(curLevelDir);
-
-				currentScene = game->GetCurrentSceneId();
-
-				const std::vector<Engine::Scene> &scenes = game->GetScenes();
-				if (scenes.size() > 0)
+				if (!loaded)
 				{
-					const std::string &name = game->GetScenes()[currentScene].name;
-
-					Engine::Serializer s(game->GetFileManager());
-					s.OpenForReading(curLevelDir + "/" + name + ".names");
-					if (s.IsOpen())
-						editorNameManager.Deserialize(s);
-					s.Close();
+					displayProjectLoadErrorPopup = true;
+					ImGui::OpenPopup("Incompatible project!");
 				}
+				else
+				{
+					std::strcpy(projectName, folderInLevelFolder[i].c_str());		// Make the current level name equal to the current folder name
 
-				aiWindow.Update();
+					std::string projectNameStr = folderInLevelFolder[i];
+					curLevelDir = "Data/Levels/" + projectNameStr;
 
-				needsLoading = false;
-				firstLevelSave = false;
-				needsProjectCreation = false;
-				isProjectOpen = true;
-				projectJustLoaded = true;
+					assetsBrowserWindow.SetFiles(curLevelDir);
+
+					currentScene = game->GetCurrentSceneId();
+
+					const std::vector<Engine::Scene>& scenes = game->GetScenes();
+					if (scenes.size() > 0)
+					{
+						const std::string& name = game->GetScenes()[currentScene].name;
+
+						Engine::Serializer s(game->GetFileManager());
+						s.OpenForReading(curLevelDir + "/" + name + ".names");
+						if (s.IsOpen())
+							editorNameManager.Deserialize(s);
+						s.Close();
+					}
+
+					aiWindow.Update();
+
+					needsLoading = false;
+					firstLevelSave = false;
+					needsProjectCreation = false;
+					isProjectOpen = true;
+					projectJustLoaded = true;
+				}
 			}
 		}
 
+		if (displayProjectLoadErrorPopup)
+		{
+			ImGui::OpenPopup("Incompatible project!");
+			if (ImGui::BeginPopupModal("Incompatible project!", nullptr, ImGuiWindowFlags_NoResize))
+			{
+				if (ImGui::Button("OK", ImVec2(200, 0)))
+				{
+					displayProjectLoadErrorPopup = false;
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
+		}
 		ImGui::EndPopup();
 	}
 }

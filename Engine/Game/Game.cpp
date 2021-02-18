@@ -5,6 +5,7 @@
 #include "Program/Input.h"
 #include "Program/Log.h"
 #include "Program/FileManager.h"
+#include "Program/Version.h"
 
 #include "Physics/RigidBody.h"
 #include "Physics/Collider.h"
@@ -44,7 +45,7 @@ namespace Engine
 		terrain = nullptr;
 		debugDrawManager = nullptr;
 		renderingPath = nullptr;
-
+		
 		shouldShutdown = false;
 		sceneChanged = false;
 		sceneChangedScript = false;
@@ -313,6 +314,10 @@ namespace Engine
 			Serializer s(fileManager);
 			s.OpenForWriting();
 
+			s.Write(MAJOR_VERSION);
+			s.Write(MINOR_VERSION);
+			s.Write(PATCH_VERSION);
+
 			entityManager.Serialize(s);
 			transformManager.Serialize(s);
 			lightManager.Serialize(s);
@@ -398,33 +403,30 @@ namespace Engine
 		this->projectName = projectName;
 		projectDir = projectFolder;
 
-		// Save the proj file first
-		std::ofstream projFile(projectFolder + '/' + projectName + ".proj");
+		Serializer s(fileManager);
+		s.OpenForWriting();
 
-		if (!projFile.is_open())
-		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Failed to open project file for saving!\n");
-			return false;
-		}
+		s.Write(MAJOR_VERSION);
+		s.Write(MINOR_VERSION);
+		s.Write(PATCH_VERSION);
 
-		// Save the current scene post process file
-		//mainView->SavePostProcessFile(projectFolder + '/' + scenes[currentScene].name + "_pp.data");
-
-		glm::vec3 pos = editorCam.GetPosition();
-		projFile << "curScene=" << currentScene << '\n';
+		s.Write(currentScene);
+		
+		s.Write(scenes.size());
 		for (size_t i = 0; i < scenes.size(); i++)
 		{
-			projFile << "scene=" << scenes[i].name << '\n';
-
+			s.Write(scenes[i].name);
 		}
-		projFile << "pos=" << pos.x << ' ' << pos.y << ' ' << pos.z << '\n';
-		projFile << "farPlane=" << editorCam.GetFarPlane() << '\n';
-		projFile << "pitch=" << editorCam.GetPitch() << '\n';
-		projFile << "yaw=" << editorCam.GetYaw() << '\n';
-		glm::vec2 gridCenter = aiSystem.GetAStarGrid().GetGridCenter();
-		projFile << "aiGridCenter=" << gridCenter.x << ' ' << gridCenter.y << '\n';
-		projFile << "aiShowGrid=" << aiSystem.GetShowGrid() << '\n';
-		projFile.close();
+
+		s.Write(editorCam.GetPosition());
+		s.Write(editorCam.GetFarPlane());
+		s.Write(editorCam.GetPitch());
+		s.Write(editorCam.GetYaw());
+		s.Write(aiSystem.GetAStarGrid().GetGridCenter());
+		s.Write(aiSystem.GetShowGrid());
+
+		s.Save(projectFolder + '/' + projectName + ".proj");
+		s.Close();
 
 		return true;
 	}
@@ -434,83 +436,68 @@ namespace Engine
 		this->projectName = projectName;
 		projectDir = "Data/Levels/" + projectName + '/';
 
-		std::ifstream projFile = fileManager->OpenForReading(projectDir + projectName + ".proj");
-
-		if (!projFile.is_open())
-		{
-			Log::Print(LogLevel::LEVEL_ERROR, "ERROR -> Failed to load project file: %s\n", projectName.c_str());
-			return false;
-		}
-
-		// Load the proj file first
-		//std::ifstream projFile(projectDir + projectName + ".proj");
-
-		std::string line;
-		glm::vec3 position;	
-
 		glm::vec2 gridCenter;
 		bool showGrid = false;
-		std::string sceneNameTemp;
-		//DirLight mainLight;
 
-		while (std::getline(projFile, line))
+		Serializer s(fileManager);
+		s.OpenForReading(projectDir + projectName + ".proj");
+		if (s.IsOpen())
 		{
-			if (line.substr(0, 9) == "curScene=")
-			{
-				currentScene = std::stoi(line.substr(9));
-				previousSceneId = currentScene;
-			}
-			else if (line.substr(0, 6) == "scene=")
-			{
-				Scene s = {};
-				s.name = line.substr(6);
-				scenes.push_back(s);
-			}
-			else if (line.substr(0, 4) == "pos=")
-			{
-				std::istringstream ss(line.substr(4));
-				ss >> position.x >> position.y >> position.z;
+			unsigned int major, minor, patch = 0;
+			s.Read(major);
+			s.Read(minor);
+			s.Read(patch);
 
-				editorCam.SetPosition(position);
-				fpsCamera->SetPosition(position);
-			}
-			else if (line.substr(0, 9) == "farPlane=")
+			if (major != MAJOR_VERSION || minor != MINOR_VERSION)
 			{
-				float farPlane = std::stof(line.substr(9));
-				editorCam.SetFarPlane(farPlane);
-				fpsCamera->SetFarPlane(farPlane);
+				s.Close();
+				return false;
 			}
-			else if (line.substr(0, 6) == "pitch=")
+
+			s.Read(currentScene);
+			previousSceneId = currentScene;
+
+			unsigned int sceneCount = 0;
+			s.Read(sceneCount);
+			scenes.resize(static_cast<size_t>(sceneCount));
+			for (size_t i = 0; i < scenes.size(); i++)
 			{
-				float pitch = std::stof(line.substr(6));
-				editorCam.SetPitch(pitch);
-				fpsCamera->SetPitch(pitch);
+				Scene scene = {};
+				s.Read(scene.name);
+				scenes[i] = scene;
 			}
-			else if (line.substr(0, 4) == "yaw=")
-			{
-				float yaw = std::stof(line.substr(4));
-				editorCam.SetYaw(yaw);
-				fpsCamera->SetYaw(yaw);
-			}
-			else if (line.substr(0, 13) == "aiGridCenter=")
-			{
-				std::istringstream ss(line.substr(13));
-				ss >> gridCenter.x >> gridCenter.y;
-			}
-			else if (line.substr(0, 11) == "aiShowGrid=")
-			{
-				int show = std::stoi(line.substr(11));
-				if (show == 1)
-					showGrid = true;
-				else
-					showGrid = false;
-			}
+
+			glm::vec3 tempVec;
+			float temp;
+
+			s.Read(tempVec);
+			editorCam.SetPosition(tempVec);
+			fpsCamera->SetPosition(tempVec);
+
+			s.Read(temp);
+
+			editorCam.SetFarPlane(temp);
+			fpsCamera->SetFarPlane(temp);
+
+			s.Read(temp);
+
+			editorCam.SetPitch(temp);
+			fpsCamera->SetPitch(temp);
+
+			s.Read(temp);
+
+			editorCam.SetYaw(temp);
+			fpsCamera->SetYaw(temp);
+
+			s.Read(gridCenter);
+			s.Read(showGrid);
 		}
+		s.Close();
 
 		if (currentScene < 0 || currentScene >= (int)scenes.size())
 			return false;
 
-		
+
 		//aiSystem.Init(this);
 		aiSystem.GetAStarGrid().SetGridCenter(gridCenter);
 		aiSystem.SetShowGrid(showGrid);
@@ -545,15 +532,23 @@ namespace Engine
 		s.OpenForReading("Data/Levels/" + projectName + "/" + sceneName + ".bin");
 		if (s.IsOpen())
 		{
-			entityManager.Deserialize(s);
-			transformManager.Deserialize(s);
-			lightManager.Deserialize(s);
-			modelManager.Deserialize(s);
-			particleManager.Deserialize(s);
-			soundManager.Deserialize(s);
-			scriptManager.Deserialize(s);
-			physicsManager.Deserialize(s);
-			uiManager.Deserialize(s);
+			unsigned int major, minor, patch = 0;
+			s.Read(major);
+			s.Read(minor);
+			s.Read(patch);
+
+			if (major == MAJOR_VERSION && minor == MINOR_VERSION)
+			{
+				entityManager.Deserialize(s);
+				transformManager.Deserialize(s);
+				lightManager.Deserialize(s);
+				modelManager.Deserialize(s);
+				particleManager.Deserialize(s);
+				soundManager.Deserialize(s);
+				scriptManager.Deserialize(s);
+				physicsManager.Deserialize(s);
+				uiManager.Deserialize(s);
+			}
 		}
 		else
 		{

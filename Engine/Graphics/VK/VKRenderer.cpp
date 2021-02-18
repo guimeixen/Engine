@@ -1369,7 +1369,9 @@ namespace Engine
 
 				if (write.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
 				{
-					// Right now range is aligned, should we put the actual size?
+					// The range is aligned, we can't actually use the other bytes anyway
+					// If we use an actual range of 120, the aligned range will be 256. If we use an offset we would have to start at 256
+					// and the part between 120->256 can't be used, so it doesn't matter if the range is 120 or 256
 					info.range = VkDeviceSize(bi.buffer->GetSize() / MAX_FRAMES_IN_FLIGHT);
 					info.offset = VkDeviceSize(j * utils::Align(bi.buffer->GetSize() / MAX_FRAMES_IN_FLIGHT, base.GetDeviceLimits().minUniformBufferOffsetAlignment));
 				}			

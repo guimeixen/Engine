@@ -131,6 +131,7 @@ private:
 	bool showUnsavedWarning = false;
 	bool projectJustLoaded = false;
 	bool isProjectOpen = false;
+	bool displayProjectLoadErrorPopup = false;
 
 	ImVec2 availableSize;
 	ImVec2 gameViewSize;

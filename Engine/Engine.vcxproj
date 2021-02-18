@@ -245,6 +245,7 @@
     <ClInclude Include="Program\Serializer.h" />
     <ClInclude Include="Program\StringID.h" />
     <ClInclude Include="Program\Utils.h" />
+    <ClInclude Include="Program\Version.h" />
     <ClInclude Include="Program\Window.h" />
     <ClInclude Include="Graphics\VertexArray.h" />
     <ClInclude Include="Graphics\Effects\ProjectedGridWater.h" />
