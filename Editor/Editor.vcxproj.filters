@@ -389,6 +389,9 @@
     <ClCompile Include="..\Engine\GPU.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="..\Engine\Program\Version.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">

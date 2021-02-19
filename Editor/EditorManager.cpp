@@ -494,7 +494,7 @@ void EditorManager::OnFocus()
 	if (game->GetState() == Engine::GameState::STOPPED)
 	{
 		// Update script properties when we gain focus of the window because we might add/remove some of them on the script file and by doing this we update it on the editor
-		game->GetScriptManager().ReloadAll(); 
+		game->GetScriptManager().ReloadAll();
 	}
 }
 
@@ -1000,7 +1000,6 @@ void EditorManager::HandleProjectCreation()
 				if (!loaded)
 				{
 					displayProjectLoadErrorPopup = true;
-					ImGui::OpenPopup("Incompatible project!");
 				}
 				else
 				{

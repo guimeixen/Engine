@@ -8,6 +8,7 @@
 #include "Game\UI\UIManager.h"
 #include "Utils.h"
 #include "Input.h"
+#include "Version.h"
 
 namespace Engine
 {
@@ -33,7 +34,7 @@ namespace Engine
 			Log::Print(LogLevel::LEVEL_INFO, "GLFW successfuly initialized\n");
 		}
 
-		//glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+		std::string windowTitle = "Engine v" + std::string(GetVersionString());
 
 		if (api == GraphicsAPI::OpenGL)
 		{
@@ -41,19 +42,22 @@ namespace Engine
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 			//glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-			window = glfwCreateWindow(width, height, "Game", nullptr, nullptr);
+			window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
 			glfwMakeContextCurrent(window);
 		}
 		else if (api == GraphicsAPI::Vulkan)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			window = glfwCreateWindow(width, height, "Game", nullptr, nullptr);
+			window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
 		}
 		else if (api == GraphicsAPI::D3D11)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			window = glfwCreateWindow(width, height, "Game", nullptr, nullptr);
+			window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
 		}
+
+		
+		glfwSetWindowTitle(window, windowTitle.c_str());
 
 		glfwSetWindowPos(window, 100, 50);
 

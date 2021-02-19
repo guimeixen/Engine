@@ -276,6 +276,7 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Program\Random.cpp" />
     <ClCompile Include="..\Engine\Program\Serializer.cpp" />
     <ClCompile Include="..\Engine\Program\Utils.cpp" />
+    <ClCompile Include="..\Engine\Program\Version.cpp" />
     <ClCompile Include="..\Engine\Program\Window.cpp" />
     <ClCompile Include="..\Engine\Sound\SoundSource.cpp" />
     <ClCompile Include="..\Engine\stb.cpp" />

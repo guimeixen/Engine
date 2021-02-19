@@ -2022,6 +2022,10 @@ namespace Engine
 		}
 	}
 
+	void VKRenderer::ReloadShaders()
+	{
+	}
+
 	void VKRenderer::Dispose()
 	{
 		VkDevice device = base.GetDevice();
