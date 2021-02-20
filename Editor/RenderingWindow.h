@@ -3,6 +3,7 @@
 #include "EditorWindow.h"
 
 #include <string>
+#include <vector>
 
 class RenderingWindow : public EditorWindow
 {

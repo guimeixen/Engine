@@ -2,6 +2,9 @@
 
 #include "EditorWindow.h"
 
+#include <string>
+#include <vector>
+
 class AssetsBrowserWindow : public EditorWindow
 {
 public:

@@ -1,7 +1,6 @@
 #include "ProjectedGridWater.h"
 
 #include "Graphics/MeshDefaults.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/Material.h"

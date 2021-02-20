@@ -1,7 +1,7 @@
 #pragma once
 
-#include "include\glew\glew.h"
-#include "Graphics\Buffers.h"
+#include "include/glew/glew.h"
+#include "Graphics/Buffers.h"
 
 namespace Engine
 {

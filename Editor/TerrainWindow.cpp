@@ -1,18 +1,17 @@
 #include "TerrainWindow.h"
 
-#include "Game\Game.h"
-#include "Graphics\Material.h"
-#include "Graphics\Texture.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Renderer.h"
-#include "Graphics\Model.h"
-#include "Graphics\VertexArray.h"
+#include "Game/Game.h"
+#include "Graphics/Material.h"
+#include "Graphics/Texture.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Model.h"
+#include "Graphics/VertexArray.h"
 #include "EditorManager.h"
-#include "Program\Utils.h"
+#include "Program/Utils.h"
 #include "Commands.h"
 
-#include "imgui\imgui.h"
-#include "imgui\imgui_dock.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_dock.h"
 
 #include <iostream>
 

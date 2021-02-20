@@ -2,7 +2,6 @@
 
 #include "Game/Game.h"
 #include "Graphics/Texture.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/MeshDefaults.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Renderer.h"

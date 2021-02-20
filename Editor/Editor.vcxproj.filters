@@ -335,9 +335,6 @@
     <ClCompile Include="..\Engine\Graphics\ResourcesLoader.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Graphics\Shader.cpp">
-      <Filter>Engine</Filter>
-    </ClCompile>
     <ClCompile Include="..\Engine\Graphics\Texture.cpp">
       <Filter>Engine</Filter>
     </ClCompile>

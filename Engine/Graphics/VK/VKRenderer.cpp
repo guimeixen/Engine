@@ -4,11 +4,11 @@
 #include "VKTexture2D.h"
 #include "VKTexture3D.h"
 #include "VKTextureCube.h"
-#include "Graphics/ResourcesLoader.h"
 #include "VKShader.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
 #include "Graphics/VertexArray.h"
+#include "Graphics/ResourcesLoader.h"
 #include "VKBuffer.h"
 #include "VKVertexArray.h"
 
@@ -343,7 +343,7 @@ namespace Engine
 
 	Buffer *VKRenderer::CreateUniformBuffer(const void *data, unsigned int size)
 	{
-		unsigned int alignedSize = utils::Align(size, base.GetDeviceLimits().minUniformBufferOffsetAlignment);
+		unsigned int alignedSize = utils::Align(size, static_cast<unsigned int>(base.GetDeviceLimits().minUniformBufferOffsetAlignment));
 
 		VKBuffer* ubo = new VKBuffer(&base, data, alignedSize * MAX_FRAMES_IN_FLIGHT, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
 		ubo->AddReference();
@@ -377,68 +377,68 @@ namespace Engine
 		return fb;
 	}
 
-	Shader *VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		unsigned int id = SID(vertexName + fragmentName + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new VKShader(id, vertexName, fragmentName, defines);
-		shaders[id] = shader;
+		ShaderProgram *shader = new VKShader(id, vertexName, fragmentName, defines);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* VKRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		return CreateShader(vertexName, fragmentName, descs, blendState);
 	}
 
-	Shader *VKRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
+	ShaderProgram* VKRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
 	{
 		unsigned int id = SID(vertexPath + geometryPath + fragmentPath + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new VKShader(id, vertexPath, geometryPath, fragmentPath, defines);
-		shaders[id] = shader;
+		ShaderProgram* shader = new VKShader(id, vertexPath, geometryPath, fragmentPath, defines);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *VKRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs)
+	ShaderProgram* VKRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs)
 	{
 		return CreateShaderWithGeometry(vertexPath, geometryPath, fragmentPath, "", descs);
 	}
 
-	Shader *VKRenderer::CreateComputeShader(const std::string &computePath, const std::string &defines)
+	ShaderProgram* VKRenderer::CreateComputeShader(const std::string &computePath, const std::string &defines)
 	{
 		unsigned int id = SID(computePath + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new VKShader(id, computePath, defines);
-		shaders[id] = shader;
+		ShaderProgram* shader = new VKShader(id, computePath, defines);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *VKRenderer::CreateComputeShader(const std::string &computePath)
+	ShaderProgram* VKRenderer::CreateComputeShader(const std::string &computePath)
 	{
 		return CreateComputeShader(computePath, "");
 	}
@@ -1373,7 +1373,7 @@ namespace Engine
 					// If we use an actual range of 120, the aligned range will be 256. If we use an offset we would have to start at 256
 					// and the part between 120->256 can't be used, so it doesn't matter if the range is 120 or 256
 					info.range = VkDeviceSize(bi.buffer->GetSize() / MAX_FRAMES_IN_FLIGHT);
-					info.offset = VkDeviceSize(j * utils::Align(bi.buffer->GetSize() / MAX_FRAMES_IN_FLIGHT, base.GetDeviceLimits().minUniformBufferOffsetAlignment));
+					info.offset = VkDeviceSize(j * utils::Align(static_cast<unsigned int>(bi.buffer->GetSize()) / MAX_FRAMES_IN_FLIGHT, static_cast<unsigned int>(base.GetDeviceLimits().minUniformBufferOffsetAlignment)));
 				}			
 				if (bi.binding == CAMERA_UBO)
 				{
@@ -2032,7 +2032,7 @@ namespace Engine
 
 		vkDeviceWaitIdle(device);
 
-		for (auto it = shaders.begin(); it != shaders.end(); it++)
+		for (auto it = shaderPrograms.begin(); it != shaderPrograms.end(); it++)
 		{
 			delete it->second;
 		}

@@ -1,15 +1,13 @@
 #pragma once
 
-#include "Graphics\Shader.h"
-#include "Graphics\VertexTypes.h"
+#include "Graphics/Shader.h"
+#include "Graphics/VertexTypes.h"
 
 #include <d3d11_1.h>
 
-#include <string>
-
 namespace Engine
 {
-	class D3D11Shader : public Shader
+	class D3D11Shader : public ShaderProgram
 	{
 	public:
 		D3D11Shader(ID3D11Device *device, unsigned int id, const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs);
@@ -20,6 +18,9 @@ namespace Engine
 		void Bind(ID3D11DeviceContext *context);
 		void BindCompute(ID3D11DeviceContext *context);
 		void UnbindGeometry(ID3D11DeviceContext *context);
+
+		void Reload() override;
+		bool CheckIfModified() override;
 
 		bool HasGeometry() const { return geometryShader != nullptr; }
 		bool HasCompute() const { return computeShader != nullptr; }

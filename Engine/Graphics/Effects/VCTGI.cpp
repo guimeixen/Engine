@@ -1,9 +1,7 @@
 #include "VCTGI.h"
 
 #include "Graphics/Renderer.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/MeshDefaults.h"
-#include "Graphics/Buffers.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Camera/Camera.h"
 #include "Graphics/Material.h"

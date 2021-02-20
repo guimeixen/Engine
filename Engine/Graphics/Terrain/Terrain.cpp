@@ -2,7 +2,6 @@
 
 #include "Program/Log.h"
 #include "Graphics/Material.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Buffers.h"

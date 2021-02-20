@@ -1,12 +1,11 @@
 #include "AnimationWindow.h"
 
-#include "Game\Game.h"
+#include "Game/Game.h"
 #include "EditorManager.h"
-#include "Program\Input.h"
-#include "Graphics\ResourcesLoader.h"
+#include "Program/Input.h"
 
-#include "imgui\imgui_dock.h"
-#include "imgui\imconfig.h"
+#include "imgui/imgui_dock.h"
+#include "imgui/imconfig.h"
 
 #include <iostream>
 

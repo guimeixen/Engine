@@ -6,7 +6,6 @@
 #include "Program/Log.h"
 #include "Program/Allocator.h"
 #include "Graphics/VertexArray.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/Material.h"
 #include "Graphics/MeshDefaults.h"
 

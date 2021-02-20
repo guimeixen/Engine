@@ -9,7 +9,7 @@ namespace Engine
 	class Material;
 	class Texture;
 	class Frustum;
-	class Shader;
+	class ShaderProgram;
 
 	struct Viewport
 	{
@@ -45,7 +45,7 @@ namespace Engine
 
 	struct ShaderPass
 	{
-		Shader *shader;
+		ShaderProgram* shader;
 		BlendState blendState;
 		DepthStencilState depthStencilState;
 		RasterizerState rasterizerState;

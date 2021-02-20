@@ -17,7 +17,6 @@
 #include "Physics/RigidBody.h"
 #include "Physics/Collider.h"
 
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/Texture.h"
 #include "Graphics/ParticleSystem.h"
 #include "Graphics/Animation/AnimatedModel.h"

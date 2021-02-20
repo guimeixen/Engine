@@ -1,40 +1,39 @@
 #include "ObjectWindow.h"
 
-#include "Game\Game.h"
-#include "Game\UI\Button.h"
-#include "Game\UI\StaticText.h"
-#include "Game\UI\Image.h"
-#include "Game\UI\EditText.h"
+#include "Game/Game.h"
+#include "Game/UI/Button.h"
+#include "Game/UI/StaticText.h"
+#include "Game/UI/Image.h"
+#include "Game/UI/EditText.h"
 
-#include "Graphics\ParticleSystem.h"
-#include "Graphics\Model.h"
-#include "Graphics\Material.h"
-#include "Graphics\Animation\AnimatedModel.h"
-#include "Graphics\Renderer.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\VertexArray.h"
-#include "Graphics\Effects\MainView.h"
+#include "Graphics/ParticleSystem.h"
+#include "Graphics/Model.h"
+#include "Graphics/Material.h"
+#include "Graphics/Animation/AnimatedModel.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/VertexArray.h"
+#include "Graphics/Effects/MainView.h"
 
-#include "Sound\SoundSource.h"
+#include "Sound/SoundSource.h"
 
-#include "Physics\Trigger.h"
-#include "Physics\RigidBody.h"
-#include "Physics\Collider.h"
+#include "Physics/Trigger.h"
+#include "Physics/RigidBody.h"
+#include "Physics/Collider.h"
 
-#include "Program\Input.h"
-#include "Program\Utils.h"
+#include "Program/Input.h"
+#include "Program/Utils.h"
 
-#include "AI\AIObject.h"
+#include "AI/AIObject.h"
 
 #include "EditorManager.h"
 #include "AssimpLoader.h"
 
-#include <include\glm\gtc\matrix_transform.hpp>
-#include <include\glm\gtc\type_ptr.hpp>
+#include <include/glm/gtc/matrix_transform.hpp>
+#include <include/glm/gtc/type_ptr.hpp>
 
-#include "imgui\imgui.h"
-#include "imgui\imgui_dock.h"
-#include "imgui\imconfig.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_dock.h"
+#include "imgui/imconfig.h"
 
 #include <iostream>
 #include <filesystem>

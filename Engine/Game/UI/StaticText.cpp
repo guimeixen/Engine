@@ -1,7 +1,6 @@
 #include "StaticText.h"
 
 #include "Game/Game.h"
-#include "Graphics/Effects/MainView.h"
 
 #include <iostream>
 

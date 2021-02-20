@@ -536,6 +536,15 @@ namespace Engine
 			context->GSSetShader(nullptr, nullptr, 0);
 	}
 
+	void D3D11Shader::Reload()
+	{
+	}
+
+	bool D3D11Shader::CheckIfModified()
+	{
+		return false;
+	}
+
 	HRESULT D3D11Shader::CompileShaderFromFile(const wchar_t *path, LPCSTR entryPoint, LPCSTR shaderModel, ID3DBlob **blobOut)
 	{
 		HRESULT hr = S_OK;

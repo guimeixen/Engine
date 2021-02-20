@@ -2,14 +2,19 @@
 
 #include "RendererStructs.h"
 
+#include <string>
+
 namespace Engine
 {
-	class Shader
+	class ShaderProgram
 	{
 	public:
-		virtual ~Shader() {}
+		virtual ~ShaderProgram() {}
 
-		virtual void Use() const;
-		virtual void Unuse() const;
+		virtual void Reload() = 0;
+		virtual bool CheckIfModified() = 0;
+
+	protected:
+		std::string defines;
 	};
 }

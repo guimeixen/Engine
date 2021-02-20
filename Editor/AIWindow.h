@@ -2,6 +2,8 @@
 
 #include "EditorWindow.h"
 
+#include "include/glm/glm.hpp"
+
 class AIWindow : public EditorWindow
 {
 public:

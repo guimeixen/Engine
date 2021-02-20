@@ -2,12 +2,10 @@
 
 #include "Graphics/Shader.h"
 #include "Program/Log.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/Material.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Buffers.h"
 #include "GLVertexArray.h"
-#include "Program/Input.h"
 #include "GLVertexBuffer.h"
 #include "GLIndexBuffer.h"
 #include "GLShader.h"
@@ -16,6 +14,7 @@
 #include "GLTexture2D.h"
 #include "GLTexture3D.h"
 #include "GLTextureCube.h"
+#include "GLUniformBuffer.h"
 
 #include "Program/Utils.h"
 #include "Program/StringID.h"
@@ -210,67 +209,68 @@ namespace Engine
 		return fb;
 	}
 
-	Shader *GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		unsigned int id = SID(vertexName + fragmentName + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new GLShader(defines, vertexName, fragmentName);
-		shaders[id] = shader;
+		ShaderProgram* shader = new GLShader(defines, vertexName, fragmentName);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* GLRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		return CreateShader(vertexName, fragmentName, "", descs, blendState);
 	}
 
-	Shader *GLRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
+	ShaderProgram* GLRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
 	{
 		unsigned int id = SID(vertexPath + geometryPath + fragmentPath + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new GLShader(defines, vertexPath, geometryPath, fragmentPath);
-		shaders[id] = shader;
+		ShaderProgram* shader = new GLShader(defines, vertexPath, geometryPath, fragmentPath);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *GLRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs)
+	ShaderProgram* GLRenderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs)
 	{
 		return CreateShaderWithGeometry(vertexPath, geometryPath, fragmentPath, "", descs);
 	}
 
-	Shader *GLRenderer::CreateComputeShader(const std::string &computePath, const std::string &defines)
+	ShaderProgram* GLRenderer::CreateComputeShader(const std::string &computePath, const std::string &defines)
 	{
 		unsigned int id = SID(computePath + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new GLShader(defines, computePath);
-		shaders[id] = shader;
+		ShaderProgram* shader = new GLShader(defines, computePath);
+		shaderPrograms[id] = shader;
+
 		return shader;
 	}
 
-	Shader *GLRenderer::CreateComputeShader(const std::string &computePath)
+	ShaderProgram* GLRenderer::CreateComputeShader(const std::string &computePath)
 	{
 		return CreateComputeShader(computePath, "");
 	}
@@ -850,7 +850,7 @@ namespace Engine
 
 	void GLRenderer::Dispose()
 	{
-		for (auto it = shaders.begin(); it != shaders.end(); it++)
+		for (auto it = shaderPrograms.begin(); it != shaderPrograms.end(); it++)
 		{
 			delete it->second;
 		}

@@ -1,8 +1,5 @@
 #include "Utils.h"
 
-#include "Graphics/ResourcesLoader.h"
-#include "Graphics/Material.h"
-#include "Physics/RigidBody.h"
 #include "Program/Log.h"
 
 #include "include/glm/gtx/quaternion.hpp"

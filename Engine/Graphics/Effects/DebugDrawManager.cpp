@@ -1,7 +1,6 @@
 #include "DebugDrawManager.h"
 
 #include "Graphics/MeshDefaults.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/Material.h"
 #include "Graphics/Buffers.h"
 #include "Graphics/VertexArray.h"

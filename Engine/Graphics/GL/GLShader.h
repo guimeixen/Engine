@@ -1,15 +1,14 @@
 #pragma once
 
-#include "Graphics\Shader.h"
+#include "Graphics/Shader.h"
 
-#include "include\glew\glew.h"
+#include "include/glew/glew.h"
 
 #include <map>
-#include <string>
 
 namespace Engine
 {
-	class GLShader : public Shader
+	class GLShader : public ShaderProgram
 	{
 	public:
 		GLShader(const std::string &defines, const std::string &vertexName, const std::string &fragmentName);
@@ -17,9 +16,10 @@ namespace Engine
 		GLShader(const std::string &defines, const std::string &computePath);
 		~GLShader();
 
-		void Use() const;
-		void Unuse() const;
 		unsigned int GetProgram() const { return program; }
+
+		void Reload() override;
+		bool CheckIfModified() override;
 
 		void SetModelMatrix(const glm::mat4 &matrix);
 		void SetInstanceDataOffset(int offset);

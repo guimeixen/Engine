@@ -1,36 +1,36 @@
 #include "EditorManager.h"
 
-#include "Game\Game.h"
-#include "Game\UI\UIManager.h"
+#include "Game/Game.h"
+#include "Game/UI/UIManager.h"
 
-#include "Program\Input.h"
-#include "Program\Utils.h"
-#include "Program\Log.h"
-#include "Program\Serializer.h"
+#include "Program/Input.h"
+#include "Program/Utils.h"
+#include "Program/Log.h"
+#include "Program/Serializer.h"
 
-#include "Graphics\Renderer.h"
-#include "Graphics\Model.h"
-#include "Graphics\Material.h"
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Effects\MainView.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Model.h"
+#include "Graphics/Material.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Effects/MainView.h"
 
-#include "Physics\RigidBody.h"
+#include "Physics/RigidBody.h"
 
-#include <GLFW\glfw3.h>
+#include <GLFW/glfw3.h>
 
-#include <include\glm\gtc\matrix_transform.hpp>
+#include <include/glm/gtc/matrix_transform.hpp>
 
-#include "imgui\imgui_dock.h"
-#include "imgui\imgui_impl_glfw.h"
-#include "imgui\imgui_impl_opengl3.h"
-#include "imgui\imgui_impl_vulkan.h"
-#include "Graphics\VK\VKRenderer.h"
+#include "imgui/imgui_dock.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
+#include "imgui/imgui_impl_vulkan.h"
+#include "Graphics/VK/VKRenderer.h"
 
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
-#include "GLFW\glfw3native.h"
-#include "imgui\imgui_impl_dx11.h"
-#include "Graphics\D3D11\D3D11Renderer.h"
+#include "GLFW/glfw3native.h"
+#include "imgui/imgui_impl_dx11.h"
+#include "Graphics/D3D11/D3D11Renderer.h"
 #include <Windows.h>
 #endif
 

@@ -7,10 +7,8 @@
 
 namespace Engine
 {
-	class Shader;
 	class Material;
 	class Renderer;
-	struct MaterialInstance;
 
 	struct MaterialRefInfo
 	{

@@ -1,13 +1,16 @@
 #pragma once
 
 #include "EditorWindow.h"
-#include "Game\EntityManager.h"
 #include "EditorNameManager.h"
 
-#include "imgui\imgui.h"
+#include "imgui/imgui.h"
 
 #include <string>
-#include <vector>
+
+namespace Engine
+{
+	class TransformManager;
+}
 
 class Gizmo;
 

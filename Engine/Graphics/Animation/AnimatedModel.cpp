@@ -1,6 +1,5 @@
 #include "AnimatedModel.h"
 
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/VertexArray.h"
 #include "Graphics/Buffers.h"
 #include "Graphics/Renderer.h"

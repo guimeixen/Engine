@@ -42,12 +42,12 @@ namespace Engine
 		Buffer *CreateSSBO(unsigned int size, const void *data, unsigned int stride, BufferUsage usage) override;
 		Framebuffer *CreateFramebuffer(const FramebufferDesc &desc) override;
 
-		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)  override;
-		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
-		Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) override;
-		Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) override;
-		Shader *CreateComputeShader(const std::string &computePath, const std::string &defines) override;
-		Shader *CreateComputeShader(const std::string &computePath) override;
+		ShaderProgram* CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)  override;
+		ShaderProgram* CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
+		ShaderProgram* CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) override;
+		ShaderProgram* CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) override;
+		ShaderProgram* CreateComputeShader(const std::string &computePath, const std::string &defines) override;
+		ShaderProgram* CreateComputeShader(const std::string &computePath) override;
 
 		MaterialInstance *CreateMaterialInstance(ScriptManager &scriptManager, const std::string &matInstPath, const std::vector<VertexInputDesc> &inputDescs) override;
 		MaterialInstance *CreateMaterialInstanceFromBaseMat(ScriptManager &scriptManager, const std::string &baseMatPath, const std::vector<VertexInputDesc> &inputDescs) override;

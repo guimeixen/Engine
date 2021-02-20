@@ -95,12 +95,12 @@ namespace Engine
 		virtual Buffer *CreateSSBO(unsigned int size, const void *data, unsigned int stride, BufferUsage usage) = 0;
 		virtual Framebuffer *CreateFramebuffer(const FramebufferDesc &desc) = 0;
 
-		virtual Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) = 0;
-		virtual Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) = 0;
-		virtual Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) = 0;
-		virtual Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) = 0;
-		virtual Shader *CreateComputeShader(const std::string &defines, const std::string &computePath) = 0;
-		virtual Shader *CreateComputeShader(const std::string &computePath) = 0;
+		virtual ShaderProgram* CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) = 0;
+		virtual ShaderProgram* CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) = 0;
+		virtual ShaderProgram* CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) = 0;
+		virtual ShaderProgram* CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) = 0;
+		virtual ShaderProgram* CreateComputeShader(const std::string &defines, const std::string &computePath) = 0;
+		virtual ShaderProgram* CreateComputeShader(const std::string &computePath) = 0;
 
 		virtual MaterialInstance *CreateMaterialInstance(ScriptManager &scriptManager, const std::string &matInstPath, const std::vector<VertexInputDesc> &inputDescs) = 0;
 		virtual MaterialInstance *CreateMaterialInstanceFromBaseMat(ScriptManager &scriptManager, const std::string &baseMatPath, const std::vector<VertexInputDesc> &inputDescs) = 0;
@@ -188,7 +188,7 @@ namespace Engine
 
 		std::vector<RenderQueueGenerator*> renderQueueGenerators;
 		std::vector<MaterialInstance*> materialInstances;
-		std::map<unsigned int, Shader*> shaders;
+		std::map<unsigned int, ShaderProgram*> shaderPrograms;
 		std::map<unsigned int, Texture*> textures;
 
 		std::string globalDefines;

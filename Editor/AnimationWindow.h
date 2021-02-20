@@ -1,10 +1,10 @@
 #pragma once
 
 #include "EditorWindow.h"
-#include "Program\Serializer.h"
-#include "Graphics\Animation\AnimatedModel.h"
+#include "Program/Serializer.h"
+#include "Graphics/Animation/AnimatedModel.h"
 
-#include "imgui\imgui.h"
+#include "imgui/imgui.h"
 
 #include <string>
 

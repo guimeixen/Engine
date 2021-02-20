@@ -1,7 +1,6 @@
 #include "Model.h"
 
 #include "VertexTypes.h"
-#include "ResourcesLoader.h"
 #include "Material.h"
 #include "VertexArray.h"
 #include "Buffers.h"

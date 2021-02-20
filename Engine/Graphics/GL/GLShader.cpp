@@ -362,14 +362,13 @@ namespace Engine
 		startIndexLoc = glGetUniformLocation(program, "startIndexLoc");
 	}
 
-	void GLShader::Use() const
+	void GLShader::Reload()
 	{
-		glUseProgram(program);
 	}
 
-	void GLShader::Unuse() const
+	bool GLShader::CheckIfModified()
 	{
-		glUseProgram(0);
+		return false;
 	}
 
 	void GLShader::SetModelMatrix(const glm::mat4 &matrix)

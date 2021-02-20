@@ -2,7 +2,6 @@
 
 #include "Program/Input.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/Material.h"
 #include "Graphics/Effects/MainView.h"
 

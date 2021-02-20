@@ -3,7 +3,6 @@
 #include "Game/Game.h"
 
 #include "Graphics/Renderer.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Graphics/Material.h"
 #include "Graphics/MeshDefaults.h"
 #include "Graphics/Effects/MainView.h"

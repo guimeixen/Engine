@@ -1,10 +1,8 @@
 #pragma once
 
-#include "Graphics\Shader.h"
+#include "Graphics/Shader.h"
 
-#include <vulkan\vulkan.h>
-
-#include <string>
+#include <vulkan/vulkan.h>
 
 namespace Engine
 {
@@ -16,7 +14,7 @@ namespace Engine
 		COMPUTE
 	};
 
-	class VKShader : public Shader
+	class VKShader : public ShaderProgram
 	{
 	public:
 		VKShader(unsigned int id, const std::string &vertexName, const std::string &fragmentName, const std::string &defines);
@@ -26,8 +24,10 @@ namespace Engine
 
 		void Compile(VkDevice device);
 		void CreateShaderModule(VkDevice device);
-
+		void Reload() override;
 		void Dispose(VkDevice device);
+
+		bool CheckIfModified() override;
 
 		VkPipelineShaderStageCreateInfo GetVertexStageInfo();
 		VkPipelineShaderStageCreateInfo GetGeometryStageInfo();
@@ -47,7 +47,6 @@ namespace Engine
 	private:
 		unsigned int id;
 		std::string idStr;
-		std::string defines;
 
 		bool compiled;
 

@@ -1,12 +1,9 @@
 #pragma once
 
-#include <vulkan\vulkan.h>
-#include "include\GLFW\glfw3.h"
-
 #include "VKUtils.h"
 #include "VKAllocator.h"
 
-#include <vector>
+#include "include/GLFW/glfw3.h"
 
 namespace Engine
 {

@@ -2,13 +2,13 @@
 
 #include "EditorManager.h"
 
-#include "Graphics\ResourcesLoader.h"
-#include "Graphics\Material.h"
-#include "Graphics\Texture.h"
-#include "Graphics\Shader.h"
+#include "Graphics/ResourcesLoader.h"
+#include "Graphics/Material.h"
+#include "Graphics/Texture.h"
+#include "Graphics/Shader.h"
 
-#include "imgui\imgui.h"
-#include "imgui\imgui_dock.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_dock.h"
 
 #include <map>
 #include <iostream>

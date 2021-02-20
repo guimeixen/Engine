@@ -2,8 +2,6 @@
 
 #include "Program/Log.h"
 #include "Program/FileManager.h"
-#include "ResourcesLoader.h"
-#include "Shader.h"
 #include "Buffers.h"
 #include "Renderer.h"
 #include "VertexArray.h"

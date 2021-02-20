@@ -4,7 +4,6 @@
 #include "VertexArray.h"
 #include "Material.h"
 #include "Renderer.h"
-#include "ResourcesLoader.h"
 #include "Program/Random.h"
 #include "Game/Game.h"
 

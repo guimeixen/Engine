@@ -2,7 +2,6 @@
 
 #include "Program/StringID.h"
 #include "AnimatedModel.h"
-#include "Graphics/ResourcesLoader.h"
 #include "Game/ComponentManagers/ModelManager.h"
 
 #include <iostream>

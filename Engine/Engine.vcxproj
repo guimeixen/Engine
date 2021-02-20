@@ -88,7 +88,6 @@
     <ClCompile Include="Graphics\ParticleSystem.cpp" />
     <ClCompile Include="Graphics\Renderer.cpp" />
     <ClCompile Include="Graphics\ResourcesLoader.cpp" />
-    <ClCompile Include="Graphics\Shader.cpp" />
     <ClCompile Include="Graphics\Terrain\Terrain.cpp" />
     <ClCompile Include="Graphics\Terrain\TerrainNode.cpp" />
     <ClCompile Include="Graphics\Texture.cpp" />

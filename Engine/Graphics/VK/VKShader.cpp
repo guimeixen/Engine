@@ -587,6 +587,10 @@ namespace Engine
 		}	
 	}
 
+	void VKShader::Reload()
+	{
+	}
+
 	void VKShader::Dispose(VkDevice device)
 	{
 		if (vertexModule != VK_NULL_HANDLE)
@@ -595,6 +599,11 @@ namespace Engine
 			vkDestroyShaderModule(device, fragmentModule, nullptr);
 		if (computeModule != VK_NULL_HANDLE)
 			vkDestroyShaderModule(device, computeModule, nullptr);
+	}
+
+	bool VKShader::CheckIfModified()
+	{
+		return false;
 	}
 
 	VkPipelineShaderStageCreateInfo VKShader::GetVertexStageInfo()

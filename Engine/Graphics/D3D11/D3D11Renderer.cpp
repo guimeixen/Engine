@@ -10,13 +10,12 @@
 #include "D3D11SSBO.h"
 #include "D3D11DrawIndirectBuffer.h"
 
-#include "Graphics\Material.h"
-#include "Graphics\ResourcesLoader.h"
+#include "Graphics/Material.h"
 
-#include "Program\StringID.h"
+#include "Program/StringID.h"
 
-#include "include\glm\gtc\matrix_transform.hpp"
-#include "include\glm\gtx\euler_angles.hpp"
+#include "include/glm/gtc/matrix_transform.hpp"
+#include "include/glm/gtx/euler_angles.hpp"
 #include <stdexcept>
 #include <iostream>
 
@@ -49,7 +48,7 @@ namespace Engine
 
 	D3D11Renderer::~D3D11Renderer()
 	{
-		for (auto it = shaders.begin(); it != shaders.end(); it++)
+		for (auto it = shaderPrograms.begin(); it != shaderPrograms.end(); it++)
 		{
 			delete it->second;
 		}
@@ -304,68 +303,68 @@ namespace Engine
 		return fb;
 	}
 
-	Shader *D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		unsigned int id = SID(vertexName + fragmentName + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new D3D11Shader(device, id, vertexName, fragmentName, defines, descs);
-		shaders[id] = shader;
+		ShaderProgram* shader = new D3D11Shader(device, id, vertexName, fragmentName, defines, descs);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* D3D11Renderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		return CreateShader(vertexName, fragmentName, "", descs, blendState);
 	}
 
-	Shader *D3D11Renderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
+	ShaderProgram* D3D11Renderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs)
 	{
 		unsigned int id = SID(vertexPath + geometryPath + fragmentPath + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new D3D11Shader(device, id, vertexPath, geometryPath, fragmentPath, defines, descs);
-		shaders[id] = shader;
+		ShaderProgram* shader = new D3D11Shader(device, id, vertexPath, geometryPath, fragmentPath, defines, descs);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *D3D11Renderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs)
+	ShaderProgram* D3D11Renderer::CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs)
 	{
 		return CreateShaderWithGeometry(vertexPath, geometryPath, fragmentPath, "", descs);
 	}
 
-	Shader *D3D11Renderer::CreateComputeShader(const std::string &computePath, const std::string &defines)
+	ShaderProgram* D3D11Renderer::CreateComputeShader(const std::string &computePath, const std::string &defines)
 	{
 		unsigned int id = SID(computePath + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
-		Shader *shader = new D3D11Shader(device, id, computePath, defines);
-		shaders[id] = shader;
+		ShaderProgram* shader = new D3D11Shader(device, id, computePath, defines);
+		shaderPrograms[id] = shader;
 
 		return shader;
 	}
 
-	Shader *D3D11Renderer::CreateComputeShader(const std::string &computePath)
+	ShaderProgram* D3D11Renderer::CreateComputeShader(const std::string &computePath)
 	{
 		return CreateComputeShader(computePath, "");
 	}

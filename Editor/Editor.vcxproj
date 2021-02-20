@@ -246,7 +246,6 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Graphics\ParticleSystem.cpp" />
     <ClCompile Include="..\Engine\Graphics\Renderer.cpp" />
     <ClCompile Include="..\Engine\Graphics\ResourcesLoader.cpp" />
-    <ClCompile Include="..\Engine\Graphics\Shader.cpp" />
     <ClCompile Include="..\Engine\Graphics\Terrain\Terrain.cpp" />
     <ClCompile Include="..\Engine\Graphics\Terrain\TerrainNode.cpp" />
     <ClCompile Include="..\Engine\Graphics\Texture.cpp" />

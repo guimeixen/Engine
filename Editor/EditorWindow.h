@@ -1,8 +1,11 @@
 #pragma once
 
-#include "Game\Game.h"
-
 class EditorManager;
+
+namespace Engine
+{
+	class Game;
+}
 
 class EditorWindow
 {
