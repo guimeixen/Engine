@@ -20,7 +20,6 @@ namespace Engine
 		VKShader(unsigned int id, const std::string &vertexName, const std::string &fragmentName, const std::string &defines);
 		VKShader(unsigned int id, const std::string &vertexName, const std::string &geometryName, const std::string &fragmentName, const std::string &defines);
 		VKShader(unsigned int id, const std::string &computeName, const std::string &defines);
-		~VKShader();
 
 		void Compile(VkDevice device);
 		void CreateShaderModule(VkDevice device);
@@ -42,6 +41,7 @@ namespace Engine
 		bool HasGeometry() const { return geometryName.length() != 0; }
 
 	private:
+		void LoadShader();
 		void CompileShader(const std::string &path, ShaderType type);
 
 	private:

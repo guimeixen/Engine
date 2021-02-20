@@ -2024,6 +2024,18 @@ namespace Engine
 
 	void VKRenderer::ReloadShaders()
 	{
+		std::map<unsigned int, MaterialRefInfo> materials;
+
+		for (auto it = materials.begin(); it != materials.end(); it++)
+		{
+			const std::vector<ShaderPass>& passes = it->second.mat->GetShaderPasses();
+
+			for (size_t i = 0; i < passes.size(); i++)
+			{
+				const ShaderPass& sp = passes[i];
+				sp.shader->Reload();
+			}
+		}
 	}
 
 	void VKRenderer::Dispose()

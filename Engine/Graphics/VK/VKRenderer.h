@@ -98,7 +98,7 @@ namespace Engine
 		void ClearImage(Texture *tex) override;
 
 		void UpdateMaterialInstance(MaterialInstance *matInst) override;
-		void ReloadShaders();
+		void ReloadShaders() override;
 
 		const VKBase &GetBase() const { return base; }
 		VKBase &GetBase() { return base; }

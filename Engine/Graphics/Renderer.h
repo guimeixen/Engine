@@ -141,7 +141,7 @@ namespace Engine
 		void CreateRenderQueues(unsigned int queueCount, unsigned int *queueIDs, const std::vector<VisibilityIndices> &visibility, RenderQueue *outQueues);
 
 		virtual void UpdateMaterialInstance(MaterialInstance *matInst) = 0;
-
+		virtual void ReloadShaders() = 0;
 		virtual void RebindTexture(Texture *texture) {}
 
 		void SetFrameTime(float frameTime) { this->frameTime = frameTime; }

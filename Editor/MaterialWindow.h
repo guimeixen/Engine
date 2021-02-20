@@ -1,9 +1,7 @@
 #pragma once
 
 #include "EditorWindow.h"
-#include "Graphics\Material.h"
-
-#include <vector>
+#include "Graphics/Material.h"
 
 class MaterialWindow : public EditorWindow
 {
@@ -11,7 +9,7 @@ public:
 	MaterialWindow();
 
 	void Render();
-
+	void CreateMaterial();
 	void Focus() { focus = true; }
 
 	void SetCurrentMaterial(Engine::Material *mat) { currentMaterial = mat; }
@@ -19,6 +17,7 @@ public:
 
 private:
 	void AddTexture();
+	void ShowTextures();
 	void ShowTextureParameters();
 	void ShowMaterialParameters();
 

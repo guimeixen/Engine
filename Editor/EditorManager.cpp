@@ -495,6 +495,7 @@ void EditorManager::OnFocus()
 	{
 		// Update script properties when we gain focus of the window because we might add/remove some of them on the script file and by doing this we update it on the editor
 		game->GetScriptManager().ReloadAll();
+		game->GetRenderer()->ReloadShaders();
 	}
 }
 
@@ -631,23 +632,7 @@ void EditorManager::ShowMainMenuBar()
 		{
 			if (ImGui::MenuItem("Default"))
 			{
-				Engine::VertexAttribute attribs[4] = {};
-				attribs[0].count = 3;						// Position
-				attribs[1].count = 2;						// UV
-				attribs[2].count = 3;						// Normal
-				attribs[3].count = 3;						// Color
-
-				attribs[0].offset = 0;
-				attribs[1].offset = 3 * sizeof(float);
-				attribs[2].offset = 5 * sizeof(float);
-				attribs[3].offset = 8 * sizeof(float);
-
-				Engine::VertexInputDesc desc = {};
-				desc.stride = sizeof(Engine::VertexPOS3D_UV_NORMAL_COLOR);
-				desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3] };
-
-				Engine::MaterialInstance *m = game->GetRenderer()->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/default_mat.lua", { desc });
-				materialWindow.SetCurrentMaterialInstance(m);
+				materialWindow.CreateMaterial();
 			}
 			if (ImGui::MenuItem("PBR"))
 			{

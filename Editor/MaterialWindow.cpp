@@ -7,6 +7,8 @@
 #include "Graphics/Texture.h"
 #include "Graphics/Shader.h"
 
+#include "Program/FileManager.h"
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_dock.h"
 
@@ -62,6 +64,7 @@ void MaterialWindow::Render()
 					for (size_t i = 0; i < shaderPasses.size(); i++)
 					{
 						Engine::ShaderPass &pass = shaderPasses[i];
+						//ImGui::Text(pass.)
 						//pass.shader->
 					}
 
@@ -73,53 +76,14 @@ void MaterialWindow::Render()
 			}
 
 			ImGui::Separator();
+			ImGui::Unindent();
 			ImGui::Text("Material Instance");
 
 			if (currentMaterialInstance)
 			{
 				ImGui::Indent();
-				if (ImGui::TreeNode("Textures"))
-				{
-					const std::vector<Engine::TextureInfo> &texturesInfo = currentMaterial->GetTexturesInfo();
 
-					for (size_t i = 0; i < currentMaterialInstance->textures.size(); i++)
-					{
-						if (ImGui::TreeNode(texturesInfo[i].name.c_str()))
-						{
-							ImGui::Text(currentMaterialInstance->textures[i]->GetPath().c_str());
-
-							ShowTextureParameters();
-
-							textureIndex = static_cast<unsigned int>(i);
-
-							if (ImGui::Button("Change Texture"))
-							{
-								ImGui::OpenPopup("Choose texture");
-								const std::string dir = editorManager->GetCurrentProjectDir() + "/*";
-								files.clear();
-								Engine::utils::FindFilesInDirectory(files, dir, ".png");
-								Engine::utils::FindFilesInDirectory(files, dir, ".jpg");
-								Engine::utils::FindFilesInDirectory(files, dir, ".dds");
-								Engine::utils::FindFilesInDirectory(files, dir, ".ktx");
-							}
-
-							if (ImGui::BeginPopup("Choose texture"))
-							{
-								if (files.size() > 0)
-									AddTexture();
-								else
-									ImGui::Text("No textures found on project folder.");
-
-								ImGui::EndPopup();
-							}
-
-							ImGui::TreePop();
-						}
-					}
-
-					ImGui::TreePop();
-				}
-
+				ShowTextures();
 				ShowMaterialParameters();
 
 				ImGui::Unindent();
@@ -132,6 +96,33 @@ void MaterialWindow::Render()
 		focus = false;
 	}
 	EndWindow();
+}
+
+void MaterialWindow::CreateMaterial()
+{
+	Engine::VertexAttribute attribs[4] = {};
+	attribs[0].count = 3;						// Position
+	attribs[1].count = 2;						// UV
+	attribs[2].count = 3;						// Normal
+	attribs[3].count = 3;						// Color
+
+	attribs[0].offset = 0;
+	attribs[1].offset = 3 * sizeof(float);
+	attribs[2].offset = 5 * sizeof(float);
+	attribs[3].offset = 8 * sizeof(float);
+
+	Engine::VertexInputDesc desc = {};
+	desc.stride = sizeof(Engine::VertexPOS3D_UV_NORMAL_COLOR);
+	desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3] };
+
+	Engine::MaterialInstance* m = game->GetRenderer()->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/default_mat.lua", { desc });
+	SetCurrentMaterialInstance(m);
+
+	std::string newMatPath = editorManager->GetCurrentProjectDir() + "/default_mat.lua";
+
+	std::ofstream file = game->GetFileManager()->OpenForWriting(newMatPath);
+	file << "default_mat =\n{\n\tpasses =\n\t{\n\t\tbase =\n\t\t{\n\t\t\tqueue='opaque',\n\t\t\tshader='default',\n\t\t}\n\t}\n}";
+	file.close();
 }
 
 void MaterialWindow::AddTexture()
@@ -154,6 +145,56 @@ void MaterialWindow::AddTexture()
 				currentMaterialInstance->textures[textureIndex] = game->GetRenderer()->CreateTexture2D(files[i], params);
 			}
 		}
+}
+
+void MaterialWindow::ShowTextures()
+{
+	if (ImGui::TreeNode("Textures"))
+	{
+		const std::vector<Engine::TextureInfo>& texturesInfo = currentMaterial->GetTexturesInfo();
+
+		for (size_t i = 0; i < currentMaterialInstance->textures.size(); i++)
+		{
+			if (ImGui::TreeNode(texturesInfo[i].name.c_str()))
+			{
+				ImGui::Text(currentMaterialInstance->textures[i]->GetPath().c_str());
+
+				ShowTextureParameters();
+
+				textureIndex = static_cast<unsigned int>(i);
+
+				if (ImGui::Button("Change Texture"))
+				{
+					ImGui::OpenPopup("Choose texture");
+					const std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+					files.clear();
+					Engine::utils::FindFilesInDirectory(files, dir, ".png");
+					Engine::utils::FindFilesInDirectory(files, dir, ".jpg");
+					Engine::utils::FindFilesInDirectory(files, dir, ".dds");
+					Engine::utils::FindFilesInDirectory(files, dir, ".ktx");
+				}
+
+				if (ImGui::BeginPopup("Choose texture"))
+				{
+					if (files.size() > 0)
+						AddTexture();
+					else
+						ImGui::Text("No textures found on project folder.");
+
+					ImGui::EndPopup();
+				}
+
+				ImGui::TreePop();
+			}
+		}
+
+		if (ImGui::Button("Add Texture"))
+		{
+
+		}
+
+		ImGui::TreePop();
+	}
 }
 
 void MaterialWindow::ShowTextureParameters()
@@ -193,6 +234,10 @@ void MaterialWindow::ShowMaterialParameters()
 	const std::vector<Engine::MaterialParameter> &parameters = currentMaterialInstance->GetMaterialParameters();
 
 	ImGui::Separator();
+	ImGui::Unindent();
+	ImGui::Unindent();
+
+	ImGui::Text("Parameters:");
 
 	if (ImGui::Button("Add Parameter"))
 	{

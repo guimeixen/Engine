@@ -4,7 +4,6 @@
 
 #include <fstream>
 #include <iostream>
-#include <filesystem>
 #include <sstream>
 
 namespace Engine
@@ -54,6 +53,8 @@ namespace Engine
 			auto compiledTime = std::filesystem::last_write_time(compiledVertexPath);
 			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
 
+			lastVertexWriteTime = baseVertexWriteTime;
+
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseVertexWriteTime)
 				vertexNeedsCompile = true;
@@ -62,6 +63,8 @@ namespace Engine
 		{
 			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);
 			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
+
+			lastFragmentWriteTime = baseFragmentWriteTime;
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseFragmentWriteTime)
@@ -179,6 +182,8 @@ namespace Engine
 			auto compiledTime = std::filesystem::last_write_time(compiledVertexPath);
 			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
 
+			lastVertexWriteTime = baseVertexWriteTime;
+
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseVertexWriteTime)
 				vertexNeedsCompile = true;
@@ -188,6 +193,8 @@ namespace Engine
 			auto compiledTime = std::filesystem::last_write_time(compiledGeometryPath);
 			auto baseGeometryWriteTime = std::filesystem::last_write_time(baseGeometryPath);
 
+			lastGeometryWriteTime = baseGeometryWriteTime;
+
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseGeometryWriteTime)
 				geometryNeedsCompile = true;
@@ -196,6 +203,8 @@ namespace Engine
 		{
 			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);
 			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
+
+			lastFragmentWriteTime = baseFragmentWriteTime;
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseFragmentWriteTime)
@@ -323,6 +332,8 @@ namespace Engine
 			auto compiledTime = std::filesystem::last_write_time(compiledComputePath);
 			auto baseComputeWriteTime = std::filesystem::last_write_time(baseComputePath);
 
+			lastComputeWriteTime = baseComputeWriteTime;
+
 			// If the compiled time is older than when the base shader was modified the we need to compile it again
 			if (compiledTime < baseComputeWriteTime)
 				computeNeedsCompile = true;
@@ -358,10 +369,6 @@ namespace Engine
 				computeWithDefinesFile.close();
 			}
 		}
-	}
-
-	VKShader::~VKShader()
-	{
 	}
 
 	void VKShader::Compile(VkDevice device)
@@ -424,6 +431,10 @@ namespace Engine
 		}
 			
 		compiled = true;
+	}
+
+	void VKShader::LoadShader()
+	{
 	}
 
 	void VKShader::CompileShader(const std::string &path, ShaderType type)
@@ -589,12 +600,41 @@ namespace Engine
 
 	void VKShader::Reload()
 	{
+		if (computeModule != VK_NULL_HANDLE)
+		{
+			std::string baseComputePath = "Data/Shaders/Vulkan/src/" + computeName + ".comp";
+
+			auto baseComputeWriteTime = std::filesystem::last_write_time(baseComputePath);
+		}
+		else
+		{
+			std::string baseVertexPath = "Data/Shaders/Vulkan/src/" + vertexName + ".vert";
+			std::string baseFragmentPath = "Data/Shaders/Vulkan/src/" + fragmentName + ".frag";
+
+			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
+			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
+
+			bool needsReload = false;
+
+			if (baseVertexWriteTime > lastVertexWriteTime)
+			{
+
+				needsReload = true;
+			}
+			if (baseFragmentWriteTime > lastFragmentWriteTime)
+			{
+
+			}
+			
+		}
 	}
 
 	void VKShader::Dispose(VkDevice device)
 	{
 		if (vertexModule != VK_NULL_HANDLE)
 			vkDestroyShaderModule(device, vertexModule, nullptr);
+		if (geometryModule != VK_NULL_HANDLE)
+			vkDestroyShaderModule(device, geometryModule, nullptr);
 		if (fragmentModule != VK_NULL_HANDLE)
 			vkDestroyShaderModule(device, fragmentModule, nullptr);
 		if (computeModule != VK_NULL_HANDLE)

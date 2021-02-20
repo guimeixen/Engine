@@ -3,6 +3,7 @@
 #include "RendererStructs.h"
 
 #include <string>
+#include <filesystem>
 
 namespace Engine
 {
@@ -16,5 +17,9 @@ namespace Engine
 
 	protected:
 		std::string defines;
+		std::filesystem::file_time_type lastVertexWriteTime;
+		std::filesystem::file_time_type lastFragmentWriteTime;
+		std::filesystem::file_time_type lastGeometryWriteTime;
+		std::filesystem::file_time_type lastComputeWriteTime;
 	};
 }
