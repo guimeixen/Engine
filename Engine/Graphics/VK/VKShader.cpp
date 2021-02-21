@@ -10,7 +10,7 @@ namespace Engine
 {
 	VKShader::VKShader(unsigned int id, const std::string &vertexName, const std::string &fragmentName, const std::string &defines)
 	{
-		compiled = false;
+		isCompiled = false;
 		this->id = id;
 		idStr = std::to_string(id);
 		this->defines = defines;
@@ -72,24 +72,12 @@ namespace Engine
 		}
 
 		if (vertexExists == false || vertexNeedsCompile)
-		{
-			std::ifstream vertexFile(baseVertexPath, std::ios::ate);
-
-			if (!vertexFile.is_open())
-			{
-				std::cout << "Error -> Failed to open file : " << baseVertexPath.c_str() << "\n";
-			}
-
-			size_t vertFileSize = (size_t)vertexFile.tellg();
-			vertexCode.resize(vertFileSize, 0);
-			vertexFile.seekg(std::ios::beg);
-			vertexFile.read(&vertexCode[0], vertFileSize);
-			vertexFile.close();
-		}
+			ReadShaderFile(baseVertexPath, ShaderType::VERTEX);
 
 		if (fragmentExists == false || fragmentNeedsCompile)
-		{			
-			std::ifstream fragmentFile(baseFragmentPath);
+		{
+			ReadShaderFile(baseFragmentPath, ShaderType::FRAGMENT);
+			/*std::ifstream fragmentFile(baseFragmentPath);
 
 			if (!fragmentFile.is_open())
 			{
@@ -110,32 +98,19 @@ namespace Engine
 		
 		if (defines.length() != 0)
 		{
-			// We load the base shader above and insert the defines and then save it to a temporary file so it can be loaded to be compiled
-			// But only save the ones with inserted defines, because the ones with no defines are equal to the base shader
-			
+			// We load the base shader above and insert the defines here and then save it to a temporary file so it can be loaded and then be compiled
+			// But only save the ones with inserted defines, because the ones with no defines are equal to the base shader		
 			if (vertexExists == false || vertexNeedsCompile)
-			{
-				vertexCode.insert(13, defines);
-
-				std::ofstream vertexWithDefinesFile("Data/Shaders/Vulkan/src/" + idStr + ".vert");
-				vertexWithDefinesFile << vertexCode;
-				vertexWithDefinesFile.close();
-			}
+				WriteShaderFileWithDefines(ShaderType::VERTEX);
 
 			if (fragmentExists == false || fragmentNeedsCompile)
-			{
-				fragmentCode.insert(13, defines);
-
-				std::ofstream fragmentWithDefinesFile("Data/Shaders/Vulkan/src/" + idStr + ".frag");
-				fragmentWithDefinesFile << fragmentCode;
-				fragmentWithDefinesFile.close();
-			}
+				WriteShaderFileWithDefines(ShaderType::FRAGMENT);
 		}
 	}
 
 	VKShader::VKShader(unsigned int id, const std::string &vertexName, const std::string &geometryName, const std::string &fragmentName, const std::string &defines)
 	{
-		compiled = false;
+		isCompiled = false;
 		this->id = id;
 		idStr = std::to_string(id);
 		this->defines = defines;
@@ -295,7 +270,7 @@ namespace Engine
 
 	VKShader::VKShader(unsigned int id, const std::string &computeName, const std::string &defines)
 	{
-		compiled = false;
+		isCompiled = false;
 		this->id = id;
 		idStr = std::to_string(id);
 		this->defines = defines;
@@ -373,7 +348,7 @@ namespace Engine
 
 	void VKShader::Compile(VkDevice device)
 	{
-		if (compiled)
+		if (isCompiled)
 			return;
 
 		// Load the shader with the defines and compile it and then delete the file
@@ -430,14 +405,82 @@ namespace Engine
 			}
 		}
 			
-		compiled = true;
+		isCompiled = true;
 	}
 
-	void VKShader::LoadShader()
+	void VKShader::ReadShaderFile(const std::string& path, ShaderType type)
 	{
+		std::ifstream file(path, std::ios::ate);
+
+		if (!file.is_open())
+		{
+			std::cout << "Error -> Failed to open file : " << path.c_str() << "\n";
+		}
+
+		size_t fileSize = (size_t)file.tellg();
+		file.seekg(std::ios::beg);
+
+		if (type == ShaderType::VERTEX)
+		{
+			vertexCode.clear();
+			vertexCode.resize(fileSize, 0);
+			file.read(&vertexCode[0], fileSize);
+		}
+		else if (type == ShaderType::GEOMETRY)
+		{
+			geometryCode.clear();
+			geometryCode.resize(fileSize, 0);
+			file.read(&geometryCode[0], fileSize);
+		}
+		else if (type == ShaderType::FRAGMENT)
+		{
+			fragmentCode.clear();
+			fragmentCode.resize(fileSize, 0);
+			file.read(&fragmentCode[0], fileSize);
+		}
+		else if (type == ShaderType::COMPUTE)
+		{
+			computeCode.clear();
+			computeCode.resize(fileSize, 0);
+			file.read(&computeCode[0], fileSize);
+		}
+		
+		file.close();
 	}
 
-	void VKShader::CompileShader(const std::string &path, ShaderType type)
+	void VKShader::WriteShaderFileWithDefines(ShaderType type)
+	{
+		if (type == ShaderType::VERTEX)
+		{
+			std::ofstream fileWithDefines("Data/Shaders/Vulkan/src/" + idStr + ".vert");
+			vertexCode.insert(13, defines);
+			fileWithDefines << vertexCode;
+			fileWithDefines.close();
+		}
+		else if (type == ShaderType::GEOMETRY)
+		{
+			std::ofstream fileWithDefines("Data/Shaders/Vulkan/src/" + idStr + ".geom");
+			geometryCode.insert(13, defines);
+			fileWithDefines << geometryCode;
+			fileWithDefines.close();
+		}
+		else if (type == ShaderType::FRAGMENT)
+		{
+			std::ofstream fileWithDefines("Data/Shaders/Vulkan/src/" + idStr + ".frag");
+			fragmentCode.insert(13, defines);
+			fileWithDefines << fragmentCode;
+			fileWithDefines.close();
+		}
+		else if (type == ShaderType::COMPUTE)
+		{
+			std::ofstream fileWithDefines("Data/Shaders/Vulkan/src/" + idStr + ".comp");
+			computeCode.insert(13, defines);
+			fileWithDefines << computeCode;
+			fileWithDefines.close();
+		}			
+	}
+
+	void VKShader::CompileShader(const std::string& path, ShaderType type)
 	{
 		std::string command = "glslangValidator.exe -V ";
 		command += path;
@@ -448,18 +491,22 @@ namespace Engine
 		case Engine::ShaderType::VERTEX:
 			command += "_vert.spv";
 			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.vert\n", vertexName.c_str());
+			vertexNeedsCompile = false;
 			break;
 		case Engine::ShaderType::GEOMETRY:
 			command += "_geom.spv";
 			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.geom\n", geometryName.c_str());
+			geometryNeedsCompile = false;
 			break;
 		case Engine::ShaderType::FRAGMENT:
 			command += "_frag.spv";
 			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.frag\n", fragmentName.c_str());
+			fragmentNeedsCompile = false;
 			break;	
 		case Engine::ShaderType::COMPUTE:
 			command += "_comp.spv";
 			Log::Print(LogLevel::LEVEL_INFO, "Compiling shader: %s.comp\n", computeName.c_str());
+			computeNeedsCompile = false;
 			break;
 		}
 
@@ -477,8 +524,14 @@ namespace Engine
 			std::remove(path.c_str());
 	}
 
-	void VKShader::CreateShaderModule(VkDevice device)
+	bool VKShader::CreateShaderModule(VkDevice device)
 	{
+		if (vertexModule != VK_NULL_HANDLE || fragmentModule != VK_NULL_HANDLE || geometryModule != VK_NULL_HANDLE || computeModule != VK_NULL_HANDLE)
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "Attempting to recreate shader module on a valid module!");
+			return false;
+		}
+
 		if (computeName.length() != 0)
 		{
 			// Don't load the shader code if we're not using shader reload
@@ -595,16 +648,30 @@ namespace Engine
 					std::cout << "Error -> Failed to create shader module!";
 				}
 			}
-		}	
+		}
+
+		return true;
 	}
 
-	void VKShader::Reload()
+	void VKShader::CheckIfModifiedAndReload()
 	{
-		if (computeModule != VK_NULL_HANDLE)
+		if (computeName.size() > 0)
 		{
 			std::string baseComputePath = "Data/Shaders/Vulkan/src/" + computeName + ".comp";
 
 			auto baseComputeWriteTime = std::filesystem::last_write_time(baseComputePath);
+
+			if (baseComputeWriteTime > lastComputeWriteTime)
+			{
+				lastComputeWriteTime = baseComputeWriteTime;
+				computeNeedsCompile = true;
+				isCompiled = false;
+
+				ReadShaderFile(baseComputePath, ShaderType::COMPUTE);
+
+				if (defines.length() != 0)
+					WriteShaderFileWithDefines(ShaderType::COMPUTE);
+			}
 		}
 		else
 		{
@@ -614,18 +681,48 @@ namespace Engine
 			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
 			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
 
-			bool needsReload = false;
-
 			if (baseVertexWriteTime > lastVertexWriteTime)
 			{
+				lastVertexWriteTime = baseVertexWriteTime;
+				vertexNeedsCompile = true;
+				isCompiled = false;
 
-				needsReload = true;
+				ReadShaderFile(baseVertexPath, ShaderType::VERTEX);
+
+				if (defines.length() != 0)
+					WriteShaderFileWithDefines(ShaderType::VERTEX);
 			}
+
 			if (baseFragmentWriteTime > lastFragmentWriteTime)
 			{
+				lastFragmentWriteTime = baseFragmentWriteTime;
+				fragmentNeedsCompile = true;
+				isCompiled = false;
 
+				ReadShaderFile(baseFragmentPath, ShaderType::FRAGMENT);
+
+				if (defines.length() != 0)
+					WriteShaderFileWithDefines(ShaderType::FRAGMENT);
 			}
-			
+
+			if (geometryName.size() > 0)
+			{
+				std::string baseGeometryPath = "Data/Shaders/Vulkan/src/" + geometryName + ".geom";
+
+				auto baseGeometryWriteTime = std::filesystem::last_write_time(baseGeometryPath);
+
+				if (baseGeometryWriteTime > lastGeometryWriteTime)
+				{
+					lastGeometryWriteTime = baseGeometryWriteTime;
+					geometryNeedsCompile = true;
+					isCompiled = false;
+
+					ReadShaderFile(baseGeometryPath, ShaderType::GEOMETRY);
+
+					if (defines.length() != 0)
+						WriteShaderFileWithDefines(ShaderType::GEOMETRY);
+				}
+			}
 		}
 	}
 
@@ -639,11 +736,11 @@ namespace Engine
 			vkDestroyShaderModule(device, fragmentModule, nullptr);
 		if (computeModule != VK_NULL_HANDLE)
 			vkDestroyShaderModule(device, computeModule, nullptr);
-	}
 
-	bool VKShader::CheckIfModified()
-	{
-		return false;
+		vertexModule = VK_NULL_HANDLE;
+		geometryModule = VK_NULL_HANDLE;
+		fragmentModule = VK_NULL_HANDLE;
+		computeModule = VK_NULL_HANDLE;
 	}
 
 	VkPipelineShaderStageCreateInfo VKShader::GetVertexStageInfo()

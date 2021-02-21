@@ -111,7 +111,7 @@ namespace Engine
 		void DisposeStagingResources();
 
 		void CreateVertexInputState(const std::vector<VertexInputDesc> &descs, std::vector<VkVertexInputBindingDescription> &bindings, std::vector<VkVertexInputAttributeDescription> &attribs);
-		void CreatePipeline(ShaderPass &p, MaterialInstance *mat);
+		bool CreatePipeline(ShaderPass &p, MaterialInstance *mat, bool reload = false);
 		bool CreateDefaultRenderPass();
 		void PrepareTexture2D(VKTexture2D *tex);
 		void PrepareTexture3D(VKTexture3D *tex);

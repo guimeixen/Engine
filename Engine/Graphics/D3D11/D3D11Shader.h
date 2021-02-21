@@ -19,8 +19,7 @@ namespace Engine
 		void BindCompute(ID3D11DeviceContext *context);
 		void UnbindGeometry(ID3D11DeviceContext *context);
 
-		void Reload() override;
-		bool CheckIfModified() override;
+		void CheckIfModifiedAndReload() override;
 
 		bool HasGeometry() const { return geometryShader != nullptr; }
 		bool HasCompute() const { return computeShader != nullptr; }

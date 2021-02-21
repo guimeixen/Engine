@@ -22,11 +22,9 @@ namespace Engine
 		VKShader(unsigned int id, const std::string &computeName, const std::string &defines);
 
 		void Compile(VkDevice device);
-		void CreateShaderModule(VkDevice device);
-		void Reload() override;
+		bool CreateShaderModule(VkDevice device);
+		void CheckIfModifiedAndReload() override;
 		void Dispose(VkDevice device);
-
-		bool CheckIfModified() override;
 
 		VkPipelineShaderStageCreateInfo GetVertexStageInfo();
 		VkPipelineShaderStageCreateInfo GetGeometryStageInfo();
@@ -41,14 +39,13 @@ namespace Engine
 		bool HasGeometry() const { return geometryName.length() != 0; }
 
 	private:
-		void LoadShader();
+		void ReadShaderFile(const std::string &path, ShaderType type);
+		void WriteShaderFileWithDefines(ShaderType type);
 		void CompileShader(const std::string &path, ShaderType type);
 
 	private:
 		unsigned int id;
 		std::string idStr;
-
-		bool compiled;
 
 		bool vertexExists;
 		bool geometryExists;

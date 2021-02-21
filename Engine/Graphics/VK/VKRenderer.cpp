@@ -286,6 +286,7 @@ namespace Engine
 	void VKRenderer::PostLoad()
 	{
 		base.GetAllocator()->PrintStats();
+		Log::Print(LogLevel::LEVEL_INFO, "Total piplines: %u\n", pipelines.size());
 	}
 
 	VertexArray *VKRenderer::CreateVertexArray(const VertexInputDesc &desc, Buffer *vertexBuffer, Buffer *indexBuffer)
@@ -461,7 +462,10 @@ namespace Engine
 			for (size_t i = 0; i < shaderPasses.size(); i++)
 			{
 				ShaderPass &p = shaderPasses[i];
-				CreatePipeline(p, m);
+				
+				if (!CreatePipeline(p, m))
+					return nullptr;
+				
 				p.pipelineID = static_cast<unsigned int>(pipelines.size() - 1);
 			}
 		}
@@ -497,8 +501,11 @@ namespace Engine
 
 			for (size_t i = 0; i < shaderPasses.size(); i++)		// TODO: Only allow one pipeline per compute material?
 			{
-				ShaderPass &p = shaderPasses[i];
-				CreatePipeline(p, m);
+				ShaderPass& p = shaderPasses[i];
+
+				if (!CreatePipeline(p, m))
+					return nullptr;
+
 				p.pipelineID = static_cast<unsigned int>(pipelines.size() - 1);
 
 				if (p.isCompute)
@@ -2024,16 +2031,28 @@ namespace Engine
 
 	void VKRenderer::ReloadShaders()
 	{
-		std::map<unsigned int, MaterialRefInfo> materials;
+		// We can use this because reloading shaders will only happen when focusing on the editor
+		vkDeviceWaitIdle(base.GetDevice());
 
-		for (auto it = materials.begin(); it != materials.end(); it++)
+		for (size_t i = 0; i < materialInstances.size(); i++)
 		{
-			const std::vector<ShaderPass>& passes = it->second.mat->GetShaderPasses();
+			MaterialInstance* mi = materialInstances[i];
+
+			std::vector<ShaderPass>& passes = mi->baseMaterial->GetShaderPasses();
 
 			for (size_t i = 0; i < passes.size(); i++)
 			{
-				const ShaderPass& sp = passes[i];
-				sp.shader->Reload();
+				ShaderPass& sp = passes[i];
+
+				sp.shader->CheckIfModifiedAndReload();
+
+				if (sp.shader->IsCompiled() == false)
+				{
+					if (!CreatePipeline(sp, mi, true))
+					{
+						Log::Print(LogLevel::LEVEL_ERROR, "Failed to recreate pipeline!");
+					}
+				}
 			}
 		}
 	}
@@ -2226,7 +2245,7 @@ namespace Engine
 		}
 	}
 
-	void VKRenderer::CreatePipeline(ShaderPass &p, MaterialInstance *mat)
+	bool VKRenderer::CreatePipeline(ShaderPass &p, MaterialInstance *mat, bool reload)
 	{
 		VkPipeline pipeline;
 		
@@ -2272,7 +2291,7 @@ namespace Engine
 			if (vkCreateDescriptorSetLayout(base.GetDevice(), &setLayoutInfo, nullptr, &setLayout) != VK_SUCCESS)
 			{
 				std::cout << "Failed to create tex descriptor set layout\n";
-				return;
+				return false;
 			}
 
 			computeSecondsSetLayouts.push_back(setLayout);			
@@ -2434,6 +2453,7 @@ namespace Engine
 			dynamicInfo.flags = 0;
 
 			VkGraphicsPipelineCreateInfo pipelineInfo = {};
+			pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			pipelineInfo.pInputAssemblyState = &inputAssembly;
 			pipelineInfo.pViewportState = &viewportState;
 			pipelineInfo.pRasterizationState = &rasterization;
@@ -2456,12 +2476,15 @@ namespace Engine
 			// Compile the shader instead of loading the spirv so that we can set flags. Could use a bool to know if we load or compile shader. Eg compile when in editor but don't compile when loading a game
 			VKShader *s = static_cast<VKShader*>(p.shader);
 			s->Compile(base.GetDevice());
-			s->CreateShaderModule(base.GetDevice());
+			if (!s->CreateShaderModule(base.GetDevice()))
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create shader modules!");
+				return false;
+			}
 
 			if (s->HasGeometry())
 			{
 				VkPipelineShaderStageCreateInfo shaderStages[] = { s->GetVertexStageInfo(), s->GetGeometryStageInfo(), s->GetFragmentStageInfo() };
-				pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 				pipelineInfo.stageCount = 3;
 				pipelineInfo.pStages = shaderStages;
 
@@ -2470,8 +2493,7 @@ namespace Engine
 			}
 			else
 			{
-				VkPipelineShaderStageCreateInfo shaderStages[] = { s->GetVertexStageInfo(), s->GetFragmentStageInfo() };
-				pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+				VkPipelineShaderStageCreateInfo shaderStages[] = { s->GetVertexStageInfo(), s->GetFragmentStageInfo() };			
 				pipelineInfo.stageCount = 2;
 				pipelineInfo.pStages = shaderStages;
 
@@ -2483,7 +2505,18 @@ namespace Engine
 			s->Dispose(base.GetDevice());
 		}
 		
-		pipelines.push_back(pipeline);	
+		if (reload)
+		{
+			VkPipeline old = pipelines[p.pipelineID];
+			pipelines[p.pipelineID] = pipeline;
+			vkDestroyPipeline(base.GetDevice(), old, nullptr);
+		}
+		else
+		{
+			pipelines.push_back(pipeline);
+		}
+
+		return true;
 	}
 
 	bool VKRenderer::CreateDefaultRenderPass()

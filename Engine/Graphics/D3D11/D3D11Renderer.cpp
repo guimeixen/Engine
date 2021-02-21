@@ -1037,6 +1037,10 @@ namespace Engine
 	{
 	}
 
+	void D3D11Renderer::ReloadShaders()
+	{
+	}
+
 	void D3D11Renderer::RebindTexture(Texture *texture)
 	{
 		/*if (!texture)

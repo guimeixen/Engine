@@ -843,6 +843,10 @@ namespace Engine
 	{
 	}
 
+	void GLRenderer::ReloadShaders()
+	{
+	}
+
 	void GLRenderer::BeginFrame()
 	{
 		renderStats = {};

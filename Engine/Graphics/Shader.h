@@ -12,8 +12,9 @@ namespace Engine
 	public:
 		virtual ~ShaderProgram() {}
 
-		virtual void Reload() = 0;
-		virtual bool CheckIfModified() = 0;
+		virtual void CheckIfModifiedAndReload() = 0;
+
+		bool IsCompiled() const { return isCompiled; }
 
 	protected:
 		std::string defines;
@@ -21,5 +22,6 @@ namespace Engine
 		std::filesystem::file_time_type lastFragmentWriteTime;
 		std::filesystem::file_time_type lastGeometryWriteTime;
 		std::filesystem::file_time_type lastComputeWriteTime;
+		bool isCompiled;
 	};
 }

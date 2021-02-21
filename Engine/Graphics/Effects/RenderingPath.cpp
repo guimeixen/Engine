@@ -501,7 +501,7 @@ namespace Engine
 		downsample4Pass.OnSetup([this](const Pass *thisPass)
 		{
 			downsampleFB[0] = thisPass->GetFramebuffer();
-			downsample4MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
+			downsample4MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat4.lua", quadMesh.vao->GetVertexInputDescs());
 			downsample4PassID = downsample4MatInstance->baseMaterial->GetShaderPassIndex("DownsamplePass4");
 			downsample4MatInstance->textures[0] = brightPassFB->GetColorTexture();
 			renderer->UpdateMaterialInstance(downsample4MatInstance);
@@ -528,7 +528,7 @@ namespace Engine
 		downsample8Pass.OnSetup([this](const Pass *thisPass)
 		{
 			downsampleFB[1] = thisPass->GetFramebuffer();
-			downsample8MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
+			downsample8MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat8.lua", quadMesh.vao->GetVertexInputDescs());
 			downsample8PassID = downsample8MatInstance->baseMaterial->GetShaderPassIndex("DownsamplePass8");
 			downsample8MatInstance->textures[0] = downsampleFB[0]->GetColorTexture();
 			renderer->UpdateMaterialInstance(downsample8MatInstance);
@@ -556,7 +556,7 @@ namespace Engine
 		downsample16Pass.OnSetup([this](const Pass *thisPass)
 		{
 			downsampleFB[2] = thisPass->GetFramebuffer();
-			downsample16MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat.lua", quadMesh.vao->GetVertexInputDescs());
+			downsample16MatInstance = renderer->CreateMaterialInstanceFromBaseMat(this->game->GetScriptManager(), "Data/Resources/Materials/downsample_mat16.lua", quadMesh.vao->GetVertexInputDescs());
 			downsample16PassID = downsample16MatInstance->baseMaterial->GetShaderPassIndex("DownsamplePass16");
 			downsample16MatInstance->textures[0] = downsampleFB[1]->GetColorTexture();
 			renderer->UpdateMaterialInstance(downsample16MatInstance);
