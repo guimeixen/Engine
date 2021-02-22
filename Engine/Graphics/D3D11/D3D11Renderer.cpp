@@ -237,10 +237,12 @@ namespace Engine
 
 	void D3D11Renderer::UpdateFrameDataUBO(const FrameUBO& frameData)
 	{
+		//frameDataUBO->Update(&frameData, sizeof(FrameUBO), 0);
 	}
 
 	void D3D11Renderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
 	{
+		ubo->Update(data, size, offset);
 	}
 
 	void D3D11Renderer::BeginFrame()

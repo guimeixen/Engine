@@ -6,14 +6,6 @@
 
 namespace Engine
 {
-	enum class ShaderType
-	{
-		VERTEX,
-		FRAGMENT,
-		GEOMETRY,
-		COMPUTE
-	};
-
 	class VKShader : public ShaderProgram
 	{
 	public:
@@ -56,11 +48,6 @@ namespace Engine
 		bool geometryNeedsCompile;
 		bool fragmentNeedsCompile;
 		bool computeNeedsCompile;
-
-		std::string vertexName;
-		std::string fragmentName;
-		std::string geometryName;
-		std::string computeName;
 
 		std::string vertexCode;
 		std::string geometryCode;

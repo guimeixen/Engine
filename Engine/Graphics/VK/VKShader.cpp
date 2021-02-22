@@ -129,17 +129,8 @@ namespace Engine
 		fragmentModule = VK_NULL_HANDLE;
 		computeModule = VK_NULL_HANDLE;
 
-		//std::ifstream vertexFile(vertexPath, std::ios::ate | std::ios::binary);		// ate -> start reading at the end of the file. Useful for determining the file size
-		//std::ifstream fragmentFile(fragmentPath, std::ios::ate | std::ios::binary);
 
-		// We first check if the compiled shader exists
-		// If it does, then we check if it was compiled earlier than the base shader and if it was then we mark it as in need of compilation
-		// Then we check if the compiled shader does not exist or needs compilation and if it is true then we load the base shader
-		// If we have any defines then we insert them in the loaded shader code and save it to a temporary file.
-		// When building the pipeline we call Compile() check the necessary flags and execute the program with the corrects paths 
-		// The compiled shader files are saved with their id's because they are unique and we can check if a certain permutation has been compiled
-
-		std::string baseVertexPath = "Data/Shaders/Vulkan/src/" + vertexName + ".vert";			// Check if we can reload or not the shaders and use .vert or _vert.spv
+		std::string baseVertexPath = "Data/Shaders/Vulkan/src/" + vertexName + ".vert";
 		std::string baseGeometryPath = "Data/Shaders/Vulkan/src/" + geometryName + ".geom";
 		std::string baseFragmentPath = "Data/Shaders/Vulkan/src/" + fragmentName + ".frag";
 
@@ -288,14 +279,7 @@ namespace Engine
 		fragmentModule = VK_NULL_HANDLE;
 		computeModule = VK_NULL_HANDLE;
 
-		// We first check if the compiled shader exists
-		// If it does, then we check if it was compiled earlier than the base shader and if it was then we mark it as in need of compilation
-		// Then we check if the compiled shader does not exist or needs compilation and if it is true then we load the base shader
-		// If we have any defines then we insert them in the loaded shader code and save it to a temporary file.
-		// When building the pipeline we call Compile() check the necessary flags and execute the program with the corrects paths 
-		// The compiled shader files are saved with their id's because they are unique and we can check if a certain permutation has been compiled
-
-		std::string baseComputePath = "Data/Shaders/Vulkan/src/" + computeName + ".comp";			// Check if we can reload or not the shaders and use .vert or _vert.spv
+		std::string baseComputePath = "Data/Shaders/Vulkan/src/" + computeName + ".comp";
 
 		// Check if the compiled file already exists so we don't save to do it again
 		std::string compiledComputePath = "Data/Shaders/Vulkan/spirv/" + idStr + "_comp.spv";

@@ -165,6 +165,7 @@ namespace Engine
 
 	void GLRenderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
 	{
+		ubo->Update(data, size, offset);
 	}
 
 	VertexArray *GLRenderer::CreateVertexArray(const VertexInputDesc &desc, Buffer *vertexBuffer, Buffer *indexBuffer)
@@ -845,6 +846,19 @@ namespace Engine
 
 	void GLRenderer::ReloadShaders()
 	{
+		for (size_t i = 0; i < materialInstances.size(); i++)
+		{
+			MaterialInstance* mi = materialInstances[i];
+
+			std::vector<ShaderPass>& passes = mi->baseMaterial->GetShaderPasses();
+
+			for (size_t i = 0; i < passes.size(); i++)
+			{
+				ShaderPass& sp = passes[i];
+
+				sp.shader->CheckIfModifiedAndReload();
+			}
+		}
 	}
 
 	void GLRenderer::BeginFrame()

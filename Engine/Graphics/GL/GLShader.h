@@ -38,6 +38,7 @@ namespace Engine
 	private:
 		std::string ReadFile(std::ifstream &file, const std::string &dir, const std::string &mainShaderPath);
 		void SetUniformLocations();
+		GLuint CompileShader(const std::string& path, ShaderType type);
 
 	private:
 		GLuint program;

@@ -7,6 +7,14 @@
 
 namespace Engine
 {
+	enum class ShaderType
+	{
+		VERTEX,
+		FRAGMENT,
+		GEOMETRY,
+		COMPUTE
+	};
+
 	class ShaderProgram
 	{
 	public:
@@ -18,10 +26,16 @@ namespace Engine
 
 	protected:
 		std::string defines;
+		std::string vertexName;
+		std::string fragmentName;
+		std::string geometryName;
+		std::string computeName;
+
 		std::filesystem::file_time_type lastVertexWriteTime;
 		std::filesystem::file_time_type lastFragmentWriteTime;
 		std::filesystem::file_time_type lastGeometryWriteTime;
 		std::filesystem::file_time_type lastComputeWriteTime;
+
 		bool isCompiled;
 	};
 }

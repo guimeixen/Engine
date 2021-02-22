@@ -14,77 +14,59 @@ namespace Engine
 {
 	GLShader::GLShader(const std::string &defines, const std::string &vertexName, const std::string &fragmentName)
 	{
-		std::ifstream vertexFile, fragmentFile;
+		program = 0;
+		instanceDataOffsetLoc = 0;
+		modelMatrixLoc = 0;
+		startIndexLoc = 0;
+
+		this->defines = defines;
+		this->vertexName = vertexName;
+		this->fragmentName = fragmentName;
 
 		std::string vertexPath = "Data/Shaders/GL/" + vertexName + ".vert";
 		std::string fragmentPath = "Data/Shaders/GL/" + fragmentName + ".frag";
 
-		vertexFile.open(vertexPath);
-		fragmentFile.open(fragmentPath);
+		lastVertexWriteTime = std::filesystem::last_write_time(vertexPath);
+		lastFragmentWriteTime = std::filesystem::last_write_time(fragmentPath);
 
-		if (!vertexFile.is_open() || !fragmentFile.is_open())
-		{
-			std::cout << "Error! Failed to load shader: \n\t" << vertexPath << "\n\t" << fragmentPath << "\n";
-			return;
-		}
-
-		std::string dir = vertexPath.substr(0, vertexPath.find_last_of("/\\"));
-
-		std::string vertexCode = ReadFile(vertexFile, dir, vertexPath);
-		std::string fragmentCode = ReadFile(fragmentFile, dir, fragmentPath);
-
-		vertexCode.insert(13, defines);
-		fragmentCode.insert(13, defines);
-
-		GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-		GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-
-		int status;
-		char log[1024];
-
-		const char *vsCode = vertexCode.c_str();
-		const char *fsCode = fragmentCode.c_str();
-
-		glShaderSource(vs, 1, &vsCode, NULL);
-		glShaderSource(fs, 1, &fsCode, NULL);
-
-		glCompileShader(vs);
-		glCompileShader(fs);
-
-		glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
-		if (!status)
-		{
-			glGetShaderInfoLog(vs, 1024, NULL, log);
-			std::cout << "Vertex shader compilation failed:" << vertexPath << "\n" << std::string(log) << "\n";
-		}
-
-		glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
-		if (!status)
-		{
-			glGetShaderInfoLog(fs, 1024, NULL, log);
-			std::cout << "Fragment shader compilation failed:" << fragmentPath << "\n" << std::string(log) << "\n";
-		}
+		GLuint vs = CompileShader(vertexPath, ShaderType::VERTEX);
+		GLuint fs = CompileShader(fragmentPath, ShaderType::FRAGMENT);
 
 		program = glCreateProgram();
 		glAttachShader(program, vs);
 		glAttachShader(program, fs);
+
+		int status;
+		char log[1024];
 
 		glLinkProgram(program);
 		glGetProgramiv(program, GL_LINK_STATUS, &status);
 		if (!status)
 		{
 			glGetProgramInfoLog(program, 1024, NULL, log);
-			std::cout << vertexName << " " << fragmentName << " Shader program linking failed:\n" << std::string(log) << "\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "%s %s Shader program linking failed:\n%s\n", vertexName.c_str(), fragmentName.c_str(), log);
 		}
 
 		glDeleteShader(vs);
 		glDeleteShader(fs);
 
 		SetUniformLocations();
+
+		isCompiled = true;
 	}
 
 	GLShader::GLShader(const std::string &defines, const std::string &vertexName, const std::string &geometryName, const std::string &fragmentName)
 	{
+		program = 0;
+		instanceDataOffsetLoc = 0;
+		modelMatrixLoc = 0;
+		startIndexLoc = 0;
+
+		this->defines = defines;
+		this->vertexName = vertexName;
+		this->geometryName = geometryName;
+		this->fragmentName = fragmentName;
+
 		std::ifstream vertexFile, geometryFile, fragmentFile;
 
 		std::string vertexPath = "Data/Shaders/GL/" + vertexName + ".vert";
@@ -174,6 +156,14 @@ namespace Engine
 
 	GLShader::GLShader(const std::string &defines, const std::string &computePath)
 	{
+		program = 0;
+		instanceDataOffsetLoc = 0;
+		modelMatrixLoc = 0;
+		startIndexLoc = 0;
+
+		this->defines = defines;
+		this->computeName = computePath;
+
 		std::ifstream computeFile;
 
 		std::string path = "Data/Shaders/GL/" + computePath + ".comp";
@@ -309,61 +299,142 @@ namespace Engine
 		int size;
 		GLenum glType;
 
-		// Used to set the sampler values
-		//Use();
-		int samplerIndex = 0;
-
 		for (int i = 0; i < nrUniforms; i++)
 		{
 			glGetActiveUniform(program, i, sizeof(buffer), 0, &size, &glType, buffer);
 
-			std::string uniformName(buffer);
-
-			//	size_t pos = uniformName.find_last_of("[");
-
-			/*if (pos != std::string::npos)
-			{
-			std::string startingName = uniformName.substr(0, pos);
-			uniformName = startingName;
-
-			for (int i = 0; i < size; i++)
-			{
-			uniformName += "[" + std::to_string(i) + "]";
-			uniforms.insert({ uniformName.c_str(), glGetUniformLocation(program, uniformName.c_str()) });
-			uniformName = startingName;
-			}
-			}
-			else
-			{*/
+			std::string uniformName(buffer);		
 			uniforms.insert({ buffer, glGetUniformLocation(program, buffer) });
-			//	}
-
-			/*if (defines == "#define ANIMATED\n")
-			{
-			GLint i = glGetUniformLocation(program, "boneTransforms");
-			std::cout << "boneTransforms location: " << i << '\n';
-			}*/
-
-			// Needs to be below the uniforms.insert above otherwise if we set the sampler binding it won't be in the map so it will pass -1
-			// If using this call the Use function commented above
-			/*if (glType == GL_SAMPLER_2D)
-			{
-			SetInt(buffer, samplerIndex);
-			samplerIndex++;
-			}*/
-
-			//std::cout << uniformName << " ->  size: " << size << " type:" << glType << "\n";
 		}
-
-		//Unuse();
 
 		modelMatrixLoc = glGetUniformLocation(program, "toWorldSpace");
 		instanceDataOffsetLoc = glGetUniformLocation(program, "instanceDataOffset");
 		startIndexLoc = glGetUniformLocation(program, "startIndexLoc");
 	}
 
+	GLuint GLShader::CompileShader(const std::string& path, ShaderType type)
+	{
+		std::ifstream file(path);
+
+		if (!file.is_open())
+		{
+			Log::Print(LogLevel::LEVEL_ERROR, "Error! Failed to load shader: \n\t%s\n", path);
+			return 0;
+		}
+
+		std::string dir = path.substr(0, path.find_last_of("/\\"));
+
+		std::string code = ReadFile(file, dir, path);
+		code.insert(13, defines);
+
+		GLenum t = 0;
+		if (type == ShaderType::VERTEX)
+			t = GL_VERTEX_SHADER;
+		else if (type == ShaderType::GEOMETRY)
+			t = GL_GEOMETRY_SHADER;
+		else if (type == ShaderType::FRAGMENT)
+			t = GL_FRAGMENT_SHADER;
+		else if (type == ShaderType::COMPUTE)
+			t = GL_COMPUTE_SHADER;
+
+		GLuint shader = glCreateShader(t);
+
+		int status;
+		char log[1024];
+
+		const char* shaderCode = code.c_str();
+
+		glShaderSource(shader, 1, &shaderCode, NULL);
+
+		glCompileShader(shader);
+
+		glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+		if (!status)
+		{
+			glGetShaderInfoLog(shader, 1024, NULL, log);
+			Log::Print(LogLevel::LEVEL_ERROR, "Shader compilation failed: \n%s\n", log);
+		}
+
+		return shader;
+	}
+
 	void GLShader::CheckIfModifiedAndReload()
 	{
+		if (computeName.size() > 0)
+		{
+			std::string baseComputePath = "Data/Shaders/GL/" + computeName + ".comp";
+		}
+		else
+		{
+			std::string baseVertexPath = "Data/Shaders/GL/" + vertexName + ".vert";
+			std::string baseFragmentPath = "Data/Shaders/GL/" + fragmentName + ".frag";
+			std::string baseGeometryPath = "Data/Shaders/GL/" + geometryName + ".geom";
+
+			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
+			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
+
+			if (baseVertexWriteTime > lastVertexWriteTime)
+			{
+				lastVertexWriteTime = baseVertexWriteTime;
+				isCompiled = false;
+			}
+
+			if (baseFragmentWriteTime > lastFragmentWriteTime)
+			{
+				lastFragmentWriteTime = baseFragmentWriteTime;
+				isCompiled = false;
+			}		
+
+			if (geometryName.size() > 0)
+			{			
+				auto baseGeometryWriteTime = std::filesystem::last_write_time(baseGeometryPath);
+
+				if (baseGeometryWriteTime > lastGeometryWriteTime)
+				{
+					lastGeometryWriteTime = baseGeometryWriteTime;
+					isCompiled = false;
+				}
+			}
+
+			if (isCompiled == false)
+			{
+				GLuint vs, fs, gs;
+				vs = CompileShader(baseVertexPath, ShaderType::VERTEX);
+				fs = CompileShader(baseFragmentPath, ShaderType::FRAGMENT);
+
+				program = glCreateProgram();
+				glAttachShader(program, vs);
+				glAttachShader(program, fs);
+
+				if (geometryName.size() > 0)
+				{
+					gs = CompileShader(baseGeometryPath, ShaderType::GEOMETRY);
+					glAttachShader(program, gs);
+				}
+
+				int status;
+				char log[1024];
+
+				glLinkProgram(program);
+				glGetProgramiv(program, GL_LINK_STATUS, &status);
+				if (!status)
+				{
+					glGetProgramInfoLog(program, 1024, NULL, log);
+					Log::Print(LogLevel::LEVEL_ERROR, "%s %s %s Shader program linking failed:\n%s\n", vertexName.c_str(), fragmentName.c_str(), geometryName.c_str(), log);
+					return;
+				}
+
+				glDeleteShader(vs);
+				glDeleteShader(fs);
+
+				if (geometryName.size() > 0)
+					glDeleteShader(gs);
+
+				SetUniformLocations();
+
+				isCompiled = true;
+			}
+		}
 	}
 
 	void GLShader::SetModelMatrix(const glm::mat4 &matrix)
@@ -384,8 +455,7 @@ namespace Engine
 
 	void GLShader::SetMat4(const std::string &name, const glm::mat4 &matrix)
 	{
-		/*if (modelMatrixLoc != -1)
-			glUniformMatrix4fv(modelMatrixLoc, 1, GL_FALSE, glm::value_ptr(matrix));*/
+		glUniformMatrix4fv(uniforms[name], 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
 	void GLShader::SetMat3(const std::string &name, const glm::mat3 &matrix)

@@ -206,42 +206,6 @@ namespace Engine
 			return false;
 		}
 
-		/*VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = cameraUBO->GetBuffer();
-		bufferInfo.range = VK_WHOLE_SIZE;
-
-		VkWriteDescriptorSet write = {};
-		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		write.dstBinding = CAMERA_UBO;
-		write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		write.descriptorCount = 1;
-
-		for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			bufferInfo.offset = VkDeviceSize(i * allCamerasAlignedSize);
-
-			write.dstSet = frameResources[i].camerasSet;
-			write.pBufferInfo = &bufferInfo;
-
-			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-		}
-		
-		bufferInfo.buffer = frameDataUBO->GetBuffer();
-		bufferInfo.range = sizeof(FrameUBO);
-
-		for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			bufferInfo.offset = i * singleFrameUBOAlignedSize;
-
-			write.dstSet = frameResources[i].globalBuffersSet;
-			write.dstBinding = FRAME_UBO;
-			write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			write.descriptorCount = 1;
-			write.pBufferInfo = &bufferInfo;
-
-			vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-		}*/
-
 		VkWriteDescriptorSet cameraUBOWrite = {};
 		cameraUBOWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		cameraUBOWrite.descriptorCount = 1;
