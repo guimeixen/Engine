@@ -121,9 +121,6 @@ namespace Engine
 		cameraUBO = new GLUniformBuffer(nullptr, sizeof(CameraUBO));
 		cameraUBO->BindTo(CAMERA_UBO);
 
-		frameDataUBO = new GLUniformBuffer(nullptr, sizeof(FrameUBO));
-		frameDataUBO->BindTo(FRAME_UBO);
-
 		materialUBO = new GLUniformBuffer(nullptr, 128);
 		materialUBO->BindTo(MAT_PROPERTIES_UBO_BINDING);
 		return true;
@@ -156,11 +153,6 @@ namespace Engine
 		ubo.nearFarPlane = glm::vec2(camera->GetNearPlane(), camera->GetFarPlane());
 		
 		cameraUBO->Update(&ubo, sizeof(ubo), 0);
-	}
-
-	void GLRenderer::UpdateFrameDataUBO(const FrameUBO& frameData)
-	{
-		frameDataUBO->Update(&frameData, sizeof(FrameUBO), 0);
 	}
 
 	void GLRenderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
@@ -885,13 +877,10 @@ namespace Engine
 
 		if (cameraUBO)
 			delete cameraUBO;
-		if (frameDataUBO)
-			delete frameDataUBO;
 		if (materialUBO)
 			delete materialUBO;
 
 		cameraUBO = nullptr;
-		frameDataUBO = nullptr;
 		materialUBO = nullptr;
 
 		/*if (meshParamsUBO)

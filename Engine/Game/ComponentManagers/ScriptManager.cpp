@@ -335,6 +335,8 @@ namespace Engine
 
 	void ScriptManager::ReloadAll()
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Reloading scripts...");
+
 		for (size_t i = 0; i < usedScripts; i++)
 		{
 			const ScriptInstance &si = scripts[i];
@@ -343,7 +345,7 @@ namespace Engine
 			si.s->RemovedUnusedProperties();
 		}
 
-		Log::Print(LogLevel::LEVEL_INFO, "Reload all scripts\n");
+		Log::Print(LogLevel::LEVEL_INFO, "Done!\n");
 	}
 
 	void ScriptManager::ReloadScripts()

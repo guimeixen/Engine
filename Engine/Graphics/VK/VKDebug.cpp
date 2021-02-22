@@ -10,7 +10,12 @@ namespace Engine
 	{
 		VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char *layerPrefix, const char *msg, void *userData)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "Validation Layer: %s\n", msg);
+			if (flags == VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
+				Log::Print(LogLevel::LEVEL_INFO, "Validation Layer: %s\n", msg);
+			else if (flags == VK_DEBUG_REPORT_WARNING_BIT_EXT || flags == VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
+				Log::Print(LogLevel::LEVEL_WARNING, "Validation Layer: %s\n", msg);
+			else if(flags == VK_DEBUG_REPORT_ERROR_BIT_EXT)
+				Log::Print(LogLevel::LEVEL_ERROR, "Validation Layer: %s\n", msg);
 
 			return VK_FALSE;
 		}

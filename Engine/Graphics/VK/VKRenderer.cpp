@@ -54,11 +54,8 @@ namespace Engine
 		currentCamera = 0;
 		cameraUBOData = nullptr;
 		cameraUBO = nullptr;
-		frameDataUBO = nullptr;
-		frameData = {};
 		singleCameraAlignedSize = 0;
 		allCamerasAlignedSize = 0;
-		singleFrameUBOAlignedSize = 0;
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -136,7 +133,6 @@ namespace Engine
 			//frameResources[i].computeCmdBuffer = base.AllocateComputeCommandBuffer();
 		}
 
-
 		VkDescriptorSetLayoutBinding cameraLayoutBinding = {};
 		cameraLayoutBinding.binding = CAMERA_UBO;
 		cameraLayoutBinding.descriptorCount = 1;
@@ -149,29 +145,16 @@ namespace Engine
 		instanceDataBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		instanceDataBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-		VkDescriptorSetLayoutBinding frameUBOBinding = {};
-		frameUBOBinding.binding = FRAME_UBO;
-		frameUBOBinding.descriptorCount = 1;
-		frameUBOBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		frameUBOBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
-
 		globalBuffersSetLayoutBindings.push_back(cameraLayoutBinding);
 		globalBuffersSetLayoutBindings.push_back(instanceDataBinding);
-		globalBuffersSetLayoutBindings.push_back(frameUBOBinding);
 
 		// Dynamic ubo for cameras
 		unsigned int minUBOAlignment = (unsigned int)base.GetDeviceLimits().minUniformBufferOffsetAlignment;
 		singleCameraAlignedSize = utils::Align(sizeof(CameraUBO), minUBOAlignment);
 		allCamerasAlignedSize = utils::Align(sizeof(CameraUBO) * MAX_CAMERAS, minUBOAlignment);
 
-		singleFrameUBOAlignedSize = utils::Align(sizeof(FrameUBO), minUBOAlignment);
-
-		//unsigned int cameraUBOBufferSize = singleCameraAlignedSize * MAX_CAMERAS * MAX_FRAMES_IN_FLIGHT;
-		//unsigned int frameUBOBufferSize = utils::Align(sizeof(FrameUBO) * MAX_FRAMES_IN_FLIGHT, minUBOAlignment);
-
 		// The buffer creation takes care of alignment
 		cameraUBO = new VKBuffer(&base, nullptr, singleCameraAlignedSize * MAX_CAMERAS * MAX_FRAMES_IN_FLIGHT, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
-		frameDataUBO = new VKBuffer(&base, nullptr, singleFrameUBOAlignedSize * MAX_FRAMES_IN_FLIGHT, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
 		instanceDataSSBO = new VKBuffer(&base, nullptr, 1024 * 512, BufferType::ShaderStorageBuffer, BufferUsage::DYNAMIC);				// 512 kib	
 
 		cameraUBOData = (glm::mat4*)malloc(size_t(cameraUBO->GetAlignedSize()));
@@ -218,12 +201,6 @@ namespace Engine
 		instanceDataWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 		instanceDataWrite.dstBinding = INSTANCE_DATA_SSBO;
 
-		VkWriteDescriptorSet frameUBOWrite = {};
-		frameUBOWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		frameUBOWrite.descriptorCount = 1;
-		frameUBOWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		frameUBOWrite.dstBinding = FRAME_UBO;
-
 		VKBufferInfo cameraUBOInfo = {};
 		cameraUBOInfo.binding = CAMERA_UBO;
 		cameraUBOInfo.buffer = cameraUBO;
@@ -232,17 +209,11 @@ namespace Engine
 		instanceBufInfo.binding = INSTANCE_DATA_SSBO;
 		instanceBufInfo.buffer = instanceDataSSBO;
 
-		VKBufferInfo frameUBOInfo = {};
-		frameUBOInfo.binding = FRAME_UBO;
-		frameUBOInfo.buffer = frameDataUBO;
-
 		globalBuffersSetWrites.push_back(cameraUBOWrite);
 		globalBuffersSetWrites.push_back(instanceDataWrite);
-		globalBuffersSetWrites.push_back(frameUBOWrite);
 
 		bufferInfos.push_back(cameraUBOInfo);
 		bufferInfos.push_back(instanceBufInfo);
-		bufferInfos.push_back(frameUBOInfo);
 
 		return true;
 	}
@@ -687,18 +658,10 @@ namespace Engine
 		currentCamera++;
 	}
 
-	void VKRenderer::UpdateFrameDataUBO(const FrameUBO& frameData)
-	{
-		this->frameData = frameData;
-	}
-
 	void VKRenderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
 	{
 		VKBuffer* b = static_cast<VKBuffer*>(ubo);
-
 		b->Update(data, size, currentFrame * (b->GetAlignedSize() / MAX_FRAMES_IN_FLIGHT));
-
-		//ubo->Update(data, size, currentFrame * singleFrameUBOAlignedSize);
 	}
 
 	void VKRenderer::SetDefaultRenderTarget()
@@ -1350,11 +1313,6 @@ namespace Engine
 				{
 					info.offset = VkDeviceSize(j * allCamerasAlignedSize);
 				}
-				else if (bi.binding == FRAME_UBO)
-				{
-					info.range = sizeof(FrameUBO);
-					info.offset = VkDeviceSize(j * singleFrameUBOAlignedSize);
-				}				
 
 				write.pBufferInfo = &info;
 				write.dstSet = frameResources[j].globalBuffersSet;
@@ -1824,7 +1782,6 @@ namespace Engine
 		VkDevice device = base.GetDevice();
 
 		cameraUBO->Update(cameraUBOData, currentCamera * singleCameraAlignedSize, currentFrame * allCamerasAlignedSize);
-		frameDataUBO->Update(&frameData, sizeof(FrameUBO), currentFrame * singleFrameUBOAlignedSize);
 
 		instanceDataSSBO->Flush();
 
@@ -1998,6 +1955,8 @@ namespace Engine
 		// We can use this because reloading shaders will only happen when focusing on the editor
 		vkDeviceWaitIdle(base.GetDevice());
 
+		Log::Print(LogLevel::LEVEL_INFO, "Reloading shaders...");
+
 		for (size_t i = 0; i < materialInstances.size(); i++)
 		{
 			MaterialInstance* mi = materialInstances[i];
@@ -2019,6 +1978,8 @@ namespace Engine
 				}
 			}
 		}
+
+		Log::Print(LogLevel::LEVEL_INFO, "Done!\n");
 	}
 
 	void VKRenderer::Dispose()
@@ -2075,8 +2036,6 @@ namespace Engine
 
 		if (cameraUBO)
 			delete cameraUBO;
-		if (frameDataUBO)
-			delete frameDataUBO;
 		if (instanceDataSSBO)
 			delete instanceDataSSBO;
 		if (cameraUBOData)

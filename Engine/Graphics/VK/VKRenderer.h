@@ -41,7 +41,6 @@ namespace Engine
 		void PostLoad() override;
 		void Resize(unsigned int width, unsigned int height) override;
 		void SetCamera(Camera *camera, const glm::vec4 &clipPlane = glm::vec4(0.0f)) override;
-		void UpdateFrameDataUBO(const FrameUBO& frameData) override;
 		void UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset) override;
 
 		void BeginFrame() override;
@@ -174,15 +173,10 @@ namespace Engine
 		//std::vector<VkWriteDescriptorSet> globalSetWrites;
 		
 		VKBuffer* cameraUBO;
-		VKBuffer* frameDataUBO;
-
 		glm::mat4* cameraUBOData;
 		unsigned int currentCamera;
 		unsigned int singleCameraAlignedSize;
 		unsigned int allCamerasAlignedSize;
-
-		FrameUBO frameData;
-		unsigned int singleFrameUBOAlignedSize;
 
 		VKBuffer* instanceDataSSBO;
 		unsigned int instanceDataOffset = 0;

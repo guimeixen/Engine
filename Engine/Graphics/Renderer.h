@@ -79,7 +79,6 @@ namespace Engine
 		virtual void PostLoad() = 0;
 		virtual void Resize(unsigned int width, unsigned int height) = 0;
 		virtual void SetCamera(Camera *camera, const glm::vec4 &clipPlane = glm::vec4(0.0f)) = 0;
-		virtual void UpdateFrameDataUBO(const FrameUBO& frameData) = 0;
 		virtual void UpdateUBO(Buffer *ubo, const void* data, unsigned int size, unsigned int offset) = 0;
 		virtual void SetViewportPos(const glm::ivec2 &pos) { viewportPos = pos; }
 		virtual void BeginFrame() {}

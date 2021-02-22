@@ -59,9 +59,8 @@ void ConsoleWindow::Render()
 
 void ConsoleWindow::AddOutput(Engine::LogLevel logLevel, const char *output)
 {
-	if (outputsIndex >= MAX_OUTPUTS)
+	if (numOutputs >= MAX_OUTPUTS)
 	{
-		outputsIndex = MAX_OUTPUTS - 1;
 		// Shift all outputs so we put the new output at the end of the array
 		for (size_t i = 0; i < numOutputs - 1; i++)
 		{
