@@ -875,6 +875,7 @@ void ObjectWindow::HandleModel()
 					std::string dir = editorManager->GetCurrentProjectDir() + "/*";
 					files.clear();
 					Engine::utils::FindFilesInDirectory(files, dir, ".mat");
+					Engine::utils::FindFilesInDirectory(files, "Data/Materials/*", ".mat");
 				}
 
 				if (mm.mat->path.size() > 0 && ImGui::IsItemHovered())

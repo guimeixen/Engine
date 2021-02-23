@@ -16,7 +16,7 @@ layout(location = 3) out vec4 lightSpacePosGeom;
 #include "include/ubos.glsl"
 #include "include/utils.glsl"
 
-layout(push_constant) uniform PushConsts
+PROPERTIES
 {
 	uint startIndex;
 	uint numVecs;

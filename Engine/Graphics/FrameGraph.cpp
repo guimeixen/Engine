@@ -30,6 +30,7 @@ namespace Engine
 		fb = nullptr;
 		isCompute = false;
 		isSetup = false;
+		writesToFramebuffer = true;
 	}
 
 	void Pass::Resize(unsigned int width, unsigned int height)

@@ -25,6 +25,14 @@ namespace Engine
 		lastCamPos = glm::vec3(0.0f);
 		voxelVis.volumeSize = (float)VOXEL_RES;
 		voxelVis.mipLevel = 0;
+		voxelizationData = {};
+		voxelMipmapData = {};
+		voxelMipmapMat = nullptr;
+		voxelCubeVisMat = nullptr;
+		fillPositionsMat = nullptr;
+		renderer = nullptr;
+		giBaseMat = nullptr;
+
 	}
 
 	void VCTGI::Init(Renderer *renderer, FrameGraph &frameGraph, ScriptManager &scriptManager)
@@ -77,7 +85,7 @@ namespace Engine
 			renderer->BindImage(0, 0, voxelTexture, ImageAccess::WRITE_ONLY);
 			renderer->Submit(toVoxelizeQueue);
 			voxelized = true;
-			needsClear = true;
+			//needsClear = true;
 		}
 	}
 	

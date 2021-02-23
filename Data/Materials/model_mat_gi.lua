@@ -21,10 +21,10 @@ model_mat_gi =
 			queue='opaque',
 			shader="model",
 		},
-		depthPrepass =
-		{
-			shader='depth_prepass',
-		}
+		--depthPrepass =
+		--{
+		--	shader='depth_prepass',
+		--}
 	},
 	resources =
 	{

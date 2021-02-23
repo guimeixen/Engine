@@ -8,8 +8,8 @@ layout(location = 2) in vec4 lightSpacePos;
 layout(location = 3) in vec3 worldPos;
 layout(location = 4) flat in int axis;
 
-tex_bind2D_user(0) texDiffuse;
-tex_bind2DShadow_global(CSM_TEXTURE) shadowMap;
+tex2D_u(0) texDiffuse;
+tex2DShadow_g(CSM_TEXTURE) shadowMap;
 image3D_g(VOXEL_IMAGE, rgba8, coherent volatile) voxelTexture;
 
 
@@ -88,16 +88,17 @@ void main()
 	
 	vec3 N = normalize(normal);
 	
-	vec3 shadowUV = lightSpacePos.xyz;
+	/*vec3 shadowUV = lightSpacePos.xyz;
 	shadowUV.y = 1.0 - shadowUV.y;
 	shadowUV.x = shadowUV.x * ONE_OVER_CASCADE_COUNT;
 	float bias = 0.00065;
 	shadowUV.z -= bias;
-	float shadow = texture(shadowMap, shadowUV).r;
+	float shadow = texture(shadowMap, shadowUV).r;*/
 	
 	vec3 diffuse = max(dot(N, dirAndIntensity.xyz), 0.0) * dirLightColor.xyz * dirAndIntensity.w;
 	
-	vec3 lighting = diffuse * shadow;
+	//vec3 lighting = diffuse * shadow;
+	vec3 lighting = diffuse;
 	
 	// Point lights
 	/*for (int i = 0; i < currentPointLights; i++)
