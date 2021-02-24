@@ -11,7 +11,7 @@ struct IndirectDraw
 	uint baseInstance;
 };
 
-layout(set = 0, binding = DEBUG_VOXELS_INDIRECT_DRAW, std430) buffer IndirectBuffer
+layout(set = BUFFERS_SET, binding = DEBUG_VOXELS_INDIRECT_DRAW, std430) buffer IndirectBuffer
 {
 	IndirectDraw indDraw[];					// We only have space for 1 element (we're just rendering a cube)
 };
@@ -22,7 +22,7 @@ struct Voxel
 	float pad;
 };
 
-layout(set = 0, binding = DEBUG_VOXELS_POSITION_SSBO, std140) writeonly buffer VoxelSSBO
+layout(set = BUFFERS_SET, binding = DEBUG_VOXELS_POSITION_SSBO, std140) writeonly buffer VoxelSSBO
 {
 	Voxel voxels[];
 };

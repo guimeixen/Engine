@@ -207,7 +207,7 @@ namespace Engine
 			b.srcStage = PipelineStage::FRAGMENT | PipelineStage::VERTEX | PipelineStage::INDIRECT;
 			b.dstStage = PipelineStage::COMPUTE;
 
-			//renderer->PerformBarrier(b);
+			renderer->PerformBarrier(b);
 		});
 
 		fillVoxelsVisBufferPass.OnExecute([this]()
@@ -225,8 +225,8 @@ namespace Engine
 			dispatchItem.materialData = &mip;
 			dispatchItem.materialDataSize = sizeof(mip);
 
-			//renderer->BindImage(0, mip, voxelTexture, ImageAccess::READ_ONLY);		// MIP MIGHT NOT BE WRITTEN! Make sure this pass occurs after mipmapping
-			//renderer->Dispatch(dispatchItem);
+			//renderer->BindImage(0, mip, voxelTexture, ImageAccess::READ_ONLY);
+			renderer->Dispatch(dispatchItem);
 		});
 	}
 

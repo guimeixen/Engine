@@ -75,7 +75,7 @@ namespace Engine
 		glm::vec3 lastCamPos;
 
 		const unsigned int VOXEL_RES = 128;
-		float voxelGridSize = 16.0f;
+		float voxelGridSize = 32.0f;
 		VoxelizationData voxelizationData;
 		VoxelMipmapData voxelMipmapData;
 		VoxelVis voxelVis;
