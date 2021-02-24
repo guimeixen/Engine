@@ -11,7 +11,7 @@ layout(location = 3) in float clipSpaceDepth;
 layout(location = 4) in vec4 lightSpacePos[3];
 
 #include "include/shadow.glsl"
-//#include "include/voxel_cone_tracing.glsl"
+#include "include/voxel_cone_tracing.glsl"
 
 tex2D_u(0) tex;
 
@@ -85,8 +85,8 @@ void main()
 	}
 #endif
 	
-	//vec4 indirectDiffuse = indirectDiffuseLight(N);
-	//lighting += indirectDiffuse.rgb;
+	vec4 indirectDiffuse = indirectDiffuseLight(N);
+	lighting += indirectDiffuse.rgb;
 	lighting += skyColor * skyColorMultiplier;
 	//lighting *= indirectDiffuse.a;
 	

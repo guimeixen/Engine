@@ -164,7 +164,7 @@ namespace Engine
 	{
 		if (needsClear && !voxelized)
 		{
-			//renderer->ClearImage(voxelTexture);
+			renderer->ClearImage(voxelTexture);
 			needsClear = false;
 		}
 	}
@@ -235,7 +235,7 @@ namespace Engine
 		Pass &mipMapsPass = frameGraph.AddPass("voxelMipMaps");
 		mipMapsPass.SetIsCompute(true);
 		mipMapsPass.AddImageInput("voxelTexture");
-		mipMapsPass.AddImageOutput("voxelTextureMipmapped", voxelTexture);		// So the framegraph adds this pass to the ordered pass list
+		mipMapsPass.AddImageOutput("voxelTextureMipmapped", voxelTexture);
 
 		mipMapsPass.OnBarriers([this]()
 		{
@@ -250,7 +250,7 @@ namespace Engine
 			b.srcStage = PipelineStage::FRAGMENT | PipelineStage::VERTEX | PipelineStage::INDIRECT;
 			b.dstStage = PipelineStage::COMPUTE;
 
-			//renderer->PerformBarrier(b);
+			renderer->PerformBarrier(b);
 		});
 
 		mipMapsPass.OnExecute([this]()
@@ -281,7 +281,7 @@ namespace Engine
 
 				//voxelTexture->BindAsImage(1, i + 1, true, ImageAccess::WRITE_ONLY, TextureInternalFormat::RGBA8);
 				//renderer->BindImage(0, i + 1, voxelTexture, ImageAccess::WRITE_ONLY);
-				//renderer->Dispatch(dispatchItem);
+				renderer->Dispatch(dispatchItem);
 
 				BarrierImage bi = {};
 				bi.image = voxelTexture;
@@ -294,7 +294,7 @@ namespace Engine
 				b.dstStage = PipelineStage::COMPUTE;
 				b.images.push_back(bi);
 
-				//renderer->PerformBarrier(b);
+				renderer->PerformBarrier(b);
 			}
 		});
 	}
