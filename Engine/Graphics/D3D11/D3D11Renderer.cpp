@@ -235,7 +235,7 @@ namespace Engine
 		cameraUBO->Update(&ubo, sizeof(CameraUBO), 0);
 	}
 
-	void D3D11Renderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
+	void D3D11Renderer::UpdateBuffer(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
 	{
 		ubo->Update(data, size, offset);
 	}

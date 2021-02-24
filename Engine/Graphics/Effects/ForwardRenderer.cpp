@@ -74,7 +74,7 @@ namespace Engine
 
 		const PointLightUBO plUBO = game->GetLightManager().GetPointLightsUBO();
 		//pointLightsUBO->Update(&plUBO, sizeof(plUBO), 0);
-		renderer->UpdateUBO(pointLightsUBO, &plUBO, sizeof(plUBO), 0);
+		renderer->UpdateBuffer(pointLightsUBO, &plUBO, sizeof(plUBO), 0);
 
 
 		unsigned int queueIDs[] = { csmQueueID, csmQueueID, csmQueueID, voxelizationQueueID, opaqueQueueID, transparentQueueID, uiQueueID };

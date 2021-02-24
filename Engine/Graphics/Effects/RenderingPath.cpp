@@ -231,7 +231,7 @@ namespace Engine
 			//ubo.lightSpaceMatrix[3] = glm::transpose(ubo.lightSpaceMatrix[3]);
 		}
 		//mainLightUBO->Update(&ubo, sizeof(DirLightUBO), 0);
-		renderer->UpdateUBO(mainLightUBO, &ubo, sizeof(DirLightUBO), 0);
+		renderer->UpdateBuffer(mainLightUBO, &ubo, sizeof(DirLightUBO), 0);
 
 
 
@@ -298,7 +298,7 @@ namespace Engine
 
 		//frameUBO->Update(&frameData, sizeof(FrameUBO), 0);
 		//renderer->UpdateFrameDataUBO(frameData);
-		renderer->UpdateUBO(frameDataUBO, &frameData, sizeof(FrameUBO), 0);
+		renderer->UpdateBuffer(frameDataUBO, &frameData, sizeof(FrameUBO), 0);
 	}
 
 	void RenderingPath::EnableTerrainEditing()

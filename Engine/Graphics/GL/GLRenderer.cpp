@@ -155,7 +155,7 @@ namespace Engine
 		cameraUBO->Update(&ubo, sizeof(ubo), 0);
 	}
 
-	void GLRenderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
+	void GLRenderer::UpdateBuffer(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
 	{
 		ubo->Update(data, size, offset);
 	}

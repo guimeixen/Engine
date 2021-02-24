@@ -48,23 +48,22 @@ namespace Engine
 		vertexExists = std::filesystem::exists(compiledVertexPath);
 		fragmentExists = std::filesystem::exists(compiledFragmentPath);
 
+		auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
+		auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
+		lastVertexWriteTime = baseVertexWriteTime;
+		lastFragmentWriteTime = baseFragmentWriteTime;
+
 		if (vertexExists)
 		{
 			auto compiledTime = std::filesystem::last_write_time(compiledVertexPath);
-			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
-
-			lastVertexWriteTime = baseVertexWriteTime;
-
+			
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseVertexWriteTime)
 				vertexNeedsCompile = true;
 		}
 		if (fragmentExists)
 		{
-			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);
-			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
-
-			lastFragmentWriteTime = baseFragmentWriteTime;
+			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);	
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseFragmentWriteTime)
@@ -143,23 +142,24 @@ namespace Engine
 		geometryExists = std::filesystem::exists(compiledGeometryPath);
 		fragmentExists = std::filesystem::exists(compiledFragmentPath);
 
+		auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
+		auto baseGeometryWriteTime = std::filesystem::last_write_time(baseGeometryPath);
+		auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
+		lastVertexWriteTime = baseVertexWriteTime;
+		lastGeometryWriteTime = baseGeometryWriteTime;
+		lastFragmentWriteTime = baseFragmentWriteTime;
+
 		if (vertexExists)
 		{
 			auto compiledTime = std::filesystem::last_write_time(compiledVertexPath);
-			auto baseVertexWriteTime = std::filesystem::last_write_time(baseVertexPath);
-
-			lastVertexWriteTime = baseVertexWriteTime;
-
+			
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseVertexWriteTime)
 				vertexNeedsCompile = true;
 		}
 		if (geometryExists)
 		{
-			auto compiledTime = std::filesystem::last_write_time(compiledGeometryPath);
-			auto baseGeometryWriteTime = std::filesystem::last_write_time(baseGeometryPath);
-
-			lastGeometryWriteTime = baseGeometryWriteTime;
+			auto compiledTime = std::filesystem::last_write_time(compiledGeometryPath);	
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseGeometryWriteTime)
@@ -167,10 +167,7 @@ namespace Engine
 		}
 		if (fragmentExists)
 		{
-			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);
-			auto baseFragmentWriteTime = std::filesystem::last_write_time(baseFragmentPath);
-
-			lastFragmentWriteTime = baseFragmentWriteTime;
+			auto compiledTime = std::filesystem::last_write_time(compiledFragmentPath);		
 
 			// If the compiled time is older than the when the base shader was modified the we need to compile it again
 			if (compiledTime < baseFragmentWriteTime)
@@ -178,84 +175,24 @@ namespace Engine
 		}
 
 		if (vertexExists == false || vertexNeedsCompile)
-		{
-			std::ifstream vertexFile(baseVertexPath, std::ios::ate);		// ate -> start reading at the end of the file. Useful for determining the file size
-
-			if (!vertexFile.is_open())
-			{
-				std::cout << "Error -> Failed to open file : " << baseVertexPath.c_str() << "\n";
-			}
-
-			size_t vertFileSize = (size_t)vertexFile.tellg();
-			vertexCode.resize(vertFileSize, 0);
-			vertexFile.seekg(std::ios::beg);									// Go back the beginning of the file
-			vertexFile.read(&vertexCode[0], vertFileSize);		// Now read it all at once
-			vertexFile.close();
-		}
+			ReadShaderFile(baseVertexPath, ShaderType::VERTEX);
 
 		if (geometryExists == false || geometryNeedsCompile)
-		{
-			std::ifstream geometryFile(baseGeometryPath, std::ios::ate);
-
-			if (!geometryFile.is_open())
-			{
-				std::cout << "Error -> Failed to open file : " << baseGeometryPath.c_str() << "\n";
-			}
-
-			size_t geomFileSize = (size_t)geometryFile.tellg();
-			geometryCode.resize(geomFileSize, 0);
-			geometryFile.seekg(std::ios::beg);
-			geometryFile.read(&geometryCode[0], geomFileSize);
-			geometryFile.close();
-		}
+			ReadShaderFile(baseGeometryPath, ShaderType::GEOMETRY);
 
 		if (fragmentExists == false || fragmentNeedsCompile)
-		{
-			std::ifstream fragmentFile(baseFragmentPath, std::ios::ate);
-
-			if (!fragmentFile.is_open())
-			{
-				std::cout << "Error -> Failed to open file : " << baseFragmentPath.c_str() << "\n";
-			}
-
-			size_t fragFileSize = (size_t)fragmentFile.tellg();
-			fragmentCode.resize(fragFileSize, 0);
-			fragmentFile.seekg(std::ios::beg);
-			fragmentFile.read(&fragmentCode[0], fragFileSize);
-			fragmentFile.close();
-		}
+			ReadShaderFile(baseFragmentPath, ShaderType::FRAGMENT);
 
 		if (defines.length() != 0)
 		{
-			// We load the base shader above and insert the defines and then save it to a temporary file so it can be loaded to be compiled
-			// But only save the ones with inserted defines, because the ones with no defines are equal to the base shader
-
 			if (vertexExists == false || vertexNeedsCompile)
-			{
-				vertexCode.insert(13, defines);
-
-				std::ofstream vertexWithDefinesFile("Data/Shaders/Vulkan/src/" + idStr + ".vert");
-				vertexWithDefinesFile << vertexCode;
-				vertexWithDefinesFile.close();
-			}
+				WriteShaderFileWithDefines(ShaderType::VERTEX);
 
 			if (geometryExists == false || geometryNeedsCompile)
-			{
-				geometryCode.insert(13, defines);
-
-				std::ofstream geometryWithDefinesFile("Data/Shaders/Vulkan/src/" + idStr + ".geom");
-				geometryWithDefinesFile << geometryCode;
-				geometryWithDefinesFile.close();
-			}
+				WriteShaderFileWithDefines(ShaderType::GEOMETRY);
 
 			if (fragmentExists == false || fragmentNeedsCompile)
-			{
-				fragmentCode.insert(13, defines);
-
-				std::ofstream fragmentWithDefinesFile("Data/Shaders/Vulkan/src/" + idStr + ".frag");
-				fragmentWithDefinesFile << fragmentCode;
-				fragmentWithDefinesFile.close();
-			}
+				WriteShaderFileWithDefines(ShaderType::FRAGMENT);
 		}
 	}
 
@@ -286,12 +223,12 @@ namespace Engine
 
 		computeExists = std::filesystem::exists(compiledComputePath);
 
+		auto baseComputeWriteTime = std::filesystem::last_write_time(baseComputePath);
+		lastComputeWriteTime = baseComputeWriteTime;
+
 		if (computeExists)
 		{
-			auto compiledTime = std::filesystem::last_write_time(compiledComputePath);
-			auto baseComputeWriteTime = std::filesystem::last_write_time(baseComputePath);
-
-			lastComputeWriteTime = baseComputeWriteTime;
+			auto compiledTime = std::filesystem::last_write_time(compiledComputePath);	
 
 			// If the compiled time is older than when the base shader was modified the we need to compile it again
 			if (compiledTime < baseComputeWriteTime)

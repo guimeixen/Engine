@@ -658,7 +658,7 @@ namespace Engine
 		currentCamera++;
 	}
 
-	void VKRenderer::UpdateUBO(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
+	void VKRenderer::UpdateBuffer(Buffer* ubo, const void* data, unsigned int size, unsigned int offset)
 	{
 		VKBuffer* b = static_cast<VKBuffer*>(ubo);
 		b->Update(data, size, currentFrame * (b->GetAlignedSize() / MAX_FRAMES_IN_FLIGHT));
@@ -1700,7 +1700,7 @@ namespace Engine
 			VKTexture3D *tex3d = static_cast<VKTexture3D*>(tex);
 
 			VkImageSubresourceRange range = {};
-			range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;		// AspectMask can only be color
+			range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 			range.baseArrayLayer = 0;
 			range.baseMipLevel = 0;
 			range.layerCount = 1;
@@ -1712,8 +1712,26 @@ namespace Engine
 			clearColor.float32[2] = 0.0f;
 			clearColor.float32[3] = 0.0f;
 
+			VkImageMemoryBarrier barrier = {};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.image = tex3d->GetImage();
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.levelCount = tex3d->GetMipLevels();
+			barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
 			// TODO: Warning because of GENERAL layout, transition to TRANSFER_DST_OPTIMAL ? test
 			vkCmdClearColorImage(frameResources[currentFrame].frameCmdBuffer, tex3d->GetImage(), VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &range);
+
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+			vkCmdPipelineBarrier(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 		}
 		
 	}

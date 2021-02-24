@@ -85,7 +85,7 @@ namespace Engine
 			renderer->BindImage(0, 0, voxelTexture, ImageAccess::WRITE_ONLY);
 			renderer->Submit(toVoxelizeQueue);
 			voxelized = true;
-			//needsClear = true;
+			needsClear = true;
 		}
 	}
 	
@@ -164,7 +164,7 @@ namespace Engine
 	{
 		if (needsClear && !voxelized)
 		{
-			renderer->ClearImage(voxelTexture);
+			//renderer->ClearImage(voxelTexture);
 			needsClear = false;
 		}
 	}
@@ -207,7 +207,7 @@ namespace Engine
 			b.srcStage = PipelineStage::FRAGMENT | PipelineStage::VERTEX | PipelineStage::INDIRECT;
 			b.dstStage = PipelineStage::COMPUTE;
 
-			renderer->PerformBarrier(b);
+			//renderer->PerformBarrier(b);
 		});
 
 		fillVoxelsVisBufferPass.OnExecute([this]()
@@ -250,7 +250,7 @@ namespace Engine
 			b.srcStage = PipelineStage::FRAGMENT | PipelineStage::VERTEX | PipelineStage::INDIRECT;
 			b.dstStage = PipelineStage::COMPUTE;
 
-			renderer->PerformBarrier(b);
+			//renderer->PerformBarrier(b);
 		});
 
 		mipMapsPass.OnExecute([this]()
@@ -294,7 +294,7 @@ namespace Engine
 				b.dstStage = PipelineStage::COMPUTE;
 				b.images.push_back(bi);
 
-				renderer->PerformBarrier(b);
+				//renderer->PerformBarrier(b);
 			}
 		});
 	}
