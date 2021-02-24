@@ -50,6 +50,8 @@ namespace Engine
 		currentFB = nullptr;
 		instanceDataSSBO = nullptr;
 		mappedInstanceData = nullptr;
+		instanceDataOffset = 0;
+		instanceDataBufferSingleSize = 0;
 		currentFrame = 0;
 		currentCamera = 0;
 		cameraUBOData = nullptr;
@@ -153,9 +155,11 @@ namespace Engine
 		singleCameraAlignedSize = utils::Align(sizeof(CameraUBO), minUBOAlignment);
 		allCamerasAlignedSize = utils::Align(sizeof(CameraUBO) * MAX_CAMERAS, minUBOAlignment);
 
+		instanceDataBufferSingleSize = 1024 * 512;
+
 		// The buffer creation takes care of alignment
 		cameraUBO = new VKBuffer(&base, nullptr, singleCameraAlignedSize * MAX_CAMERAS * MAX_FRAMES_IN_FLIGHT, BufferType::UniformBuffer, BufferUsage::DYNAMIC);
-		instanceDataSSBO = new VKBuffer(&base, nullptr, 1024 * 512, BufferType::ShaderStorageBuffer, BufferUsage::DYNAMIC);				// 512 kib	
+		instanceDataSSBO = new VKBuffer(&base, nullptr, instanceDataBufferSingleSize * MAX_FRAMES_IN_FLIGHT, BufferType::ShaderStorageBuffer, BufferUsage::DYNAMIC);				// 512 kib	
 
 		cameraUBOData = (glm::mat4*)malloc(size_t(cameraUBO->GetAlignedSize()));
 
@@ -1313,6 +1317,11 @@ namespace Engine
 				{
 					info.offset = VkDeviceSize(j * allCamerasAlignedSize);
 				}
+				else if (bi.binding == INSTANCE_DATA_SSBO)
+				{
+					info.range = static_cast<VkDeviceSize>(instanceDataBufferSingleSize);
+					info.offset = static_cast<VkDeviceSize>(j * instanceDataBufferSingleSize);
+				}
 
 				write.pBufferInfo = &info;
 				write.dstSet = frameResources[j].globalBuffersSet;
@@ -1787,7 +1796,7 @@ namespace Engine
 		vkCmdBindDescriptorSets(frameResources[currentFrame].frameCmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineLayout, 1, 1, &globalTexturesSet, 0, nullptr);
 
 		instanceDataOffset = 0;
-		mappedInstanceData = (char*)instanceDataSSBO->Mapped();
+		mappedInstanceData = (char*)instanceDataSSBO->Mapped() + currentFrame * instanceDataBufferSingleSize;
 	}
 
 	void VKRenderer::Present()
@@ -1801,7 +1810,7 @@ namespace Engine
 
 		cameraUBO->Update(cameraUBOData, currentCamera * singleCameraAlignedSize, currentFrame * allCamerasAlignedSize);
 
-		instanceDataSSBO->Flush();
+		instanceDataSSBO->Flush(currentFrame * instanceDataBufferSingleSize);
 
 		// Acquire the image as late as possible
 		VkResult res = vkAcquireNextImageKHR(device, swapChain.GetSwapChain(), std::numeric_limits<uint64_t>::max(), frameResources[currentFrame].imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);

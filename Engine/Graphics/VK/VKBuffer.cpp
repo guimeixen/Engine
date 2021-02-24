@@ -271,13 +271,13 @@ namespace Engine
 		}
 	}
 
-	void VKBuffer::Flush()
+	void VKBuffer::Flush(unsigned int offset)
 	{
 		VkMappedMemoryRange memoryRange = {};
 		memoryRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
 		memoryRange.memory = alloc.memory;
 		memoryRange.size = VK_WHOLE_SIZE;
-		memoryRange.offset = alloc.offset;
+		memoryRange.offset = alloc.offset + static_cast<VkDeviceSize>(offset);
 
 		vkFlushMappedMemoryRanges(device, 1, &memoryRange);
 	}

@@ -179,7 +179,8 @@ namespace Engine
 		unsigned int allCamerasAlignedSize;
 
 		VKBuffer* instanceDataSSBO;
-		unsigned int instanceDataOffset = 0;
+		unsigned int instanceDataOffset;
+		unsigned int instanceDataBufferSingleSize;
 		char *mappedInstanceData;
 		
 		VkPipeline curPipeline;

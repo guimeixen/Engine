@@ -22,7 +22,7 @@ namespace Engine
 
 		void Map();
 		void Unmap();
-		void Flush();
+		void Flush(unsigned int offset);
 
 		VkBuffer GetBuffer() const { return buffer; }
 		VkDeviceMemory GetDeviceMemory() const { return alloc.memory; }
