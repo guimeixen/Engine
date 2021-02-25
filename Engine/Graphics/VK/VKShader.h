@@ -15,7 +15,8 @@ namespace Engine
 
 		void Compile(VkDevice device);
 		bool CreateShaderModule(VkDevice device);
-		void CheckIfModifiedAndReload() override;
+		bool CheckIfModified() override;
+		void Reload() override;
 		void Dispose(VkDevice device);
 
 		VkPipelineShaderStageCreateInfo GetVertexStageInfo();

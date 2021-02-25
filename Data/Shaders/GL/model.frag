@@ -111,7 +111,6 @@ void main()
 	//outColor.rgb = vec3(indirectDiffuse.a *indirectDiffuse.a * indirectDiffuse.a);
 	//outColor.rgb = outNormal;
 	//outColor.rgb += emissionColor * texture(emissiveTexture, uv).r;
-	
 	//outColor.rgb = vec3(shadow) * cascadeColor[cascadeIndex];
 	//outColor.rgb = vec3(shadow);
 }

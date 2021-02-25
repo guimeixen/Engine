@@ -14,7 +14,7 @@ layout(location = 2) out vec3 worldPos;
 layout(location = 3) out vec4 lightSpacePos;
 layout(location = 4) flat out int axis;
 
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 void main()
 {

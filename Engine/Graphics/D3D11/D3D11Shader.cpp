@@ -536,7 +536,12 @@ namespace Engine
 			context->GSSetShader(nullptr, nullptr, 0);
 	}
 
-	void D3D11Shader::CheckIfModifiedAndReload()
+	bool D3D11Shader::CheckIfModified()
+	{
+		return false;
+	}
+
+	void D3D11Shader::Reload()
 	{
 
 	}

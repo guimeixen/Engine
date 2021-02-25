@@ -23,6 +23,7 @@ namespace Engine
 		vertexNeedsCompile = false;
 		geometryNeedsCompile = false;
 		fragmentNeedsCompile = false;
+		computeNeedsCompile = false;
 		vertexModule = VK_NULL_HANDLE;
 		geometryModule = VK_NULL_HANDLE;
 		fragmentModule = VK_NULL_HANDLE;
@@ -123,6 +124,7 @@ namespace Engine
 		vertexNeedsCompile = false;
 		geometryNeedsCompile = false;
 		fragmentNeedsCompile = false;
+		computeNeedsCompile = false;
 		vertexModule = VK_NULL_HANDLE;
 		geometryModule = VK_NULL_HANDLE;
 		fragmentModule = VK_NULL_HANDLE;
@@ -574,7 +576,7 @@ namespace Engine
 		return true;
 	}
 
-	void VKShader::CheckIfModifiedAndReload()
+	bool VKShader::CheckIfModified()
 	{
 		if (computeName.size() > 0)
 		{
@@ -586,12 +588,7 @@ namespace Engine
 			{
 				lastComputeWriteTime = baseComputeWriteTime;
 				computeNeedsCompile = true;
-				isCompiled = false;
-
-				ReadShaderFile(baseComputePath, ShaderType::COMPUTE);
-
-				if (defines.length() != 0)
-					WriteShaderFileWithDefines(ShaderType::COMPUTE);
+				isCompiled = false;		
 			}
 		}
 		else
@@ -607,23 +604,13 @@ namespace Engine
 				lastVertexWriteTime = baseVertexWriteTime;
 				vertexNeedsCompile = true;
 				isCompiled = false;
-
-				ReadShaderFile(baseVertexPath, ShaderType::VERTEX);
-
-				if (defines.length() != 0)
-					WriteShaderFileWithDefines(ShaderType::VERTEX);
 			}
 
 			if (baseFragmentWriteTime > lastFragmentWriteTime)
 			{
 				lastFragmentWriteTime = baseFragmentWriteTime;
 				fragmentNeedsCompile = true;
-				isCompiled = false;
-
-				ReadShaderFile(baseFragmentPath, ShaderType::FRAGMENT);
-
-				if (defines.length() != 0)
-					WriteShaderFileWithDefines(ShaderType::FRAGMENT);
+				isCompiled = false;			
 			}
 
 			if (geometryName.size() > 0)
@@ -636,13 +623,48 @@ namespace Engine
 				{
 					lastGeometryWriteTime = baseGeometryWriteTime;
 					geometryNeedsCompile = true;
-					isCompiled = false;
-
-					ReadShaderFile(baseGeometryPath, ShaderType::GEOMETRY);
-
-					if (defines.length() != 0)
-						WriteShaderFileWithDefines(ShaderType::GEOMETRY);
+					isCompiled = false;				
 				}
+			}
+		}
+
+		return isCompiled == false;
+	}
+
+
+	void VKShader::Reload()
+	{
+		if (computeNeedsCompile)
+		{
+			ReadShaderFile("Data/Shaders/Vulkan/src/" + computeName + ".comp", ShaderType::COMPUTE);
+
+			if (defines.length() != 0)
+				WriteShaderFileWithDefines(ShaderType::COMPUTE);
+		}
+		else
+		{
+			if (vertexNeedsCompile)
+			{
+				ReadShaderFile("Data/Shaders/Vulkan/src/" + vertexName + ".vert", ShaderType::VERTEX);
+
+				if (defines.length() != 0)
+					WriteShaderFileWithDefines(ShaderType::VERTEX);
+			}
+
+			if (fragmentNeedsCompile)
+			{
+				ReadShaderFile("Data/Shaders/Vulkan/src/" + fragmentName + ".frag", ShaderType::FRAGMENT);
+
+				if (defines.length() != 0)
+					WriteShaderFileWithDefines(ShaderType::FRAGMENT);
+			}
+
+			if (geometryNeedsCompile)
+			{
+				ReadShaderFile("Data/Shaders/Vulkan/src/" + geometryName + ".geom", ShaderType::GEOMETRY);
+
+				if (defines.length() != 0)
+					WriteShaderFileWithDefines(ShaderType::GEOMETRY);
 			}
 		}
 	}

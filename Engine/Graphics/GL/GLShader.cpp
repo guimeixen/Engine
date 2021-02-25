@@ -358,7 +358,7 @@ namespace Engine
 		return shader;
 	}
 
-	void GLShader::CheckIfModifiedAndReload()
+	bool GLShader::CheckIfModified()
 	{
 		if (computeName.size() > 0)
 		{
@@ -421,7 +421,7 @@ namespace Engine
 				{
 					glGetProgramInfoLog(program, 1024, NULL, log);
 					Log::Print(LogLevel::LEVEL_ERROR, "%s %s %s Shader program linking failed:\n%s\n", vertexName.c_str(), fragmentName.c_str(), geometryName.c_str(), log);
-					return;
+					return false;
 				}
 
 				glDeleteShader(vs);
@@ -435,6 +435,13 @@ namespace Engine
 				isCompiled = true;
 			}
 		}
+
+		return true;
+	}
+
+	void GLShader::Reload()
+	{
+
 	}
 
 	void GLShader::SetModelMatrix(const glm::mat4 &matrix)

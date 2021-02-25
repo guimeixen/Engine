@@ -20,7 +20,8 @@ namespace Engine
 	public:
 		virtual ~ShaderProgram() {}
 
-		virtual void CheckIfModifiedAndReload() = 0;
+		virtual bool CheckIfModified() = 0;
+		virtual void Reload() = 0;
 
 		bool IsCompiled() const { return isCompiled; }
 

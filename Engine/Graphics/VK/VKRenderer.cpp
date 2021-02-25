@@ -1984,25 +1984,71 @@ namespace Engine
 
 		Log::Print(LogLevel::LEVEL_INFO, "Reloading shaders...");
 
+		struct MatAndShaderPass
+		{
+			MaterialInstance* mi;
+			ShaderPass sp;
+		};
+
+		std::vector<MatAndShaderPass> passesToReload;
+
+		const std::map<unsigned int, MaterialRefInfo>& materials = ResourcesLoader::GetMaterials();
+
+		for (auto it = materials.begin(); it != materials.end(); it++)
+		{
+			std::vector<ShaderPass>& passes = it->second.mat->GetShaderPasses();
+
+			for (size_t i = 0; i < passes.size(); i++)
+			{
+				ShaderPass& sp = passes[i];
+
+				// Compute passes are handled below
+				if (sp.isCompute)
+					continue;
+
+				if (sp.shader->CheckIfModified())
+				{
+					MatAndShaderPass msp = {};
+					msp.mi = nullptr;
+					msp.sp = sp;
+					passesToReload.push_back(msp);
+				}
+			}
+		}
+
+		// We need to also loop through the material instances because of compute materials, which need the material instance passed in when creating the pipeline
 		for (size_t i = 0; i < materialInstances.size(); i++)
 		{
 			MaterialInstance* mi = materialInstances[i];
-
 			std::vector<ShaderPass>& passes = mi->baseMaterial->GetShaderPasses();
 
 			for (size_t i = 0; i < passes.size(); i++)
 			{
 				ShaderPass& sp = passes[i];
 
-				sp.shader->CheckIfModifiedAndReload();
+				if (!sp.isCompute)
+					continue;
 
-				if (sp.shader->IsCompiled() == false)
+				if (sp.shader->CheckIfModified())
 				{
-					if (!CreatePipeline(sp, mi, true))
-					{
-						Log::Print(LogLevel::LEVEL_ERROR, "Failed to recreate pipeline!");
-					}
+					MatAndShaderPass msp = {};
+					msp.mi = mi;
+					msp.sp = sp;
+					passesToReload.push_back(msp);
 				}
+			}
+		}
+
+		for (size_t i = 0; i < passesToReload.size(); i++)
+		{
+			MatAndShaderPass& msp = passesToReload[i];
+
+			if (msp.sp.shader->IsCompiled() == false)
+				msp.sp.shader->Reload();
+
+			if (!CreatePipeline(msp.sp, msp.mi, true))
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to recreate pipeline!");
 			}
 		}
 

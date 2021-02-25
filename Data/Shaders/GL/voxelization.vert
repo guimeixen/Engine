@@ -17,7 +17,7 @@ uniform mat4 toWorldSpace;
 uniform int instanceDataOffset;
 #endif
 
-#include include/ubos.glsl
+#include "include/ubos.glsl"
 
 void main()
 {

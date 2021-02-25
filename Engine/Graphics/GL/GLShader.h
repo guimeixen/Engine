@@ -18,7 +18,8 @@ namespace Engine
 
 		unsigned int GetProgram() const { return program; }
 
-		void CheckIfModifiedAndReload() override;
+		bool CheckIfModified() override;
+		void Reload() override;
 
 		void SetModelMatrix(const glm::mat4 &matrix);
 		void SetInstanceDataOffset(int offset);

@@ -848,7 +848,7 @@ namespace Engine
 			{
 				ShaderPass& sp = passes[i];
 
-				sp.shader->CheckIfModifiedAndReload();
+				sp.shader->CheckIfModified();
 			}
 		}
 	}
