@@ -8,6 +8,7 @@
 #include "Graphics/Shader.h"
 
 #include "Program/FileManager.h"
+#include "Program/StringID.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_dock.h"
@@ -15,17 +16,18 @@
 #include <map>
 #include <iostream>
 
-#include <Windows.h>
-
 MaterialWindow::MaterialWindow()
 {
 	currentMaterial = nullptr;
+	currentMaterialInstance = nullptr;
 	tempF = 0.0f;
 	tempI = 0;
 	tempv2 = glm::vec2();
 	tempv4 = glm::vec4();
 	tempColV3 = glm::vec3();
 	tempColV4 = glm::vec4();
+
+	basePassID = Engine::SID("base");
 }
 
 void MaterialWindow::Render()
@@ -39,7 +41,46 @@ void MaterialWindow::Render()
 			ImGui::Indent();
 			for (auto &m : materials)
 			{
-				ImGui::Selectable(m.second.mat->GetPath().c_str());
+				if (ImGui::TreeNode(m.second.mat->GetPath().c_str()))
+				{
+					std::vector<Engine::ShaderPass>& shaderPasses = m.second.mat->GetShaderPasses();
+
+					for (size_t i = 0; i < shaderPasses.size(); i++)
+					{
+						Engine::ShaderPass& pass = shaderPasses[i];
+
+						ImGui::Text("Pass ");
+						ImGui::SameLine();
+						ImGui::Text(std::to_string(i).c_str());
+
+						if (pass.shader->GetComputeName().size() > 0)
+						{
+							ImGui::Text("Compute shader: ");
+							ImGui::SameLine();
+							ImGui::Text(pass.shader->GetComputeName().c_str());
+						}
+						else
+						{
+							ImGui::Text("Vertex shader: ");
+							ImGui::SameLine();
+							ImGui::Text(pass.shader->GetVertexName().c_str());
+
+							if (pass.shader->GetGeometryName().size() > 0)
+							{
+								ImGui::Text("Geometry shader: ");
+								ImGui::SameLine();
+								ImGui::Text(pass.shader->GetGeometryName().c_str());
+							}
+
+							ImGui::Text("Fragment shader: ");
+							ImGui::SameLine();
+							ImGui::Text(pass.shader->GetFragmentName().c_str());
+						}
+						
+					}
+					ImGui::TreePop();
+				}
+
 				/*if(m.second.mat->ShowInEditor() && ImGui::Selectable(m.second.mat->GetPath().c_str()))
 				{
 					currentMaterial = m.second.mat;
@@ -64,9 +105,44 @@ void MaterialWindow::Render()
 					for (size_t i = 0; i < shaderPasses.size(); i++)
 					{
 						Engine::ShaderPass &pass = shaderPasses[i];
-						//ImGui::Text(pass.)
-						//pass.shader->
+
+						if (pass.id != basePassID)
+							continue;
+
+						ImGui::Text("Pass Base");
+						
+						if (ImGui::Selectable("Vertex shader:"))
+						{
+							ImGui::OpenPopup("Choose shader");
+							const std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+							files.clear();
+							Engine::utils::FindFilesInDirectory(files, dir, ".vert");
+						}
+						ImGui::SameLine();
+						ImGui::Text(pass.shader->GetVertexName().c_str());
+										
+						if (ImGui::Selectable("Fragment shader: "))
+						{
+							ImGui::OpenPopup("Choose shader");
+							const std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+							files.clear();
+							Engine::utils::FindFilesInDirectory(files, dir, ".frag");
+						}
+						ImGui::SameLine();
+						ImGui::Text(pass.shader->GetFragmentName().c_str());
+
+						if (ImGui::BeginPopup("Choose shader"))
+						{
+							if (files.size() > 0)
+								ChangeShader();
+							else
+								ImGui::Text("No shaders found on project folder.");
+
+							ImGui::EndPopup();
+						}
 					}
+
+					
 
 					ImGui::TreePop();
 				}
@@ -76,7 +152,7 @@ void MaterialWindow::Render()
 			}
 
 			ImGui::Separator();
-			ImGui::Unindent();
+			//ImGui::Unindent();
 			ImGui::Text("Material Instance");
 
 			if (currentMaterialInstance)
@@ -121,7 +197,7 @@ void MaterialWindow::CreateMaterial()
 	std::string newMatPath = editorManager->GetCurrentProjectDir() + "/default_mat.lua";
 
 	std::ofstream file = game->GetFileManager()->OpenForWriting(newMatPath);
-	file << "default_mat =\n{\n\tpasses =\n\t{\n\t\tbase =\n\t\t{\n\t\t\tqueue='opaque',\n\t\t\tshader='default',\n\t\t}\n\t}\n}";
+	file << "default_mat =\n{\n\tpasses =\n\t{\n\t\tbase =\n\t\t{\n\t\t\tqueue='opaque',\n\t\t\tshader='model',\n\t\t}\n\t}\n}";
 	file.close();
 }
 
@@ -130,6 +206,7 @@ void MaterialWindow::AddTexture()
 	static ImGuiTextFilter filter;
 	filter.Draw("Find");
 	for (size_t i = 0; i < files.size(); i++)
+	{
 		if (filter.PassFilter(files[i].c_str()))
 		{
 			if (ImGui::Selectable(files[i].c_str()))
@@ -143,8 +220,27 @@ void MaterialWindow::AddTexture()
 				params.useMipmapping = true;
 				params.wrap = Engine::TextureWrap::REPEAT;
 				currentMaterialInstance->textures[textureIndex] = game->GetRenderer()->CreateTexture2D(files[i], params);
+
+				game->GetRenderer()->UpdateMaterialInstance(currentMaterialInstance);
 			}
 		}
+	}
+}
+
+void MaterialWindow::ChangeShader()
+{
+	static ImGuiTextFilter filter;
+	filter.Draw("Find");
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		if (filter.PassFilter(files[i].c_str()))
+		{
+			if (ImGui::Selectable(files[i].c_str()))
+			{
+				
+			}
+		}
+	}
 }
 
 void MaterialWindow::ShowTextures()

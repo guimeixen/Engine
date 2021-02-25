@@ -10,7 +10,7 @@ layout(location = 4) flat in int axis;
 
 tex2D_u(0) texDiffuse;
 tex2DShadow_g(CSM_TEXTURE) shadowMap;
-image3D_g(VOXEL_IMAGE, rgba8, coherent volatile) voxelTexture;
+uimage3D_g(VOXEL_IMAGE, r32ui, coherent volatile) voxelTexture;
 
 
 //layout(set = 1, binding = 0) uniform sampler2D texDiffuse;
@@ -20,7 +20,7 @@ image3D_g(VOXEL_IMAGE, rgba8, coherent volatile) voxelTexture;
 
 //#include "include/voxelization_helpers.glsl"
 
-/*vec4 convRGBA8ToVec4(uint val)
+vec4 convRGBA8ToVec4(uint val)
 {
 	return vec4(float((val & 0x000000FF)),
 					   float((val & 0x0000FF00) >> 8U),
@@ -38,8 +38,7 @@ uint convVec4ToRGBA8( vec4 val)
 
 // From OpenGL Insights 
 // In Vulkan glsl, we cannot use layout qualifiers as function parameters
-//void imageAtomicRGBA8Avg(layout (r32ui) coherent volatile uimage3D voxelGrid, ivec3 coords , vec4 value)
-void imageAtomicRGBA8Avg(ivec3 coords, vec4 value)
+void imageAtomicRGBA8Avg(ivec3 coords , vec4 value)
 {
 	value.rgb *= 255.0;			// Optimise following calculations
 	uint newVal = convVec4ToRGBA8(value);
@@ -58,7 +57,7 @@ void imageAtomicRGBA8Avg(ivec3 coords, vec4 value)
 		newVal = convVec4ToRGBA8(curValF);
 		++i;
 	}
-}*/
+}
 
 
 void main()
@@ -124,7 +123,7 @@ void main()
 	vec3 color = lighting * texture(texDiffuse, uv).rgb;
 
 	//imageAtomicRGBA8Avg(voxelTexture, ivec3(voxelPos), vec4(color,1.0));
-	//imageAtomicRGBA8Avg(ivec3(voxelPos), vec4(color, 1.0));
+	imageAtomicRGBA8Avg(ivec3(voxelPos), vec4(color, 1.0));
 	
-	imageStore(voxelTexture, ivec3(voxelPos), vec4(color, 1.0));
+	//imageStore(voxelTexture, ivec3(voxelPos), vec4(color, 1.0));
 }

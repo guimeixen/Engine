@@ -17,6 +17,8 @@
 
 // Global Images
 #define image3D_g(b, format, mode) layout(binding = b, format) uniform mode image3D
+#define uimage3D_g(b, format, mode) layout(binding = b, format) uniform mode uimage3D
+#define image2D_g(b, format, mode) layout(binding = b, format) uniform mode image2D
 #define uimage2D_g(b, format, mode) layout(binding = b, format) uniform mode uimage2D
 
 // User Textures
@@ -39,6 +41,8 @@
 
 // Global Images
 #define image3D_g(b, format, mode) layout(set = TEXTURES_SET, binding = b, format) uniform mode image3D
+#define uimage3D_g(b, format, mode) layout(set = TEXTURES_SET, binding = b, format) uniform mode uimage3D
+#define image2D_g(b, format, mode) layout(set = TEXTURES_SET, binding = b, format) uniform mode image2D
 #define uimage2D_g(b, format, mode) layout(set = TEXTURES_SET, binding = b, format) uniform mode uimage2D
 
 // User Textures

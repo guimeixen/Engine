@@ -1982,7 +1982,7 @@ namespace Engine
 		// We can use this because reloading shaders will only happen when focusing on the editor
 		vkDeviceWaitIdle(base.GetDevice());
 
-		Log::Print(LogLevel::LEVEL_INFO, "Reloading shaders...");
+		Log::Print(LogLevel::LEVEL_INFO, "Reloading shaders...\n");
 
 		struct MatAndShaderPass
 		{

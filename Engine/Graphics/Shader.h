@@ -25,6 +25,13 @@ namespace Engine
 
 		bool IsCompiled() const { return isCompiled; }
 
+		const std::string& GetVertexName() const { return vertexName; }
+		const std::string& GetFragmentName() const { return fragmentName; }
+		const std::string& GetGeometryName() const { return geometryName; }
+		const std::string& GetComputeName() const { return computeName; }
+
+		bool HasGeometry() const { return geometryName.length() != 0; }
+
 	protected:
 		std::string defines;
 		std::string vertexName;

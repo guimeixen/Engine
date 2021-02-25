@@ -72,9 +72,7 @@ namespace Engine
 	class Material
 	{
 	public:
-		Material();
 		Material(Renderer *renderer, const std::string &matPath, const std::string &defines, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &descs);
-		~Material();
 
 		static MaterialInstance *LoadMaterialInstance(Renderer *renderer, const std::string &path, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &descs);
 		static MaterialInstance *LoadMaterialInstanceFromBaseMat(Renderer *renderer, const std::string &baseMatPath, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &inputDescs);

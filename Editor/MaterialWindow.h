@@ -17,6 +17,7 @@ public:
 
 private:
 	void AddTexture();
+	void ChangeShader();
 	void ShowTextures();
 	void ShowTextureParameters();
 	void ShowMaterialParameters();
@@ -27,6 +28,8 @@ private:
 	bool focus = false;
 	std::vector<std::string> files;
 	unsigned int textureIndex = 0;
+
+	unsigned int basePassID;
 
 	int textureFilterComboIndex = 0;
 	int textureWrapComboIndex = 0;

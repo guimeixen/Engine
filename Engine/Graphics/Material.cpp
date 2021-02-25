@@ -15,11 +15,6 @@
 
 namespace Engine
 {
-	Material::Material()
-	{
-		showInEditor = true;
-	}
-
 	Material::Material(Renderer *renderer, const std::string &matPath, const std::string &defines, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &descs)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Loading new material: %s\n", matPath.c_str());
@@ -405,10 +400,6 @@ namespace Engine
 		}
 
 		Log::Print(LogLevel::LEVEL_INFO, "Finished loading material\n");
-	}
-
-	Material::~Material()
-	{
 	}
 
 	MaterialInstance *Material::LoadMaterialInstance(Renderer *renderer, const std::string &path, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &descs)
