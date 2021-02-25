@@ -691,7 +691,7 @@ namespace Engine
 		renderStats.dispatchCalls++;
 	}
 
-	void GLRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void GLRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, TextureInternalFormat viewFormat, bool separateMipViews)
 	{
 		// Even though texture and images bindings are separate in OpenGL, we treat it as if they use the same
 		// bindings points to help with the Vulkan implementation. I don't think there are performance issues

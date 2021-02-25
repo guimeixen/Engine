@@ -106,9 +106,14 @@ namespace Engine
 		renderer->AddBufferResourceToSlot(DEBUG_VOXELS_INDIRECT_DRAW, vctgi.GetIndirectBuffer(), PipelineStage::COMPUTE);
 		renderer->AddBufferResourceToSlot(DEBUG_VOXELS_POSITION_SSBO, vctgi.GetVoxelPositionsBuffer(), PipelineStage::VERTEX | PipelineStage::COMPUTE);
 
-		renderer->AddTextureResourceToSlot(VOXEL_IMAGE, vctgi.GetVoxelTexture(), true, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);	// use the voxel texture as a storage image here	
-		renderer->AddTextureResourceToSlot(VOXEL_TEXTURE, vctgi.GetVoxelTexture(), false, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE);	// use the voxel texture as a normal texture here, so we can sample from it
-		renderer->AddTextureResourceToSlot(VOXEL_IMAGE_MIPS, vctgi.GetVoxelTexture(), true, PipelineStage::COMPUTE, true);		// Add all the mips except the first so they can be used as an array in the shader	
+		Texture* voxelTexture = vctgi.GetVoxelTexture();
+
+		// Use the voxel texture as a storage image here with a different format than it was created with
+		renderer->AddTextureResourceToSlot(VOXEL_IMAGE, voxelTexture, true, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE, TextureInternalFormat::R32UI);
+		// Use the voxel texture as a normal texture here, so we can sample from it
+		renderer->AddTextureResourceToSlot(VOXEL_TEXTURE, voxelTexture, false, PipelineStage::VERTEX | PipelineStage::FRAGMENT | PipelineStage::COMPUTE, voxelTexture->GetTextureParams().internalFormat);
+		// Add all the mips except the first so they can be used as an array in the shader	
+		renderer->AddTextureResourceToSlot(VOXEL_IMAGE_MIPS, voxelTexture, true, PipelineStage::COMPUTE, voxelTexture->GetTextureParams().internalFormat, true);
 	}
 
 	void RenderingPath::Dispose()

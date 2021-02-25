@@ -953,7 +953,7 @@ namespace Engine
 		vkCmdDispatch(cmdBuffer, item.numGroupsX, item.numGroupsY, item.numGroupsZ);
 	}
 
-	void VKRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void VKRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, TextureInternalFormat viewFormat, bool separateMipViews)
 	{
 		if (!texture)
 			return;
@@ -1063,8 +1063,12 @@ namespace Engine
 			}
 			else
 			{
-				b.descriptorCount = 1;
-				info.imageViews.push_back(tex->GetImageViewForAllMips());
+				if (viewFormat != tex->GetTextureParams().internalFormat)
+					info.imageViews.push_back(tex->GetImageViewForAllMips(viewFormat));
+				else
+					info.imageViews.push_back(tex->GetImageViewForAllMips());
+
+				b.descriptorCount = 1;			
 			}
 
 			if (useStorage)

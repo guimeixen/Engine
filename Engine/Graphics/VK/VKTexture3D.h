@@ -31,6 +31,7 @@ namespace Engine
 		VkBuffer GetStagingBuffer() const;
 		VkImage GetImage() const { return image; }
 		VkImageView GetImageViewForAllMips() const { return imageViews[0]; }
+		VkImageView GetImageViewForAllMips(TextureInternalFormat viewFormat);
 		VkImageView GetImageViewForMip(unsigned int mip) const { return imageViews[mip + 1]; }
 		VkSampler GetSampler() const { return sampler; }
 

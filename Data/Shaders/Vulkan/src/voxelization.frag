@@ -12,12 +12,6 @@ tex2D_u(0) texDiffuse;
 tex2DShadow_g(CSM_TEXTURE) shadowMap;
 uimage3D_g(VOXEL_IMAGE, r32ui, coherent volatile) voxelTexture;
 
-
-//layout(set = 1, binding = 0) uniform sampler2D texDiffuse;
-//layout(set = 0, binding = 6, rgba8) uniform coherent volatile image3D voxelTexture;
-//layout(set = 0, binding = 4) uniform sampler2DShadow shadowMap;
-
-
 //#include "include/voxelization_helpers.glsl"
 
 vec4 convRGBA8ToVec4(uint val)
@@ -58,7 +52,6 @@ void imageAtomicRGBA8Avg(ivec3 coords , vec4 value)
 		++i;
 	}
 }
-
 
 void main()
 {

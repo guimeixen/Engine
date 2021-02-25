@@ -32,10 +32,7 @@ PROPERTIES
 	uint mip;
 };
 
-//layout(set = 0, binding = 6, rgba8) uniform readonly image3D voxelTexture;
-
 image3D_g(VOXEL_IMAGE_MIPS, rgba8, readonly) voxelTexture[8];
-//layout(set = 0, binding = 10, rgba8) uniform readonly image3D voxelTexture[8];
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 

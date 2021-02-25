@@ -123,7 +123,7 @@ namespace Engine
 		virtual void SubmitIndirect(const RenderItem &renderItem, Buffer *indirectBuffer) = 0;
 		virtual void Dispatch(const DispatchItem &item) = 0;
 
-		virtual void AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews = false) = 0;
+		virtual void AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, TextureInternalFormat viewFormat, bool separateMipViews = false) = 0;
 		virtual void AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages) = 0;
 		virtual void SetupResources() = 0;
 		virtual void UpdateTextureResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews = false) = 0;

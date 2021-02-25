@@ -30,8 +30,10 @@ namespace Engine
 		frameGraph.SetBackbufferSource("postProcessPass");		// Post process pass writes to backbuffer
 		frameGraph.Bake(renderer);
 		frameGraph.ExportGraphVizFile();
-	
-		renderer->AddTextureResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
+
+		Texture* shadowMap = frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture();
+
+		renderer->AddTextureResourceToSlot(CSM_TEXTURE, shadowMap, false, PipelineStage::FRAGMENT, shadowMap->GetTextureParams().internalFormat);
 		renderer->AddBufferResourceToSlot(FORWARD_POINT_LIGHTS_UBO, pointLightsUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
 
 		renderer->SetupResources();	

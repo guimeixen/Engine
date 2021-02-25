@@ -46,8 +46,10 @@ namespace Engine
 		frameGraph.Bake(renderer);
 		frameGraph.Setup();
 
+		Texture* shadowMap = frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture();
+
 		renderer->AddBufferResourceToSlot(MAIN_LIGHT_UBO_SLOT, mainLightUBO, PipelineStage::VERTEX | PipelineStage::FRAGMENT);
-		renderer->AddTextureResourceToSlot(0, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
+		renderer->AddTextureResourceToSlot(0, shadowMap, false, PipelineStage::FRAGMENT, shadowMap->GetTextureParams().internalFormat);
 	}
 
 	void PSVitaRenderer::Dispose()

@@ -930,7 +930,7 @@ namespace Engine
 		immediateContext->CSSetUnorderedAccessViews(0, setUAVs, nullUAVs.data(), nullptr);		// So the resource can be used on a next pass
 	}
 
-	void D3D11Renderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void D3D11Renderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, TextureInternalFormat viewFormat, bool separateMipViews)
 	{
 		if (!texture)
 			return;

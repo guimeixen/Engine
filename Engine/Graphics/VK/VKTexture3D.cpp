@@ -184,6 +184,32 @@ namespace Engine
 		return VK_NULL_HANDLE;
 	}
 
+	VkImageView VKTexture3D::GetImageViewForAllMips(TextureInternalFormat viewFormat)
+	{
+		VkImageViewCreateInfo viewInfo = {};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = image;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
+		viewInfo.format = vkutils::GetFormat(viewFormat);
+		viewInfo.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
+		viewInfo.subresourceRange.aspectMask = aspectFlags;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = 1;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = static_cast<uint32_t>(mipLevels);
+
+		VkImageView view;
+
+		if (vkCreateImageView(device, &viewInfo, nullptr, &view) != VK_SUCCESS)
+			Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create image view!\n");
+
+		// Put the view at the back so it doesn't interfere with the views for the mipmaps
+		// so it gets destroyed at the end
+		imageViews.push_back(view);
+
+		return view;
+	}
+
 	void VKTexture3D::CreateImage(VkPhysicalDevice physicalDevice)
 	{
 		VkImageCreateInfo imageInfo = {};

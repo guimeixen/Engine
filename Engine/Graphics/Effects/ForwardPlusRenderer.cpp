@@ -73,8 +73,10 @@ namespace Engine
 		frameGraph.Bake(renderer);
 		frameGraph.ExportGraphVizFile();
 
-		renderer->AddTextureResourceToSlot(CSM_TEXTURE, frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture(), false, PipelineStage::FRAGMENT);
-		renderer->AddTextureResourceToSlot(LIGHT_GRID_TEXTURE, lightGrid, true, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
+		Texture* shadowMap = frameGraph.GetPass("csm").GetFramebuffer()->GetDepthTexture();
+
+		renderer->AddTextureResourceToSlot(CSM_TEXTURE, shadowMap, false, PipelineStage::FRAGMENT, shadowMap->GetTextureParams().internalFormat);
+		renderer->AddTextureResourceToSlot(LIGHT_GRID_TEXTURE, lightGrid, true, PipelineStage::COMPUTE | PipelineStage::FRAGMENT, lightGrid->GetTextureParams().internalFormat);
 
 		renderer->AddBufferResourceToSlot(FRUSTUMS_SSBO, frustumsSSBO, PipelineStage::COMPUTE);
 		renderer->AddBufferResourceToSlot(LIGHT_LIST_SSBO, lightListSSBO, PipelineStage::COMPUTE | PipelineStage::FRAGMENT);
