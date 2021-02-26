@@ -312,31 +312,6 @@ namespace Engine
 		}
 	}
 
-	bool Renderer::RemoveTexture(Texture *t)
-	{
-		for (auto it = textures.begin(); it != textures.end(); it++)
-		{
-			Texture *tex = it->second;
-
-			if (tex == t && tex->GetRefCount() == 1)
-			{
-				if (tex->GetRefCount() == 1)
-				{
-					textures.erase(it);
-					tex->RemoveReference();
-					return true;
-				}
-				else
-				{
-					tex->RemoveReference();
-					return false;
-				}
-			}
-		}
-
-		return false;
-	}
-
 	bool Renderer::RemoveMaterialInstance(MaterialInstance *m)
 	{
 		for (auto it = materialInstances.begin(); it != materialInstances.end(); it++)

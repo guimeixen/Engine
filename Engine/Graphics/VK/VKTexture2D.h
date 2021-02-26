@@ -26,10 +26,9 @@ namespace Engine
 
 		void Clear() override;
 
-		void Load(VKBase* base);
-
-		void CreateColorAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params);
-		void CreateDepthStencilAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params, bool useInShader, bool useStencil);
+		bool Load(VKBase* base);
+		bool CreateColorAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params);
+		bool CreateDepthStencilAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params, bool useInShader, bool useStencil);
 
 		void Dispose();
 		void DisposeStagingBuffer();
@@ -52,8 +51,8 @@ namespace Engine
 		bool HasMipmaps() const { return mipmapsGenerated; }
 
 	private:
-		void CreateImage(VkPhysicalDevice physicalDevice);
-		void LoadPNGJPG(VKBase* base);
+		bool CreateImage(VkPhysicalDevice physicalDevice);
+		bool LoadPNGJPG(VKBase* base);
 
 	private:
 		VkDevice device;

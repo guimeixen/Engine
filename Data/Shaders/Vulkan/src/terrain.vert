@@ -13,7 +13,6 @@ layout(location = 4) out float clipSpaceDepth;
 layout(location = 5) out vec4 lightSpacePos[3];
 
 tex2D_u(0) heightmap;
-//layout(set = 1, binding = 0) uniform sampler2D heightmap;
 
 const vec2 gridDim = vec2(16.0, 16.0);
 const vec2 size = vec2(2.0, 0.0);

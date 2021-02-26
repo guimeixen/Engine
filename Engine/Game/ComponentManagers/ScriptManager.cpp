@@ -752,9 +752,9 @@ namespace Engine
 		}
 	}
 
-	std::map<std::string, luabridge::LuaRef> ScriptManager::GetKeyValueMap(const luabridge::LuaRef &table)
+	std::unordered_map<std::string, luabridge::LuaRef> ScriptManager::GetKeyValueMap(const luabridge::LuaRef &table)
 	{
-		std::map<std::string, luabridge::LuaRef> result;
+		std::unordered_map<std::string, luabridge::LuaRef> result;
 
 		if (table.isNil())
 			return result;
@@ -766,7 +766,8 @@ namespace Engine
 		{
 			if (lua_isstring(L, -2))				 // only store stuff with string keys
 			{
-				result.emplace(lua_tostring(L, -2), luabridge::LuaRef::fromStack(L, -1));
+				std::string s = lua_tostring(L, -2);
+				result.emplace(s, luabridge::LuaRef::fromStack(L, -1));
 			}
 			lua_pop(L, 1);						// remove value, keep key for lua_next
 		}

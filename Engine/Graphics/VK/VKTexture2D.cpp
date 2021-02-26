@@ -195,17 +195,15 @@ namespace Engine
 	{
 	}
 
-	void VKTexture2D::Load(VKBase* base)
+	bool VKTexture2D::Load(VKBase* base)
 	{	
 		if ((std::strstr(path.c_str(), ".png") > 0) || (std::strstr(path.c_str(), ".jpg") > 0))
-		{
-			LoadPNGJPG(base);
-			return;
-		}
+			return LoadPNGJPG(base);
 
 		if (storeTextureData)
 		{
-			std::cout << "Warning: Can't store data of compressed texture: " << path << '\n';
+			Log::Print(LogLevel::LEVEL_WARNING, "Can't store data of compressed texture: %s\n", path.c_str());
+			storeTextureData = false;
 		}
 
 		gli::texture t = gli::load(path);
@@ -215,6 +213,9 @@ namespace Engine
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s\n", path.c_str());
 			path = "Data/Resources/Textures/white.dds";
 			t = gli::load(path);
+
+			if (t.empty())
+				return false;
 		}
 
 		gli::texture2d tex2D(t);
@@ -230,13 +231,9 @@ namespace Engine
 		if (std::strstr(path.c_str(), ".dds") > 0)
 		{
 			if (tex2D.format() == gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16)
-			{
 				format = VK_FORMAT_BC3_UNORM_BLOCK;
-			}
 			else
-			{
 				format = VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
-			}
 		}
 		else if (std::strstr(path.c_str(), ".ktx") > 0)
 		{
@@ -255,18 +252,17 @@ namespace Engine
 		}
 		else
 		{
-			std::cout << "Error -> Unsupported image extension!\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Error -> Unsupported image extension!\n");
+			return false;
 		}
 
-
-		//stagingBuffer = new VKBuffer();
-		//stagingBuffer->Create(allocator, physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
 		stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 		stagingBuffer->Map();
 		stagingBuffer->Update(tex2D.data(), tex2D.size(), 0);
 		stagingBuffer->Unmap();
 
-		CreateImage(base->GetPhysicalDevice());
+		if (!CreateImage(base->GetPhysicalDevice()))
+			return false;
 
 		uint32_t offset = 0;
 
@@ -287,9 +283,11 @@ namespace Engine
 
 			offset += static_cast<uint32_t>(tex2D[i].size());
 		}
+
+		return true;
 	}
 
-	void VKTexture2D::CreateColorAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params)
+	bool VKTexture2D::CreateColorAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params)
 	{
 		this->width = width;
 		this->height = height;
@@ -313,12 +311,16 @@ namespace Engine
 		addressMode = vkutils::GetAddressMode(params.wrap);
 		format = vkutils::GetFormat(params.internalFormat);
 
-		CreateImage(physicalDevice);
+		if (!CreateImage(physicalDevice))
+			return false;
+
 		CreateImageView();
 		CreateSampler();
+
+		return true;
 	}
 
-	void VKTexture2D::CreateDepthStencilAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params, bool useInShader, bool useStencil)
+	bool VKTexture2D::CreateDepthStencilAttachment(VKAllocator *allocator, VkPhysicalDevice physicalDevice, VkDevice device, uint32_t width, uint32_t height, const TextureParams &params, bool useInShader, bool useStencil)
 	{
 		this->width = width;
 		this->height = height;
@@ -351,26 +353,30 @@ namespace Engine
 		else
 			aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		CreateImage(physicalDevice);
+		if (!CreateImage(physicalDevice))
+			return false;
+
 		CreateImageView();
 
 		if (useInShader)
 			CreateSampler();
+
+		return true;
 	}
 
 	void VKTexture2D::Dispose()
 	{
 		if (data)
-		{
 			delete[] data;
-		}
+
+		data = nullptr;
 
 		if (sampler != VK_NULL_HANDLE)
-		{
 			vkDestroySampler(device, sampler, nullptr);
-		}
-		vkDestroyImageView(device, imageView, nullptr);		// Destroy image view before the image
-		vkDestroyImage(device, image, nullptr);
+		if (imageView != VK_NULL_HANDLE)
+			vkDestroyImageView(device, imageView, nullptr);
+		if (image != VK_NULL_HANDLE)
+			vkDestroyImage(device, image, nullptr);
 
 		allocator->Free(alloc);
 	}
@@ -384,7 +390,7 @@ namespace Engine
 		}
 	}
 
-	void VKTexture2D::CreateImage(VkPhysicalDevice physicalDevice)
+	bool VKTexture2D::CreateImage(VkPhysicalDevice physicalDevice)
 	{
 		VkImageCreateInfo imageInfo = {};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -405,6 +411,7 @@ namespace Engine
 		if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
 		{
 			std::cout << "Error -> Failed to create image!\n";
+			return false;
 		}
 
 		VkMemoryRequirements memReqs;
@@ -413,9 +420,11 @@ namespace Engine
 		allocator->Allocate(alloc, memReqs.size, vkutils::FindMemoryType(physicalDevice, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), false);
 
 		vkBindImageMemory(device, image, alloc.memory, alloc.offset);
+
+		return true;
 	}
 
-	void VKTexture2D::LoadPNGJPG(VKBase* base)
+	bool VKTexture2D::LoadPNGJPG(VKBase* base)
 	{
 		unsigned char* image = nullptr;
 		int width, height, nChannels;
@@ -438,10 +447,9 @@ namespace Engine
 
 		if (!image)
 		{
-			std::cout << "Failed to load texture : " << path << std::endl;
+			Log::Print(LogLevel::LEVEL_ERROR, "Failed to load texture: %s\n",path.c_str());
 			path = "Data/Resources/Textures/white.dds";
-			Load(base);
-			return;
+			return Load(base);
 		}
 		
 
@@ -498,7 +506,8 @@ namespace Engine
 		stagingBuffer->Update(image, (unsigned int)size, 0);
 		stagingBuffer->Unmap();
 
-		CreateImage(base->GetPhysicalDevice());
+		if (!CreateImage(base->GetPhysicalDevice()))
+			return false;
 
 		// Setup buffer copy regions
 		// We only use one here because we only have the base texture and not the whole mip chain
@@ -515,6 +524,8 @@ namespace Engine
 		bufferCopyRegions.push_back(region);
 
 		stbi_image_free(image);
+
+		return true;
 	}
 
 	void VKTexture2D::CreateImageView()

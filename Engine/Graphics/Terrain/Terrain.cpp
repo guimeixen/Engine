@@ -27,6 +27,7 @@ namespace Engine
 {
 	Terrain::Terrain()
 	{
+		renderer = nullptr;
 		heights = nullptr;
 		matInstance = nullptr;
 		game = nullptr;
@@ -35,6 +36,13 @@ namespace Engine
 		vegInstancingBufferLOD0 = nullptr;
 		vegInstancingBufferLOD1 = nullptr;
 		vegInstancingBufferLOD2 = nullptr;
+		lodVisRanges[0] = 0;
+		lodVisRanges[1] = 0;
+		lodVisRanges[2] = 0;
+		lodVisRanges[3] = 0;
+		resolution = 0;
+		intersectionPoint = glm::vec3(0.0f);
+		collidersRefPoint = glm::vec3(0.0f);
 	}
 
 	Terrain::~Terrain()
@@ -803,9 +811,10 @@ namespace Engine
 
 		if (path != matInstance->textures[0]->GetPath())		// Only reload if it's not the same texture
 		{
-			// TODO: Texture is not being deleted
 			TextureParams params = heightmap->GetTextureParams();
+			heightmap->RemoveReference();
 			renderer->RemoveTexture(heightmap);
+
 			// We can now use the heightmap, which is now null, to change the first element of the vector to the new heightmap
 			heightmap = renderer->CreateTexture2D(path, params, true);
 			matInstance->textures[0] = heightmap;

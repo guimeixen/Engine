@@ -13,19 +13,12 @@ layout(location = 5) in vec4 lightSpacePos[3];
 
 #include "include/shadow.glsl"
 
-tex2D_u(0) diffuseR;
-tex2D_u(1) diffuseG;
-tex2D_u(2) diffuseB;
-tex2D_u(3) diffuseBlack;
-tex2D_u(4) normalR;
-tex2D_u(5) splatmapTex;
-
-/*layout(set = 1, binding = 1) uniform sampler2D diffuseR;
-layout(set = 1, binding = 2) uniform sampler2D diffuseG;
-layout(set = 1, binding = 3) uniform sampler2D diffuseB;
-layout(set = 1, binding = 4) uniform sampler2D diffuseBlack;
-layout(set = 1, binding = 5) uniform sampler2D normalR;
-layout(set = 1, binding = 6) uniform sampler2D splatmapTex;*/
+tex2D_u(1) diffuseR;
+tex2D_u(2) diffuseG;
+tex2D_u(3) diffuseB;
+tex2D_u(4) diffuseBlack;
+tex2D_u(5) normalR;
+tex2D_u(6) splatmapTex;
 
 #ifdef FORWARD_PLUS
 #include "include/forward_plus.glsl"

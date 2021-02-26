@@ -45,7 +45,7 @@ namespace Engine
 		if (!passesTable.isNil())
 		{
 			//Log::Print(LogLevel::LEVEL_INFO, "Loading passes\n");
-			std::map<std::string, luabridge::LuaRef> values = scriptManager.GetKeyValueMap(passesTable);
+			std::unordered_map<std::string, luabridge::LuaRef> values = scriptManager.GetKeyValueMap(passesTable);
 
 			// Loop over every pass of this material
 			for (auto &pair : values)
@@ -301,9 +301,9 @@ namespace Engine
 		luabridge::LuaRef resourcesTable = matTable["resources"];
 		if (!resourcesTable.isNil())
 		{
-			std::map<std::string, luabridge::LuaRef> values = scriptManager.GetKeyValueMap(resourcesTable);
-			// Iterate in reverse order because we get the values from lua in reverde order
-			for (auto it = values.rbegin(); it != values.rend(); ++it)
+			std::unordered_map<std::string, luabridge::LuaRef> values = scriptManager.GetKeyValueMap(resourcesTable);
+
+			for (auto it = values.begin(); it != values.end(); ++it)
 			{
 				if (it->second.isTable())
 				{
@@ -423,6 +423,7 @@ namespace Engine
 
 		std::string line;
 		unsigned int options = 0;
+		unsigned int textureIdx = 0;
 		std::vector<std::string> cubemapFaces;
 		std::vector<std::string> texturePaths;
 
@@ -473,8 +474,21 @@ namespace Engine
 			}
 			else
 			{
-				texturePaths.push_back(line.substr(line.find('=') + 1));
+				//texturePaths.push_back(line.substr(line.find('=') + 1));
 				//Log::Print(LogLevel::LEVEL_INFO, "%s\n", texturePaths[texturePaths.size()-1].c_str());
+
+				std::string path = line.substr(line.find('=') + 1);
+				std::string name;
+				for (size_t i = 0; i < mi->textures.size(); i++)
+				{
+					name = mi->baseMaterial->texturesInfo[i].name;
+					if (line.substr(0, name.length()) == name)
+					{
+						mi->textures[textureIdx] = renderer->CreateTexture2D(path, mi->baseMaterial->texturesInfo[i].params, mi->baseMaterial->texturesInfo[i].storeData);
+						textureIdx++;
+						break;
+					}
+				}
 			}
 
 			/*for (size_t i = 0; i < mi->textures.size(); i++)
@@ -510,9 +524,9 @@ namespace Engine
 		// TODO : instead of adding this limit, load the textures for the texturePaths we have and for the missing one load the default white texture
 		// Make sure that we don't load more textures than we can
 		// We could have space for 2 texture but missing a texture path or we could have space for only 1 texture but have 2 texture paths
-		size_t texturesToLoad = mi->textures.size() > texturePaths.size() ? texturePaths.size() : mi->textures.size();
+		//size_t texturesToLoad = mi->textures.size() > texturePaths.size() ? texturePaths.size() : mi->textures.size();
 
-		size_t textureIndex = 0;
+		/* textureIndex = 0;
 		for (size_t i = 0; i < texturesToLoad; i++)
 		{
 			if (mi->baseMaterial->texturesInfo[i].type == TextureType::TEXTURE_CUBE)
@@ -526,13 +540,14 @@ namespace Engine
 
 				mi->textures[i] = renderer->CreateTextureCube(cubemapFaces, mi->baseMaterial->texturesInfo[i].params);			// Allow loading a cubemap from just one file or 6
 				cubemapFaces.clear();
+				textureIndex = 0;
 			}
 			else
 			{
 				Log::Print(LogLevel::LEVEL_INFO, "Loading texture\n");
-				mi->textures[i] = renderer->CreateTexture2D(texturePaths[textureIndex], mi->baseMaterial->texturesInfo[i].params, mi->baseMaterial->texturesInfo[i].storeData);
+				mi->textures[i] = renderer->CreateTexture2D(texturePaths[i], mi->baseMaterial->texturesInfo[i].params, mi->baseMaterial->texturesInfo[i].storeData);
 			}
-		}
+		}*/
 
 		return mi;
 	}

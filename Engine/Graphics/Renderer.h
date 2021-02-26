@@ -142,13 +142,14 @@ namespace Engine
 		virtual void UpdateMaterialInstance(MaterialInstance *matInst) = 0;
 		virtual void ReloadShaders() = 0;
 		virtual void RebindTexture(Texture *texture) {}
+		virtual void RemoveTexture(Texture* t) = 0;
 
 		void SetFrameTime(float frameTime) { this->frameTime = frameTime; }
 		float GetFrameTime() const { return frameTime; }
 
 		void AddRenderQueueGenerator(RenderQueueGenerator *renderQueueGenerator) { renderQueueGenerators.push_back(renderQueueGenerator); }
 		void RemoveRenderQueueGenerator(RenderQueueGenerator *generator);
-		bool RemoveTexture(Texture *t);
+		
 		bool RemoveMaterialInstance(MaterialInstance *m);			// Probably should remove this function
 
 		unsigned int GetWidth() const { return width; }

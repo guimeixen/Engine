@@ -853,6 +853,24 @@ namespace Engine
 		}
 	}
 
+	void GLRenderer::RemoveTexture(Texture* t)
+	{
+		for (auto it = textures.begin(); it != textures.end(); it++)
+		{
+			Texture* tex = it->second;
+
+			if (tex == t)
+			{
+				if (tex->GetRefCount() != 1)
+					Log::Print(LogLevel::LEVEL_ERROR, "Calling Renderer::RemoveTexture on a texture with more than 1 reference!\n");
+
+				tex->RemoveReference();
+				textures.erase(it);
+				return;
+			}
+		}
+	}
+
 	void GLRenderer::BeginFrame()
 	{
 		renderStats = {};

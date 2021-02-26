@@ -58,6 +58,7 @@ namespace Engine
 		cameraUBO = nullptr;
 		singleCameraAlignedSize = 0;
 		allCamerasAlignedSize = 0;
+		framesWaitedToRemove = 0;
 
 		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
@@ -476,18 +477,19 @@ namespace Engine
 		{
 			Texture *tex = textures[id];
 			tex->AddReference();
-			std::cout << path << '\n';
+			//std::cout << path << '\n';
 			return tex;
 		}
 
 		VKTexture2D *tex = new VKTexture2D(&base, path, params, storeTextureData);
-		tex->AddReference();
-		tex->Load(&base);
+		if (!tex->Load(&base))
+			return nullptr;
 
+		tex->AddReference();
+		
 		textures[id] = tex;
 
 		PrepareTexture2D(tex);
-
 		needsTransfers = true;
 
 		return tex;
@@ -1790,6 +1792,16 @@ namespace Engine
 		// Update this frame descriptor sets before we begin the command buffer
 		UpdateDescriptorSets();
 
+		if (framesWaitedToRemove >= MAX_FRAMES_IN_FLIGHT)
+		{
+			for (size_t i = 0; i < texturesToRemove.size(); i++)
+			{
+				texturesToRemove[i]->RemoveReference();
+			}
+			texturesToRemove.clear();
+			framesWaitedToRemove = 0;
+		}
+
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -1909,6 +1921,9 @@ namespace Engine
 		//vkQueueWaitIdle(base.GetPresentQueue());
 		//WaitIdle();
 		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+		if (texturesToRemove.size() > 0)
+			framesWaitedToRemove++;
 	}
 
 	void VKRenderer::WaitIdle()
@@ -2057,6 +2072,27 @@ namespace Engine
 		}
 
 		Log::Print(LogLevel::LEVEL_INFO, "Done!\n");
+	}
+
+	void VKRenderer::RemoveTexture(Texture* t)
+	{
+		for (auto it = textures.begin(); it != textures.end(); it++)
+		{
+			Texture* tex = it->second;
+
+			if (tex == t)
+			{
+				//vkDeviceWaitIdle(base.GetDevice());
+
+				if (tex->GetRefCount() != 1)
+					Log::Print(LogLevel::LEVEL_ERROR, "Calling Renderer::RemoveTexture on a texture with more than 1 reference!\n");
+
+				//tex->RemoveReference();
+				texturesToRemove.push_back(tex);
+				textures.erase(it);
+				return;
+			}
+		}
 	}
 
 	void VKRenderer::Dispose()

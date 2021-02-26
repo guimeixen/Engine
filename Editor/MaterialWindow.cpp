@@ -140,9 +140,7 @@ void MaterialWindow::Render()
 
 							ImGui::EndPopup();
 						}
-					}
-
-					
+					}			
 
 					ImGui::TreePop();
 				}
@@ -233,9 +231,10 @@ void MaterialWindow::ChangeShader()
 	filter.Draw("Find");
 	for (size_t i = 0; i < files.size(); i++)
 	{
-		if (filter.PassFilter(files[i].c_str()))
+		const char* str = files[i].c_str();
+		if (filter.PassFilter(str))
 		{
-			if (ImGui::Selectable(files[i].c_str()))
+			if (ImGui::Selectable(str))
 			{
 				
 			}

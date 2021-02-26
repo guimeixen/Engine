@@ -75,6 +75,7 @@ namespace Engine
 
 		void UpdateMaterialInstance(MaterialInstance *matInst) override;
 		void ReloadShaders() override;
+		void RemoveTexture(Texture* t) override;
 
 	private:
 		void SortCommands();

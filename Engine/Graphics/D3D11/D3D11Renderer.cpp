@@ -12,6 +12,7 @@
 
 #include "Graphics/Material.h"
 
+#include "Program/Log.h"
 #include "Program/StringID.h"
 
 #include "include/glm/gtc/matrix_transform.hpp"
@@ -1036,6 +1037,24 @@ namespace Engine
 
 	void D3D11Renderer::ReloadShaders()
 	{
+	}
+
+	void D3D11Renderer::RemoveTexture(Texture* t)
+	{
+		for (auto it = textures.begin(); it != textures.end(); it++)
+		{
+			Texture* tex = it->second;
+
+			if (tex == t)
+			{
+				if (tex->GetRefCount() != 1)
+					Log::Print(LogLevel::LEVEL_ERROR, "Calling Renderer::RemoveTexture on a texture with more than 1 reference!\n");
+
+				tex->RemoveReference();
+				textures.erase(it);
+				return;
+			}
+		}
 	}
 
 	void D3D11Renderer::RebindTexture(Texture *texture)

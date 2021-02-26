@@ -42,7 +42,6 @@ terrain_mat =
 		diffuseRNormal =
 		{
 			resType="texture2D",
-			texFormat="rgb"
 		},
 		splatmap =
 		{

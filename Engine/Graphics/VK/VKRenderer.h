@@ -98,6 +98,7 @@ namespace Engine
 
 		void UpdateMaterialInstance(MaterialInstance *matInst) override;
 		void ReloadShaders() override;
+		void RemoveTexture(Texture* t) override;
 
 		const VKBase &GetBase() const { return base; }
 		VKBase &GetBase() { return base; }
@@ -200,6 +201,9 @@ namespace Engine
 
 		std::vector<VKBufferInfo> bufferInfos;
 		std::vector<VKImageInfo> imagesInfo;
+
+		std::vector<Texture*> texturesToRemove;
+		unsigned int framesWaitedToRemove;
 
 		uint32_t curMeshParamsOffset = 0;
 

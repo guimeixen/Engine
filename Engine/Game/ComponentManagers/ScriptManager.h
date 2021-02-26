@@ -60,7 +60,7 @@ namespace Engine
 			lua_setglobal(L, name.c_str());
 		}
 
-		std::map<std::string, luabridge::LuaRef> GetKeyValueMap(const luabridge::LuaRef &table);
+		std::unordered_map<std::string, luabridge::LuaRef> GetKeyValueMap(const luabridge::LuaRef &table);
 
 		lua_State *GetLuaState() const { return L; }
 		const std::vector<ScriptInstance> &GetScripts() const { return scripts; }

@@ -85,6 +85,7 @@ namespace Engine
 
 		void UpdateMaterialInstance(MaterialInstance *matInst) override;
 		void ReloadShaders() override;
+		void RemoveTexture(Texture* t) override;
 
 		void RebindTexture(Texture *texture);
 
