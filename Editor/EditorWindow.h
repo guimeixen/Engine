@@ -16,6 +16,7 @@ public:
 	virtual void Init(Engine::Game *game, EditorManager *editorManager);
 
 	void Show(bool show) { showWindow = show; }
+	void Focus() { focus = true; }
 	bool IsVisible() const { return showWindow; }
 
 protected:
@@ -26,5 +27,6 @@ protected:
 	Engine::Game *game = nullptr;
 	EditorManager *editorManager = nullptr;
 	bool showWindow = true;
+	bool focus = false;
 };
 

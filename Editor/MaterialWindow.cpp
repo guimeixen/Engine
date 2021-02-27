@@ -164,11 +164,7 @@ void MaterialWindow::Render()
 			}
 		}
 	}
-	if (focus)
-	{
-		ImGui::SetDockActive();
-		focus = false;
-	}
+	
 	EndWindow();
 }
 

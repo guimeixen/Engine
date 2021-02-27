@@ -401,6 +401,8 @@ void ObjectWindow::Render()
 					game->GetScriptManager().AddScript(selectedEntity, path);
 
 					SetEntity(selectedEntity);		// Call to show the script component in the object tab
+
+					Engine::utils::OpenFileWithDefaultProgram(path);
 				}			
 
 				ImGui::CloseCurrentPopup();

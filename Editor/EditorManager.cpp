@@ -587,6 +587,7 @@ void EditorManager::ShowMainMenuBar()
 			sprintf(name, "%u", e.id);
 			editorNameManager.SetName(e, name);
 			objectWindow.SetEntity(e);
+			objectWindow.Focus();
 			gizmo.SetSelectedEntity(e);
 		}
 		if (ImGui::BeginMenu("Entity Primitive"))
@@ -594,22 +595,26 @@ void EditorManager::ShowMainMenuBar()
 			if (ImGui::MenuItem("Box"))
 			{
 				Engine::Entity e = game->AddEntity();
+				game->GetModelManager().AddPrimitiveModel(e, Engine::ModelType::PRIMITIVE_CUBE);
+
 				char name[128];
 				sprintf(name, "%u", e.id);
+
 				editorNameManager.SetName(e, name);
 				objectWindow.SetEntity(e);
-				gizmo.SetSelectedEntity(e);
-				game->GetModelManager().AddPrimitiveModel(e, Engine::ModelType::PRIMITIVE_CUBE);
+				gizmo.SetSelectedEntity(e);			
 			}
 			if (ImGui::MenuItem("Sphere"))
 			{
 				Engine::Entity e = game->AddEntity();
+				game->GetModelManager().AddPrimitiveModel(e, Engine::ModelType::PRIMITIVE_SPHERE);
+
 				char name[128];
 				sprintf(name, "%u", e.id);
+
 				editorNameManager.SetName(e, name);
 				objectWindow.SetEntity(e);
-				gizmo.SetSelectedEntity(e);
-				game->GetModelManager().AddPrimitiveModel(e, Engine::ModelType::PRIMITIVE_SPHERE);
+				gizmo.SetSelectedEntity(e);				
 			}
 			ImGui::EndMenu();
 		}

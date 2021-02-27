@@ -20,5 +20,10 @@ bool EditorWindow::BeginWindow(const char *name)
 
 void EditorWindow::EndWindow()
 {
+	if (focus)
+	{
+		ImGui::SetDockActive();
+		focus = false;
+	}
 	ImGui::EndDock();
 }

@@ -10,7 +10,6 @@ public:
 
 	void Render();
 	void CreateMaterial();
-	void Focus() { focus = true; }
 
 	void SetCurrentMaterial(Engine::Material *mat) { currentMaterial = mat; }
 	void SetCurrentMaterialInstance(Engine::MaterialInstance *mat) { if (!mat)return; currentMaterialInstance = mat; currentMaterial = mat->baseMaterial; }
@@ -25,7 +24,6 @@ private:
 private:
 	Engine::Material *currentMaterial;
 	Engine::MaterialInstance *currentMaterialInstance;
-	bool focus = false;
 	std::vector<std::string> files;
 	unsigned int textureIndex = 0;
 
