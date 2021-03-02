@@ -341,8 +341,12 @@ namespace Engine
 		{
 			const ScriptInstance &si = scripts[i];
 			ReloadFile(si.s);
-			si.s->CallOnAddEditorProperty(si.e);
-			si.s->RemovedUnusedProperties();
+
+			if (si.s)
+			{
+				si.s->CallOnAddEditorProperty(si.e);
+				si.s->RemovedUnusedProperties();
+			}
 		}
 
 		Log::Print(LogLevel::LEVEL_INFO, "Done!\n");
@@ -352,23 +356,37 @@ namespace Engine
 	{
 		for (size_t i = 0; i < usedScripts; i++)
 		{
-			ReloadFile(scripts[i].s);
-			scripts[i].s->ReloadProperties();
+			const ScriptInstance& si = scripts[i];
+
+			ReloadFile(si.s);
+
+			if (si.s)
+				si.s->ReloadProperties();
 		}
 	}
 
 	void ScriptManager::ReloadProperties()
 	{
 		for (size_t i = 0; i < usedScripts; i++)
-			scripts[i].s->ReloadProperties();
+		{
+			const ScriptInstance& si = scripts[i];
+
+			if (si.s)
+				si.s->ReloadProperties();
+		}
 	}
 
 	void ScriptManager::PartialDispose()
 	{
 		for (size_t i = 0; i < usedScripts; i++)
 		{
-			scripts[i].s->Dispose();
-			delete scripts[i].s;
+			const ScriptInstance& si = scripts[i];
+
+			if (si.s)
+			{
+				si.s->Dispose();
+				delete si.s;
+			}
 		}
 		scripts.clear();
 	}
@@ -519,8 +537,11 @@ namespace Engine
 				map[lastDisabledEntitySi.e.id] = entityToRemoveIndex;
 			}
 
-			entityToRemoveSi.s->Dispose();
-			delete entityToRemoveSi.s;
+			if (entityToRemoveSi.s != nullptr)
+			{
+				entityToRemoveSi.s->Dispose();
+				delete entityToRemoveSi.s;
+			}
 			usedScripts--;
 		}
 	}
@@ -680,7 +701,7 @@ namespace Engine
 		{
 			const ScriptInstance &si = scripts[i];
 			s.Write(si.e.id);
-			si.s->Serialize(s);
+			si.s->Serialize(s);		
 		}	
 	}
 
@@ -693,6 +714,7 @@ namespace Engine
 			s.Read(usedScripts);
 			s.Read(disabledScripts);
 			scripts.resize(usedScripts);
+
 			for (unsigned int i = 0; i < usedScripts; i++)
 			{
 				ScriptInstance si;
@@ -702,16 +724,31 @@ namespace Engine
 				s.Read(path);
 
 				si.s = LoadScript(path);
-				si.s->Deserialize(s);
 
 				// Set these two before CallOnAddEditorProperty otherwise the entity won't be in the map when it gets called
 				scripts[i] = si;
-				map[si.e.id] = i;		
+				map[si.e.id] = i;
 
+				if (si.s)
+				{
+					si.s->Deserialize(s);
 #ifdef EDITOR
-				si.s->CallOnAddEditorProperty(si.e);
-				si.s->RemovedUnusedProperties();
+					si.s->CallOnAddEditorProperty(si.e);
+					si.s->RemovedUnusedProperties();
 #endif
+				}
+				else
+				{
+					Log::Print(LogLevel::LEVEL_WARNING, "Removed missing script for entity %u : %s\n", si.e.id, path.c_str());
+				}
+			}
+
+
+			// Loop again through all the script, but now to remove the scripts from the entities which have missing scripts
+			for (unsigned int i = 0; i < usedScripts; i++)
+			{
+				if (scripts[i].s == nullptr)
+					RemoveScript(scripts[i].e);
 			}
 		}
 		else
@@ -743,11 +780,14 @@ namespace Engine
 
 				map[eid] = i;
 
-				si.s->Deserialize(s);
+				if (si.s)
+				{
+					si.s->Deserialize(s);
 #ifdef EDITOR
-				si.s->CallOnAddEditorProperty(si.e);
-				si.s->RemovedUnusedProperties();
+					si.s->CallOnAddEditorProperty(si.e);
+					si.s->RemovedUnusedProperties();
 #endif
+				}
 			}	
 		}
 	}
@@ -779,6 +819,9 @@ namespace Engine
 
 	void ScriptManager::ReloadFile(Script *script)
 	{
+		if (!script)
+			return;
+
 		script->Dispose();
 
 		std::string tableName = script->GetPath();
