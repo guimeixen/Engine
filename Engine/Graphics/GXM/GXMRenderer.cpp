@@ -332,23 +332,23 @@ namespace Engine
 		return new GXMFramebuffer(desc);
 	}
 
-	Shader *GXMRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* GXMRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		unsigned int id = SID(vertexName + fragmentName + defines);
 
 		// If the shader already exists return that one instead
-		if (shaders.find(id) != shaders.end())
+		if (shaderPrograms.find(id) != shaderPrograms.end())
 		{
-			return shaders[id];
+			return shaderPrograms[id];
 		}
 
 		// Else create a new one
 		GXMShader *shader = new GXMShader(shaderPatcher, fileManager, vertexName, fragmentName, descs, blendState);		// No need to pass the defines because the shaders are compiled when building in the editor. When load the shader in the Vita it already has been compiled with the defines
-		shaders[id] = shader;
+		shaderPrograms[id] = shader;
 		return shader;
 	}
 
-	Shader *GXMRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
+	ShaderProgram* GXMRenderer::CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState)
 	{
 		return CreateShader(vertexName, fragmentName, "", descs, blendState);
 	}
@@ -603,7 +603,7 @@ namespace Engine
 		backBufferIndex = (backBufferIndex + 1) % DISPLAY_BUFFER_COUNT;
 	}
 
-	void GXMRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews)
+	void GXMRenderer::AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, TextureInternalFormat viewFormat, bool separateMipViews)
 	{
 		if (!texture)
 			return;

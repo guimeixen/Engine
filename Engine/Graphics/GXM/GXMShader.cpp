@@ -175,6 +175,15 @@ namespace Engine
 		Log::Print(LogLevel::LEVEL_INFO, "Disposed shader\n");
 	}
 
+	bool GXMShader::CheckIfModified()
+	{
+		return false;
+	}
+
+	void GXMShader::Reload()
+	{
+	}
+
 	void GXMShader::Use()
 	{
 	}

@@ -34,12 +34,12 @@ namespace Engine
 		Buffer *CreateSSBO(unsigned int size, const void *data, unsigned int stride, BufferUsage usage) override { return nullptr; }
 		Framebuffer *CreateFramebuffer(const FramebufferDesc &desc) override;
 
-		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
-		Shader *CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
-		Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) override { return nullptr; }
-		Shader *CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) override { return nullptr; }
-		Shader *CreateComputeShader(const std::string &defines, const std::string &computePath) override { return nullptr; }
-		Shader *CreateComputeShader(const std::string &computePath) override { return nullptr; }
+		ShaderProgram* CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::string &defines, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
+		ShaderProgram* CreateShader(const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState) override;
+		ShaderProgram* CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::string &defines, const std::vector<VertexInputDesc> &descs) override { return nullptr; }
+		ShaderProgram* CreateShaderWithGeometry(const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath, const std::vector<VertexInputDesc> &descs) override { return nullptr; }
+		ShaderProgram* CreateComputeShader(const std::string &defines, const std::string &computePath) override { return nullptr; }
+		ShaderProgram* CreateComputeShader(const std::string &computePath) override { return nullptr; }
 
 		MaterialInstance *CreateMaterialInstance(ScriptManager &scriptManager, const std::string &matInstPath, const std::vector<VertexInputDesc> &inputDescs) override;
 		MaterialInstance *CreateMaterialInstanceFromBaseMat(ScriptManager &scriptManager, const std::string &baseMatPath, const std::vector<VertexInputDesc> &inputDescs) override;
@@ -63,7 +63,7 @@ namespace Engine
 		void SubmitIndirect(const RenderItem &renderItem, Buffer *indirectBuffer) override {}
 		void Dispatch(const DispatchItem &item) override {}
 
-		void AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, bool separateMipViews = false) override;
+		void AddTextureResourceToSlot(unsigned int binding, Texture *texture, bool useStorage, unsigned int stages, TextureInternalFormat viewFormat, bool separateMipViews = false) override;
 		void AddBufferResourceToSlot(unsigned int binding, Buffer *buffer, unsigned int stages) override;
 		void SetupResources() override;
 		void UpdateTextureResourceOnSlot(unsigned int binding, Texture *texture, bool useStorage, bool separateMipViews = false) override;

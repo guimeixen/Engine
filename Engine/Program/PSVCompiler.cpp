@@ -114,9 +114,14 @@ namespace Engine
 		const std::vector<ScriptInstance> &scripts = game->GetScriptManager().GetScripts();
 		for (size_t i = 0; i < scripts.size(); i++)
 		{
-			const std::string &p = scripts[i].s->GetPath();
+			const ScriptInstance& si = scripts[i];
 
-			cmakelists += "FILE ../../../../" + p + ' ' + p + '\n';
+			if (si.s)
+			{
+				const std::string& p = si.s->GetPath();
+
+				cmakelists += "FILE ../../../../" + p + ' ' + p + '\n';
+			}		
 		}
 
 		// Compile shaders if they have been modified
@@ -173,7 +178,8 @@ namespace Engine
 		{
 			buildFile << "mkdir Data\n";
 			buildFile << "xcopy /k/c/y \"..\\" + curProjectName + ".proj\" \"Data\"\n";				// Copy the project file, making sure the previous dir is specified as ..\ instead of ../ otherwise xcopy won't copy
-			buildFile << "sed -i 's/\\r$//' Data/" + curProjectName + ".proj\n";					// Change the line endings. Should just save them all with linux line endings... Notepad++ is able to open and edit them anyway
+			// No longer necessary to change line endings as the project file is longer a text file
+			//buildFile << "sed -i 's/\\r$//' Data/" + curProjectName + ".proj\n";					// Change the line endings. Should just save them all with linux line endings... Notepad++ is able to open and edit them anyway
 			buildFile << "xcopy /s/h/e/k/c/y \"../../../Vita\" \".\"\n";
 			buildFile << "cmake -G \"Unix Makefiles\" .\n";
 			buildFile << "make";
@@ -193,7 +199,7 @@ namespace Engine
 		std::string cmd = "cd " + folderPath + " & build.bat";
 		if (std::system(cmd.c_str()) != 0)
 		{
-			Log::Print(LogLevel::LEVEL_ERROR, "build.bat failed!\n");
+			Log::Print(LogLevel::LEVEL_ERROR, "build.bat failed! Is cmake installed?\n");
 			return;
 		}
 

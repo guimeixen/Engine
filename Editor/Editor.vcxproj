@@ -280,6 +280,28 @@ copy /Y "$(SolutionDir)lib\$(Configuration)\$(PlatformTargetAsMSBuildArchitectur
     <ClCompile Include="..\Engine\Sound\SoundSource.cpp" />
     <ClCompile Include="..\Engine\stb.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ProjectBuilder.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AIWindow.h" />
+    <ClInclude Include="AnimationProperties.h" />
+    <ClInclude Include="AnimationWindow.h" />
+    <ClInclude Include="AssetsBrowserWindow.h" />
+    <ClInclude Include="AssimpLoader.h" />
+    <ClInclude Include="Commands.h" />
+    <ClInclude Include="ConsoleWindow.h" />
+    <ClInclude Include="EditorManager.h" />
+    <ClInclude Include="EditorNameManager.h" />
+    <ClInclude Include="EditorWindow.h" />
+    <ClInclude Include="EntityDebugWindow.h" />
+    <ClInclude Include="Gizmo.h" />
+    <ClInclude Include="MaterialWindow.h" />
+    <ClInclude Include="ObjectWindow.h" />
+    <ClInclude Include="ProjectBuilder.h" />
+    <ClInclude Include="RenderingWindow.h" />
+    <ClInclude Include="SceneWindow.h" />
+    <ClInclude Include="SkeletonTreeWindow.h" />
+    <ClInclude Include="TerrainWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -389,6 +389,9 @@
     <ClCompile Include="..\Engine\Program\Version.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="ProjectBuilder.cpp">
+      <Filter>Source files\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -406,5 +409,64 @@
     <Filter Include="Source files\imgui">
       <UniqueIdentifier>{4f1c752b-c67e-4e70-9800-8fd7a563ac94}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AIWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationProperties.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetsBrowserWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpLoader.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="Commands.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorManager.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorNameManager.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntityDebugWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="Gizmo.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonTreeWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainWindow.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectBuilder.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

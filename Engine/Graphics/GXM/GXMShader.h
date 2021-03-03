@@ -8,14 +8,15 @@
 
 namespace Engine
 {
-	class GXMShader : public Shader
+	class GXMShader : public ShaderProgram
 	{
 	public:
 		GXMShader(SceGxmShaderPatcher *shaderPatcher, FileManager *fileManager, const std::string &vertexName, const std::string &fragmentName, const std::vector<VertexInputDesc> &descs, const BlendState &blendState);
 		~GXMShader();
 
 		void Dispose(SceGxmShaderPatcher *shaderPatcher);
-
+		bool CheckIfModified() override;
+		void Reload() override;
 		void Use();
 
 		const SceGxmProgramParameter *GetParameter(bool vertexStage, const char *name);

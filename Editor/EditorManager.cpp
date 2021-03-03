@@ -16,6 +16,8 @@
 
 #include "Physics/RigidBody.h"
 
+#include "ProjectBuilder.h"
+
 #include <GLFW/glfw3.h>
 
 #include <include/glm/gtc/matrix_transform.hpp>
@@ -520,7 +522,11 @@ void EditorManager::ShowMainMenuBar()
 		{
 			SaveProject();
 		}
-		if (ImGui::MenuItem("Compile for PS Vita"))
+		if (ImGui::MenuItem("Export project"))
+		{
+			ProjectBuilder::Export(curLevelDir, projectName);
+		}
+		if (ImGui::MenuItem("Export for PS Vita"))
 		{
 			wasCompileForVitaSelected = true;
 			std::ifstream settings(curLevelDir + "/PSVita_Build/settings.txt");
