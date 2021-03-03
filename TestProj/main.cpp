@@ -24,9 +24,9 @@ public:
 		forwardRenderer.EnableOcean(false);
 		forwardRenderer.EnableBloom(false);*/
 
-		//game.LoadProject("models");
+		game.LoadProject("roll_a_ball");
 
-		auto time = std::chrono::system_clock::now();
+		/*auto time = std::chrono::system_clock::now();
 		time_t tt = std::chrono::system_clock::to_time_t(time);
 
 		//tm utc_tm = *gmtime(&tt);
@@ -44,7 +44,7 @@ public:
 		tod.SetCurrentTime(curTime);
 
 		Engine::VolumetricClouds& vol = game.GetRenderingPath()->GetVolumetricClouds();
-		Engine::VolumetricCloudsData& volData = vol.GetVolumetricCloudsData();
+		Engine::VolumetricCloudsData& volData = vol.GetVolumetricCloudsData();*/
 
 		//volData.cloudCoverage = 0.3f;
 		//volData.highCloudsCoverage = 0.4f;
@@ -107,7 +107,7 @@ public:
 
 		//tm.SetLocalPosition(lightEntity, glm::vec3(0.0f, 1.0f, -4.0f));
 
-		game.GetMainCamera()->SetMoveSpeed(8.0f);
+		//game.GetMainCamera()->SetMoveSpeed(8.0f);
 
 		return true;
 	}

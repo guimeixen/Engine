@@ -1,0 +1,3 @@
+v0.0.3
+- Added project export using MSBuild
+- Fixed input mappings not loading on a standalone build

@@ -16,6 +16,8 @@ namespace Engine
 			return false;
 
 		fileManager.Init();
+		// Create the default input mappings
+		inputManager.LoadInputMappings(game.GetFileManager(), "");
 
 		Random::Init();
 

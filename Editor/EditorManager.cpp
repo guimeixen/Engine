@@ -61,9 +61,6 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputMa
 	this->game = game;
 	this->inputManager = inputManager;
 
-	// Create the default input mappings
-	inputManager->LoadInputMappings(game->GetFileManager(), "");
-
 	ImGui::CreateContext();
 	ImGuiStyle &style = ImGui::GetStyle();
 	style.FrameBorderSize = 1.0f;
