@@ -40,7 +40,7 @@ public:
 	void UpdateScroll(double yoffset);
 	void UpdateMouse(int button, int action);
 	void UpdateChar(unsigned int c);
-
+	void OnWindowClose();
 	void OnFocus();
 
 	std::stack<EditorCommand*> &GetUndoStack() { return undoStack; }
@@ -151,6 +151,7 @@ private:
 	char vitaAppTitleID[10];
 
 	// Changing input mapping
+	bool isInputMappingWindowOpen;
 	int changingInputMappingIndex;
 	bool changingPositiveKey;
 	bool changingNegativeKey;

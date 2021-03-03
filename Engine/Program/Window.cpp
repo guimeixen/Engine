@@ -59,7 +59,7 @@ namespace Engine
 		
 		glfwSetWindowTitle(window, windowTitle.c_str());
 
-		glfwSetWindowPos(window, 100, 50);
+		glfwSetWindowPos(window, 150, 50);
 
 		glfwSetWindowUserPointer(window, this);
 
@@ -69,6 +69,7 @@ namespace Engine
 		glfwSetWindowFocusCallback(window, WindowFocusCallback);
 		glfwSetCharCallback(window, WindowCharCallback);
 		glfwSetFramebufferSizeCallback(window, WindowFramebufferSizeCallback);
+		glfwSetWindowCloseCallback(window, WindowCloseCallback);
 
 		glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
 
@@ -269,5 +270,13 @@ namespace Engine
 			isMinimized = false;
 			wasResized = true;
 		}
+	}
+
+	void Window::UpdateWindowClose()
+	{
+#ifdef EDITOR
+		if (editorManager)
+			editorManager->OnWindowClose();
+#endif	
 	}
 }

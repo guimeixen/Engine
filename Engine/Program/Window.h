@@ -50,6 +50,7 @@ namespace Engine
 		void UpdateChar(unsigned int c);
 		void UpdateFocus(int focused);
 		void UpdateFramebufferSize(int width, int height);
+		void UpdateWindowClose();
 
 		inline static auto WindowKeyboardCallback(GLFWwindow* win, int key, int scancode, int action, int mods)
 		{
@@ -91,6 +92,12 @@ namespace Engine
 		{
 			Window *window = static_cast<Window*>(glfwGetWindowUserPointer(win));
 			window->UpdateFramebufferSize(width, height);
+		}
+
+		inline static auto WindowCloseCallback(GLFWwindow* win)
+		{
+			Window* window = static_cast<Window*>(glfwGetWindowUserPointer(win));
+			window->UpdateWindowClose();
 		}
 
 	private:

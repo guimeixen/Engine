@@ -1,3 +1,10 @@
+v0.0.4
+- When adding an entity the object window now becomes focused. Same thing for terrain, when adding a terrain the
+  terrain window becomes focused
+- The editor now displays the exit popup if a user tries to close the window by pressing the close button (X),
+  instead of closing immediately
+- Fixed a bug when clicking on the input mappings window or the exit popup when you close the editor and it would
+  also click on the entity behind the window in the game view
 v0.0.3
 - Added project export using MSBuild
 - Fixed input mappings not loading on a standalone build

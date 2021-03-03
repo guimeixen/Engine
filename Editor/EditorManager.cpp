@@ -53,6 +53,7 @@ EditorManager::EditorManager()
 
 	changingPositiveKey = false;
 	changingNegativeKey = false;
+	isInputMappingWindowOpen = false;
 }
 
 void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputManager *inputManager)
@@ -212,11 +213,6 @@ void EditorManager::Update(float dt)
 
 void EditorManager::Render()
 {
-	// Needed so the gizmo ends up on the editor rt for the imgui texture
-	/*game->GetRenderer()->SetRenderTarget(game->GetRenderingPath()->GetEditorRT());
-	gizmo.Render();
-	game->GetRenderer()->SetDefaultRenderTarget();*/
-
 	// ImGui input
 	ImGuiIO &io = ImGui::GetIO();
 	for (int i = 0; i < 3; i++)
@@ -365,6 +361,7 @@ void EditorManager::Render()
 				sprintf(name, "%u", e.id);
 				editorNameManager.SetName(e, name);
 				objectWindow.SetEntity(e);
+				objectWindow.Focus();
 				gizmo.SetSelectedEntity(e);
 
 				// Also add names for the children
@@ -487,6 +484,12 @@ void EditorManager::UpdateChar(unsigned int c)
 		io.AddInputCharacter((unsigned short)c);
 }
 
+void EditorManager::OnWindowClose()
+{
+	showExitPopup = true;
+	glfwSetWindowShouldClose(window, false);
+}
+
 void EditorManager::OnFocus()
 {
 	// Only do this if the game is stopped
@@ -502,6 +505,7 @@ void EditorManager::ShowMainMenuBar()
 {
 	bool wasCompileForVitaSelected = false;
 	bool wasInputSettingsSelected = false;
+	isInputMappingWindowOpen = false;
 
 	ImGui::BeginMainMenuBar();
 	if (ImGui::BeginMenu("File"))
@@ -605,7 +609,8 @@ void EditorManager::ShowMainMenuBar()
 
 				editorNameManager.SetName(e, name);
 				objectWindow.SetEntity(e);
-				gizmo.SetSelectedEntity(e);			
+				objectWindow.Focus();
+				gizmo.SetSelectedEntity(e);
 			}
 			if (ImGui::MenuItem("Sphere"))
 			{
@@ -617,6 +622,7 @@ void EditorManager::ShowMainMenuBar()
 
 				editorNameManager.SetName(e, name);
 				objectWindow.SetEntity(e);
+				objectWindow.Focus();
 				gizmo.SetSelectedEntity(e);				
 			}
 			ImGui::EndMenu();
@@ -635,6 +641,7 @@ void EditorManager::ShowMainMenuBar()
 			Engine::TerrainInfo info = {};
 			info.matPath = "Data/Resources/Materials/terrain/default_terrain.mat";
 			game->AddTerrain(info);
+			terrainWindow.Focus();
 		}
 		if (ImGui::BeginMenu("Material"))
 		{
@@ -756,6 +763,8 @@ void EditorManager::ShowMainMenuBar()
 
 	if (ImGui::BeginPopupModal("Input Settings", &openInput, ImGuiWindowFlags_None))
 	{
+		isInputMappingWindowOpen = true;
+
 		std::unordered_map<std::string, Engine::InputMapping> &inputMappings = inputManager->GetInputMappings();
 		for (auto it = inputMappings.begin(); it != inputMappings.end(); it++)
 		{
@@ -875,10 +884,12 @@ ImVec2 EditorManager::HandleGameView()
 		viewportPos.y = minSize.y;
 		gizmo.SetRayPoint(mousePos);
 
-		// Don't let the raycast to select and object be made if the mouse if not in the game view otherwise it would unselect and object when we could be trying to modify some value
-		// Don't let the raycast when the save level popup is open
-		// Dont' let the gizmo raycast when the create/open project popup is open
-		if (!needsSaving && !needsLoading && !needsProjectCreation)
+		// Don't perform the raycast if the mouse is not in the game view otherwise it would unselect an object when we could be trying to modify some value
+		// Don't perform the raycast when the save level popup is open
+		// Don't perform the raycast when the create/open project popup is open
+		// Don't perform the raycast when the input mappings window is open
+		// Don't perform the raycast when the exit popup is open
+		if (!needsSaving && !needsLoading && !needsProjectCreation && !showExitPopup && !isInputMappingWindowOpen)
 		{
 			if (mousePos.x > 0.0f && mousePos.x < availableSize.x && mousePos.y > 0.0f && mousePos.y < availableSize.y)
 			{
