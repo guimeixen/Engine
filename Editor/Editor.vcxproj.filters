@@ -392,6 +392,12 @@
     <ClCompile Include="ProjectBuilder.cpp">
       <Filter>Source files\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\imgui_widgets.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>Source files\imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Engine">
@@ -409,64 +415,103 @@
     <Filter Include="Source files\imgui">
       <UniqueIdentifier>{4f1c752b-c67e-4e70-9800-8fd7a563ac94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header files\imgui">
+      <UniqueIdentifier>{9ec3ddc1-4704-4d16-b810-07ee9ef4f080}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header files\Editor">
+      <UniqueIdentifier>{4860438c-6240-48c3-b1af-f0602cf550d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_dock.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_dx11.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_glfw.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_opengl3.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_impl_vulkan.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
     <ClInclude Include="AIWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="AnimationProperties.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="AnimationWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="AssetsBrowserWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="AssimpLoader.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Commands.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="ConsoleWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="EditorManager.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="EditorNameManager.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="EditorWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="EntityDebugWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="Gizmo.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="MaterialWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="ObjectWindow.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderingWindow.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneWindow.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="SkeletonTreeWindow.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="TerrainWindow.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
     </ClInclude>
     <ClInclude Include="ProjectBuilder.h">
-      <Filter>Header files</Filter>
+      <Filter>Header files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingWindow.h">
+      <Filter>Header files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneWindow.h">
+      <Filter>Header files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonTreeWindow.h">
+      <Filter>Header files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainWindow.h">
+      <Filter>Header files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_rectpack.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_textedit.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>Header files\imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

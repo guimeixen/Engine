@@ -102,6 +102,7 @@ namespace Engine
 
 		const VKBase &GetBase() const { return base; }
 		VKBase &GetBase() { return base; }
+		const VKSwapChain& GetSwapchain() const { return swapChain; }
 		VkDescriptorPool GetDescriptorPool() const { return descriptorPool; }
 		VkRenderPass GetDefaultRenderPass() const { return defaultRenderPass; }
 		VkCommandBuffer GetCurrentCommamdBuffer() const { return frameResources[currentFrame].frameCmdBuffer; }
