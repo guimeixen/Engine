@@ -387,8 +387,13 @@ namespace Engine
 			float height;
 			s.Read(radius);
 			s.Read(height);
+
+			// The height parameter is actually the capsule's cylinder height and not the full height (which also includes the radius of both spheres)
+			// So compute just the cylinder height
+			float cylinderHeight = std::abs(height - 2 * radius);
+
 			if (!shape)
-				shape = physicsManager.GetCapsuleShape(radius, height);
+				shape = physicsManager.GetCapsuleShape(radius, cylinderHeight);
 			else
 			{
 				SetRadius(radius);
