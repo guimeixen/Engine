@@ -322,7 +322,9 @@ void EditorManager::Render()
 	ImGui::Text("status");
 	ImGui::End();
 
-	if (needsProjectCreation)
+	// Only display the project creation popup if the exit popup is not being shown
+	// Like this we can show the exit popup if the user tries to close when the project creation popup is open
+	if (needsProjectCreation && !showExitPopup)
 	{
 		HandleProjectCreation();
 	}
