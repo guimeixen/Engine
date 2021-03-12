@@ -1152,7 +1152,7 @@ void ObjectWindow::HandleParticleSystem()
 			selectedPS->SetCenter(psCenter);
 		ImGui::PopID();
 
-		if (ImGui::InputFloat("Duration", &duration, 0.05f, 0.0f, 2))
+		if (ImGui::InputFloat("Duration", &duration, 0.05f, 0.0f, "%.2f"))
 		{
 			if (duration < 0.05f)
 				duration = 0.05f;
@@ -1160,7 +1160,7 @@ void ObjectWindow::HandleParticleSystem()
 			selectedPS->SetDuration(duration);
 		}
 
-		if (ImGui::InputFloat("Lifetime", &psLifetime, 0.05f, 0.0f, 2))
+		if (ImGui::InputFloat("Lifetime", &psLifetime, 0.05f, 0.0f, "%.2f"))
 		{
 			if (psLifetime < 0.05f)
 				psLifetime = 0.05f;
@@ -1168,7 +1168,7 @@ void ObjectWindow::HandleParticleSystem()
 			selectedPS->SetLifeTime(psLifetime);
 		}
 
-		if (ImGui::InputFloat("Size", &size, 0.01f, 0.0f, 2))
+		if (ImGui::InputFloat("Size", &size, 0.01f, 0.0f, "%.2f"))
 		{
 			if (size < 0.01f)
 				size = 0.01f;

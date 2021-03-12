@@ -90,12 +90,14 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputMa
 		info.DescriptorPool = renderer->GetDescriptorPool();
 		info.Allocator = nullptr;
 		info.CheckVkResultFn = nullptr;
+		info.MinImageCount = renderer->GetSwapchain().GetImageCount();
+		info.ImageCount = renderer->GetSwapchain().GetImageCount();
 		ImGui_ImplVulkan_Init(renderer, &info, renderer->GetDefaultRenderPass());
 
 		base.BeginSingleTimeCommands();
 		ImGui_ImplVulkan_CreateFontsTexture(base.GetSingleTimeCommandbuffer());
 		base.EndSingleTimeCommands();
-		ImGui_ImplVulkan_InvalidateFontUploadObjects();
+		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
 	else if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::D3D11)
 	{
@@ -247,8 +249,8 @@ void EditorManager::Render()
 	ImVec2 docksSize = ImVec2(displaySize.x, displaySize.y - mainMenuHeight - toolBarSize.y - statusBarSize.y);
 
 	// Draw tool bar
-	ImGui::SetNextWindowPos(toolBarPos, ImGuiSetCond_Always);
-	ImGui::SetNextWindowSize(toolBarSize, ImGuiSetCond_Always);
+	ImGui::SetNextWindowPos(toolBarPos, ImGuiCond_Always);
+	ImGui::SetNextWindowSize(toolBarSize, ImGuiCond_Always);
 	ImGui::Begin("toolbar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize);
 	if (ImGui::Button("Play"))
 	{
@@ -315,8 +317,8 @@ void EditorManager::Render()
 	ImGui::End();
 
 	// Draw status bar
-	ImGui::SetNextWindowPos(statusBarPos, ImGuiSetCond_Always);
-	ImGui::SetNextWindowSize(statusBarSize, ImGuiSetCond_Always);
+	ImGui::SetNextWindowPos(statusBarPos, ImGuiCond_Always);
+	ImGui::SetNextWindowSize(statusBarSize, ImGuiCond_Always);
 	ImGui::Begin("statusbar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize);
 	//ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
 	ImGui::Text("status");
