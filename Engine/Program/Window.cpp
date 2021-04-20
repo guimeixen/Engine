@@ -219,7 +219,15 @@ namespace Engine
 
 	void Window::UpdateMouseButtonState(int button, int action, int mods)
 	{
-		inputManager->SetMouseButtonState(button, action);
+		MouseButtonType mouseButton = MouseButtonType::Left;
+		if (button == GLFW_MOUSE_BUTTON_LEFT)
+			mouseButton = MouseButtonType::Left;
+		else if (button == GLFW_MOUSE_BUTTON_RIGHT)
+			mouseButton = MouseButtonType::Right;
+		else if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+			mouseButton = MouseButtonType::Middle;
+
+		inputManager->SetMouseButtonState(mouseButton, action);
 
 #ifdef EDITOR
 		editorManager->UpdateMouse(button, action);

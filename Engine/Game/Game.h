@@ -30,6 +30,7 @@ namespace Engine
 	class DebugDrawManager;
 	class FileManager;
 	class Allocator;
+	class InputManager;
 
 	struct Scene
 	{
@@ -41,7 +42,7 @@ namespace Engine
 	public:
 		Game();
 
-		void Init(Allocator *allocator, Renderer *renderer, FileManager *fileManager);
+		void Init(Allocator *allocator, Renderer *renderer, FileManager *fileManager, InputManager *inputManager);
 		void Update(float dt);
 		void Render(Renderer *renderer);
 		// Used when creating a new or opening a project. It just disposes what is not necessary
@@ -115,6 +116,7 @@ namespace Engine
 		FPSCamera *GetMainCamera() const { return mainCamera; }
 		void SetSceneScript(const std::string &sceneName);
 		void Shutdown() { shouldShutdown = true; }
+		void Print(const char* str);
 
 		bool IsPaused() const { return isPaused; }
 
@@ -136,6 +138,7 @@ namespace Engine
 		Allocator			*allocator;
 		Renderer			*renderer;		
 		FileManager			*fileManager;
+		InputManager		*inputManager;
 		AISystem			aiSystem;
 		Terrain				*terrain;
 		DebugDrawManager	*debugDrawManager;

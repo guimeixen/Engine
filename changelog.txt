@@ -1,4 +1,6 @@
 v0.0.4
+- It's now possible to add new input mappings per project
+- Input mappings are now saved in a file which is global to a project
 - When adding an entity the object window now becomes focused. Same thing for terrain, when adding a terrain the
   terrain window becomes focused
 - The editor now displays the exit popup if a user tries to close the window by pressing the close button (X),

@@ -38,6 +38,10 @@ namespace Engine
 {
 	Game::Game()
 	{
+		allocator = nullptr;
+		renderer = nullptr;
+		fileManager = nullptr;
+		inputManager = nullptr;
 		mainCamera = nullptr;
 		fpsCamera = nullptr;
 		terrain = nullptr;
@@ -52,16 +56,20 @@ namespace Engine
 		timeElapsed = 0.0f;
 		deltaTime = 0.0f;
 
+		playableWidth = 0.0f;
+		playebleHeight = 0.0f;
+
 		gameState = GameState::STOPPED;
 	}
 
-	void Game::Init(Allocator *allocator, Renderer *renderer, FileManager *fileManager)
+	void Game::Init(Allocator *allocator, Renderer *renderer, FileManager *fileManager, InputManager* inputManager)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Starting Game\n");
 
 		this->allocator = allocator;
 		this->renderer = renderer;
 		this->fileManager = fileManager;
+		this->inputManager = inputManager;
 
 		transformManager.Init(allocator, 50);
 		scriptManager.Init(this);
@@ -333,6 +341,8 @@ namespace Engine
 				terrain->Save(projectFolder, scenes[currentScene].name);
 
 			renderingPath->SaveRenderingSettings("Data/Levels/" + projectName + '/' + scenes[currentScene].name + ".rendersettings");
+
+			inputManager->SaveInputMappings(fileManager, projectFolder + "input.mappings");
 		}
 #endif
 		return true;
@@ -973,5 +983,10 @@ namespace Engine
 				break;
 			}
 		}
+	}
+
+	void Game::Print(const char* str)
+	{
+		Log::Print(LogLevel::LEVEL_INFO, str);
 	}
 }

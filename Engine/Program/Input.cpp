@@ -3,6 +3,7 @@
 #include "Program/StringID.h"
 #include "Program/FileManager.h"
 #include "Program/Log.h"
+#include "Program/Serializer.h"
 
 namespace Engine
 {
@@ -22,9 +23,11 @@ namespace Engine
 
 		mouseButtonsState[0] = { false, false, false };
 		mouseButtonsState[1] = { false, false, false };
+		mouseButtonsState[2] = { false, false, false };
 
 		mouseMoved = false;
-
+		lastButtons = 0;
+		lastChar = 0;
 		mousePosition = glm::vec2();
 		charUpdated = false;
 
@@ -38,6 +41,7 @@ namespace Engine
 		rightStickX = 0.0f;
 		rightStickY = 0.0f;
 
+		keysToString[Keys::KEY_SPACE] = "Space";
 		keysToString[Keys::KEY_0] = "0";
 		keysToString[Keys::KEY_1] = "1";
 		keysToString[Keys::KEY_2] = "2";
@@ -133,21 +137,55 @@ namespace Engine
 
 	void InputManager::LoadInputMappings(FileManager *fileManager, const std::string &path)
 	{
-		// Not finished
-		/*std::ifstream file = fileManager->OpenForReading(path);
+		inputMappings.clear();
+		
+		Serializer s(fileManager);
+		s.OpenForReading(path);
 
-		if (file.is_open())
+		if (s.IsOpen())
 		{
+			unsigned int size = 0;
+			s.Read(size);
 
+			InputMapping im = {};
+			std::string name;
+			int temp = 0;
+			unsigned short tempShort = 0;
+
+			for (unsigned int i = 0; i < size; i++)
+			{
+				im = {};
+
+				s.Read(name);
+				s.Read(temp);
+				im.mouseButton = (MouseButtonType)temp;
+				s.Read(tempShort);
+				im.negativeKey = (Keys)tempShort;
+				s.Read(tempShort);
+				im.positiveKey = (Keys)tempShort;
+				s.Read(temp);
+				im.negativeVitaButton = (VitaButtons)temp;
+				s.Read(temp);
+				im.positiveVitaButton = (VitaButtons)temp;
+				s.Read(im.useLeftAnalogueStickX);
+				s.Read(im.useLeftAnalogueStickY);
+				s.Read(im.useRightAnalogueStickX);
+				s.Read(im.useRightAnalogueStickY);
+
+				inputMappings[name] = im;
+			}
 		}
 		else
-		{*/
+		{
+			// Create default input mappings
 			InputMapping horizontal = {};
+			horizontal.mouseButton = MouseButtonType::None;
 			horizontal.positiveKey = Keys::KEY_D;
 			horizontal.negativeKey = Keys::KEY_A;
 			horizontal.useLeftAnalogueStickX = true;
 
 			InputMapping vertical = {};
+			vertical.mouseButton = MouseButtonType::None;
 			vertical.positiveKey = Keys::KEY_W;
 			vertical.negativeKey = Keys::KEY_S;
 			vertical.useLeftAnalogueStickY = true;
@@ -159,7 +197,48 @@ namespace Engine
 			inputMappings["Horizontal"] = horizontal;
 			inputMappings["Vertical"] = vertical;
 			inputMappings["Fire"] = fire;
-		//}
+		}
+
+		s.Close();
+	}
+
+	void InputManager::SaveInputMappings(FileManager* fileManager, const std::string& path)
+	{
+		Serializer s(fileManager);
+		s.OpenForWriting();
+
+		if (s.IsOpen())
+		{
+			s.Write((unsigned int)inputMappings.size());
+
+			for (auto it = inputMappings.begin(); it != inputMappings.end(); it++)
+			{
+				const InputMapping& im = it->second;
+				
+				s.Write(it->first);
+				s.Write(im.mouseButton);
+				s.Write(im.negativeKey);
+				s.Write(im.positiveKey);
+				s.Write(im.negativeVitaButton);
+				s.Write(im.positiveVitaButton);
+				s.Write(im.useLeftAnalogueStickX);
+				s.Write(im.useLeftAnalogueStickY);
+				s.Write(im.useRightAnalogueStickX);
+				s.Write(im.useRightAnalogueStickY);
+			}
+		}
+
+		s.Save(path);
+		s.Close();
+	}
+
+	void InputManager::AddInputMapping(const std::string& name, const InputMapping& newMapping)
+	{
+		// Don't do anything if we already one with the same name
+		if (inputMappings.find(name) != inputMappings.end())
+			return;
+
+		inputMappings[name] = newMapping;
 	}
 
 	int InputManager::AnyKeyPressed() const
@@ -170,6 +249,17 @@ namespace Engine
 				return i;
 		}
 		return 0;
+	}
+
+	bool InputManager::AnyMouseButtonPressed() const
+	{
+		for (int i = 0; i < NUM_MOUSE_BUTTON_TYPES; i++)
+		{
+			if (mouseButtonsState[i].state)
+				return true;
+		}
+
+		return false;
 	}
 
 	bool InputManager::GetLastChar(unsigned char &c)
@@ -225,6 +315,11 @@ namespace Engine
 		return mouseButtonsState[button].state;
 	}
 
+	MouseButtonType InputManager::GetLastMouseButtonPressed() const
+	{
+		return lastMouseButtonPressed;
+	}
+
 	void InputManager::SetMousePosition(const glm::vec2 &pos)
 	{
 		mousePosition = pos;
@@ -257,40 +352,23 @@ namespace Engine
 		charUpdated = true;
 	}
 
-	void InputManager::SetMouseButtonState(int button, int action)
+	void InputManager::SetMouseButtonState(MouseButtonType button, int action)
 	{
-		if (button < 0 || button > 1)
+		if (button < MouseButtonType::Left || button > MouseButtonType::Middle)
 			return;
 
-		if (button == MOUSE_BUTTON_LEFT)
+		if (action == KEY_PRESSED)
 		{
-			if (action == KEY_PRESSED)
-			{
-				mouseButtonsState[0].state = true;
-				mouseButtonsState[0].justReleased = false;
-				mouseButtonsState[0].justPressed = true;
-			}
-			else if (action == KEY_RELEASED)
-			{
-				mouseButtonsState[0].state = false;
-				mouseButtonsState[0].justReleased = true;
-				mouseButtonsState[0].justPressed = false;
-			}
+			lastMouseButtonPressed = button;
+			mouseButtonsState[button].state = true;
+			mouseButtonsState[button].justReleased = false;
+			mouseButtonsState[button].justPressed = true;
 		}
-		else if (button == MOUSE_BUTTON_RIGHT)
+		else if (action == KEY_RELEASED)
 		{
-			if (action == KEY_PRESSED)
-			{
-				mouseButtonsState[1].state = true;
-				mouseButtonsState[1].justReleased = false;
-				mouseButtonsState[1].justPressed = true;
-			}
-			else if (action == KEY_RELEASED)
-			{
-				mouseButtonsState[1].state = false;
-				mouseButtonsState[1].justReleased = true;
-				mouseButtonsState[1].justPressed = false;
-			}
+			mouseButtonsState[button].state = false;
+			mouseButtonsState[button].justReleased = true;
+			mouseButtonsState[button].justPressed = false;
 		}
 	}
 	void InputManager::SetScrollWheelYOffset(float yoffset)

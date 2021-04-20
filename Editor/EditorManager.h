@@ -132,6 +132,10 @@ private:
 	bool projectJustLoaded = false;
 	bool isProjectOpen = false;
 	bool displayProjectLoadErrorPopup = false;
+	bool displayAddInputMappingPopup;
+
+	Engine::InputMapping newInputMapping;
+	char inputMappingName[64];
 
 	ImVec2 availableSize;
 	ImVec2 gameViewSize;
@@ -157,6 +161,6 @@ private:
 	bool changingNegativeKey;
 	bool changingPositiveVitaButton;
 	bool changingNegativeVitaButton;
-	int currentPositiveKeyIndex = 0;
+	int currentPositiveKeyIndex;
 };
 

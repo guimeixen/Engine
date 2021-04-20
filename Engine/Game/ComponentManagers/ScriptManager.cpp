@@ -160,6 +160,7 @@ namespace Engine
 			.addFunction("play", &Game::Play)
 			.addFunction("pause", &Game::Pause)
 			.addFunction("setEntityEnabled", &Game::SetEntityEnabled)
+			.addFunction("print", &Game::Print)
 			.endClass()
 
 			/*.beginClass<MainView>("Renderer")

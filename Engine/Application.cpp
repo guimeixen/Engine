@@ -16,8 +16,6 @@ namespace Engine
 			return false;
 
 		fileManager.Init();
-		// Create the default input mappings
-		inputManager.LoadInputMappings(game.GetFileManager(), "");
 
 		Random::Init();
 
@@ -28,7 +26,7 @@ namespace Engine
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to create renderer!");
 			return false;
 		}
-		game.Init(&allocator, renderer, &fileManager);
+		game.Init(&allocator, renderer, &fileManager, &inputManager);
 
 #ifdef EDITOR
 		editorManager.Init(window.GetHandle(), &game, &inputManager);

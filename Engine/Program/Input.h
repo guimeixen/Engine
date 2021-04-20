@@ -4,11 +4,10 @@
 
 #include <vector>
 #include <unordered_map>
+#include <map>
 
 #define KEY_PRESSED			1
 #define KEY_RELEASED		0
-#define MOUSE_BUTTON_LEFT	0
-#define MOUSE_BUTTON_RIGHT	1
 
 namespace Engine
 {
@@ -114,10 +113,13 @@ namespace Engine
 		bool justPressed;
 	};
 
-	enum MouseButtonType
+	enum MouseButtonType : int
 	{
 		Left,
-		Right
+		Right,
+		Middle,
+		None,
+		NUM_MOUSE_BUTTON_TYPES
 	};
 
 	struct InputMapping
@@ -146,28 +148,36 @@ namespace Engine
 
 		// Tries to load the input mappings from file, if there is no file, it loads some default ones
 		void LoadInputMappings(FileManager *fileManager, const std::string &path);
+		void SaveInputMappings(FileManager *fileManager, const std::string &path);
+		void AddInputMapping(const std::string& name, const InputMapping& newMapping);
 
 		int AnyKeyPressed() const;
-		bool GetLastChar(unsigned char &c);
-		Keys GetLastKeyPressed() const;
+		bool GetLastChar(unsigned char &c);	
 		bool IsKeyPressed(int keycode) const;
 		bool WasKeyPressed(int keycode) const;
 		bool WasKeyReleased(int keycode) const;
+		Keys GetLastKeyPressed() const;
+
+		bool AnyMouseButtonPressed() const;
 		bool WasMouseButtonReleased(int button);
 		bool MouseMoved() const;
 		bool IsMousePressed(int button) const;
 		bool IsMouseButtonDown(int button) const;
+		MouseButtonType GetLastMouseButtonPressed() const;
+
 		float GetScrollWheelY() const { return scrollWheelY; }
+
 		float GetLeftAnalogueStickX() const { return leftStickX; }
 		float GetLeftAnalogueStickY() const { return leftStickY; }
 		float GetRightAnalogueStickX() const { return rightStickX; }
 		float GetRightAnalogueStickY() const { return rightStickY; }
 		bool IsVitaButtonDown(int button);
 		bool WasVitaButtonReleased(int button);
+
 		float GetAxis(const std::string &name);
 		bool GetAction(const std::string &name);
 
-		std::unordered_map<std::string, InputMapping> &GetInputMappings() { return inputMappings; }
+		std::map<std::string, InputMapping> &GetInputMappings() { return inputMappings; }
 		const std::string &GetStringOfKey(Keys key) { return keysToString[key]; }
 		const std::string &GetStringOfVitaButton(VitaButtons button) { return vitaButtonsToString[button]; }
 
@@ -176,7 +186,7 @@ namespace Engine
 
 		void UpdateKeys(int key, int scancode, int action, int mods);
 		void UpdateChar(unsigned char c);
-		void SetMouseButtonState(int button, int action);
+		void SetMouseButtonState(MouseButtonType button, int action);
 		void SetScrollWheelYOffset(float yoffset);
 		void UpdateVitaButtons(int buttons);
 		void UpdateVitaSticks(unsigned char leftStickX, unsigned char leftStickY, unsigned char rightStickX, unsigned char rightStickY);
@@ -185,9 +195,10 @@ namespace Engine
 		Key keys[512];
 		glm::vec2 mousePosition;
 		bool mouseMoved;
-		MouseButton mouseButtonsState[2];		// 0 is left mouse button, 1 is right mouse button
+		MouseButton mouseButtonsState[NUM_MOUSE_BUTTON_TYPES];		// The last one will be unused. Corresponds to None, so we can use an unassigned mouse button in the editor when changin the input mapping
 		unsigned char lastChar;
 		Keys lastKeyPressed;
+		MouseButtonType lastMouseButtonPressed;
 		bool charUpdated;
 		float scrollWheelY;
 
@@ -201,7 +212,7 @@ namespace Engine
 
 		std::unordered_map<unsigned short, std::string> keysToString;
 		std::unordered_map<unsigned int, std::string> vitaButtonsToString;
-		std::unordered_map<std::string, InputMapping> inputMappings;
+		std::map<std::string, InputMapping> inputMappings;
 	};
 
 	class Input
@@ -210,23 +221,29 @@ namespace Engine
 		friend class InputManager;
 	public:
 		static int AnyKeyPressed() { return inputManager->AnyKeyPressed(); }
-		static Keys GetLastKeyPressed() { return inputManager->GetLastKeyPressed(); }
+		static bool AnyMouseButtonPressed() { return inputManager->AnyMouseButtonPressed(); }	
 		static bool GetLastChar(unsigned char &c) { return inputManager->GetLastChar(c); }
 		static bool IsKeyPressed(int keycode) { return inputManager->IsKeyPressed(keycode); }
 		static bool WasKeyPressed(int keycode) { return inputManager->WasKeyPressed(keycode); }
 		static bool WasKeyReleased(int keycode) { return inputManager->WasKeyReleased(keycode); }
+		static Keys GetLastKeyPressed() { return inputManager->GetLastKeyPressed(); }
+		
 		static bool WasMouseButtonReleased(int button) { return inputManager->WasMouseButtonReleased(button); }
 		static bool IsMousePressed(int button) { return inputManager->IsMousePressed(button); }
 		static bool IsMouseButtonDown(int button) { return inputManager->IsMouseButtonDown(button); }
 		static bool MouseMoved() { return inputManager->MouseMoved(); }
 		static const glm::vec2 &GetMousePosition() { return inputManager->GetMousePosition(); }
+		static MouseButtonType GetLastMouseButtonPressed() { return inputManager->GetLastMouseButtonPressed(); }
+
 		static float GetScrollWheelY() { return inputManager->GetScrollWheelY(); }
+
 		static float GetLeftAnalogueStickX() { return inputManager->GetLeftAnalogueStickX(); }
 		static float GetLeftAnalogueStickY() { return inputManager->GetLeftAnalogueStickY(); }
 		static float GetRightAnalogueStickX() { return inputManager->GetRightAnalogueStickX(); }
 		static float GetRightAnalogueStickY() { return inputManager->GetRightAnalogueStickY(); }
 		static bool IsVitaButtonDown(int button) { return inputManager->IsVitaButtonDown(button); }
 		static bool WasVitaButtonReleased(int button) { return inputManager->WasVitaButtonReleased(button); }
+
 		static float GetAxis(const std::string &name) { return inputManager->GetAxis(name); }
 		static bool GetAction(const std::string &name) { return inputManager->GetAction(name); }
 

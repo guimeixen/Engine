@@ -403,6 +403,8 @@ void ObjectWindow::Render()
 					SetEntity(selectedEntity);		// Call to show the script component in the object tab
 
 					Engine::utils::OpenFileWithDefaultProgram(path);
+
+					memset(scriptNameInputBuffer, 0, 64);
 				}			
 
 				ImGui::CloseCurrentPopup();
