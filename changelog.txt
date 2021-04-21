@@ -7,6 +7,8 @@ v0.0.4
   instead of closing immediately
 - Fixed a bug when clicking on the input mappings window or the exit popup when you close the editor and it would
   also click on the entity behind the window in the game view
+- Fixed a bug with GetAxis and GetAction which would create a new input mapping if it didn't existe when they were
+  called
 v0.0.3
 - Added project export using MSBuild
 - Fixed input mappings not loading on a standalone build

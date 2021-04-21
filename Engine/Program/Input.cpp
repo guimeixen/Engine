@@ -416,7 +416,11 @@ namespace Engine
 		// If using strings as the key becomes slows, then we could try ints
 		//unsigned int id = SID(name);
 		
-		const InputMapping &im = inputMappings[name];
+		std::map<std::string, InputMapping>::iterator it = inputMappings.find(name);			// We use find instead of [] because otherwise we would insert InputMappings during gameplay if they didn't exist
+
+		if (it != inputMappings.end())
+		{
+			const InputMapping& im = (*it).second;
 
 #ifdef VITA
 		if (im.useLeftAnalogueStickX && (leftStickX > 0.1f || leftStickX < -0.1f))
@@ -431,20 +435,28 @@ namespace Engine
 		if (IsKeyPressed(im.negativeKey))
 			return -1.0f;
 #endif	
+		}
+
 		return 0.0f;
 	}
 
 	bool InputManager::GetAction(const std::string &name)
 	{
-		const InputMapping &im = inputMappings[name];
+		std::map<std::string, InputMapping>::iterator it = inputMappings.find(name);			// We use find instead of [] because we don't want to insert an InputMapping if it doesnt's exist
+
+		if (it != inputMappings.end())
+		{
+			const InputMapping& im = (*it).second;
 
 #ifdef VITA
-		if (buttons & im.positiveVitaButton)
-			return true;
+			if (buttons & im.positiveVitaButton)
+				return true;
 #else
-		if (IsKeyPressed(im.positiveKey))
-			return true;
-#endif
+			if (IsKeyPressed(im.positiveKey))
+				return true;
+#endif			
+		}
+
 		return false;
 	}
 }
