@@ -4,6 +4,15 @@ v0.0.5
 - Fixed crash when trying to display the name of an empty script entity property in the Editor
 - Only select an entity in the Scene Window list when the mouse is released instead of when it's clicked
 - Fixed crash when in Play mode if the name of a script property wasn't the same as the script variable name
+- Fixed rigid bodies, colliders and triggers not updating on the children of an entity when updating the transform of
+  the parent in Editor
+- Fixed a bug when adding the same script to more than one entity and if the script had properties that happened to have
+  the name of the table/script in it's name (eg. script name pickup and property name pickupText) they would only have the
+  correct names on the first script. The second, third and so on would have incorrect names.
+  Eg. First script name: pickup, property name: pickupText.
+      Second script name: pickup1, property name: pickup1Text
+  As you can see the name of the second script needs to be altered and this was also changing the name for every ocurrence
+  of the word pickup
 
 v0.0.4
 - It's now possible to add new input mappings per project

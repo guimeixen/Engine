@@ -187,6 +187,37 @@ void Gizmo::Update(float dt)
 				if (selectedRigidBody)
 					selectedRigidBody->SetPosition(localToWorld[3]);
 
+				// Also update all child triggers, colliders, rbs
+				if (transformManager->HasChildren(selectedEntity))
+				{
+					Engine::Entity child = transformManager->GetFirstChild(selectedEntity);
+
+					glm::mat4 localToWorld;
+					Engine::PhysicsManager &physicsManager = game->GetPhysicsManager();
+
+					while (child.IsValid())
+					{
+						localToWorld = transformManager->GetLocalToWorld(child);
+						// Normalize scale
+						localToWorld[0] = glm::normalize(localToWorld[0]);
+						localToWorld[1] = glm::normalize(localToWorld[1]);
+						localToWorld[2] = glm::normalize(localToWorld[2]);
+
+						Engine::Trigger* tr = physicsManager.GetTriggerSafe(child);
+						if (tr)
+							tr->SetTransform(localToWorld);
+
+						Engine::Collider* col = physicsManager.GetColliderSafe(child);
+						if (col)
+							col->SetTransform(localToWorld);
+
+						Engine::RigidBody* rb = physicsManager.GetRigidBodySafe(child);
+						if (rb)
+							rb->SetPosition(localToWorld[3]);
+
+						child = transformManager->GetNextSibling(child);
+					}
+				}
 
 				wasEntitySelected = true;
 			}

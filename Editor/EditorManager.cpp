@@ -1406,6 +1406,8 @@ void EditorManager::AddEntityScriptProperty(const std::string &propName, Engine:
 
 	Engine::Script* s = game->GetScriptManager().GetScript(eWithProp);
 
+	//std::unordered_map<std::string, luabridge::LuaRef> values = game->GetScriptManager().GetKeyValueMap(s->GetEnvironment());
+
 	if (!s->AddProperty(propName))
 	{
 		Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Can't add script property. No variable with name \"%s\" exists in the script \"%s\" for entity \"%s\". Is it mistyped?\n", propName.c_str(), s->GetName().c_str(), editorNameManager.GetName(eWithProp));

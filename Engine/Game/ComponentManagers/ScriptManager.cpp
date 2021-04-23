@@ -846,11 +846,12 @@ namespace Engine
 			fileStr = buffer.str();
 
 			size_t tableNamePos = fileStr.find(tableName);
-			while (tableNamePos != std::string::npos)
+			fileStr.replace(tableNamePos, tableName.length(), script->GetName());
+			/*while (tableNamePos != std::string::npos)
 			{
 				fileStr.replace(tableNamePos, tableName.length(), script->GetName());
 				tableNamePos = fileStr.find(tableName, tableNamePos + tableName.length());	// Advance tableName.length to the offset so when we use find again we don't get the same position	
-			}
+			}*/
 
 			file.close();
 		}
@@ -957,6 +958,7 @@ namespace Engine
 			if (si.s && si.s->GetName() == tableName)		// The script has already been loaded
 				occurrences++;
 		}
+
 		if (occurrences > 0)
 		{
 			std::ifstream file = game->GetFileManager()->OpenForReading(fileName);
@@ -971,14 +973,19 @@ namespace Engine
 			buffer << file.rdbuf();
 			fileStr = buffer.str();
 
+			// Only replace the first ocurrence of the script name (which is the table name at the top)
 			size_t tableNamePos = fileStr.find(tableName);
-			while (tableNamePos != std::string::npos)
+			newTableName = tableName + std::to_string(usedScripts);				// Append the script count instead of occurrences otherwise we will have errors
+
+			fileStr.replace(tableNamePos, tableName.length(), newTableName);
+
+			/*while (tableNamePos != std::string::npos)
 			{
 				newTableName = tableName + std::to_string(usedScripts);				// Append the script count instead of occurrences otherwise we will have errors
 
 				fileStr.replace(tableNamePos, tableName.length(), newTableName);
 				tableNamePos = fileStr.find(tableName, tableNamePos + tableName.length());	// Advance tableName.length to the offset so when we use find again we don't get the same position	
-			}
+			}*/
 
 			/*std::ofstream outF("Data/test.lua");
 			outF << fileStr;
