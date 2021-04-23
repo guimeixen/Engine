@@ -59,7 +59,7 @@ namespace Engine
 
 		void SetFunction(ScriptFunctionID id, luabridge::LuaRef *func);
 
-		void AddProperty(const std::string &name);
+		bool AddProperty(const std::string &name);
 		void SetProperty(const std::string &name, Entity e);
 		void ReloadProperties();
 		void RemovedUnusedProperties();

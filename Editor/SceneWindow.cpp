@@ -157,10 +157,11 @@ void SceneWindow::RenderEntityName(const EditorName &name)
 	hovered = ImGui::IsMouseHoveringRect(min, max);		// We calculate hovered by ourselves because ImGui::IsItemHovered() was not giving correct results
 
 	if (hovered && ImGui::IsMouseClicked(0))
-	{
 		startEntity = entityCopy;
+
+	if (hovered && ImGui::IsMouseReleased(0))
 		shouldSelectEntity = true;
-	}
+
 	if (Engine::Input::IsMouseButtonDown(0))
 	{
 		dragDelta = ImGui::GetMouseDragDelta();

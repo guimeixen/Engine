@@ -213,6 +213,10 @@ void MaterialWindow::AddTexture()
 				params.type = Engine::TextureDataType::UNSIGNED_BYTE;
 				params.useMipmapping = true;
 				params.wrap = Engine::TextureWrap::REPEAT;
+
+				currentMaterialInstance->textures[textureIndex]->RemoveReference();
+				game->GetRenderer()->RemoveTexture(currentMaterialInstance->textures[textureIndex]);
+
 				currentMaterialInstance->textures[textureIndex] = game->GetRenderer()->CreateTexture2D(files[i], params);
 
 				game->GetRenderer()->UpdateMaterialInstance(currentMaterialInstance);
@@ -263,6 +267,11 @@ void MaterialWindow::ShowTextures()
 					Engine::utils::FindFilesInDirectory(files, dir, ".jpg");
 					Engine::utils::FindFilesInDirectory(files, dir, ".dds");
 					Engine::utils::FindFilesInDirectory(files, dir, ".ktx");
+
+					Engine::utils::FindFilesInDirectory(files, "Data/Resources/Textures/*", ".png");
+					Engine::utils::FindFilesInDirectory(files, "Data/Resources/Textures/*", ".jpg");
+					Engine::utils::FindFilesInDirectory(files, "Data/Resources/Textures/*", ".dds");
+					Engine::utils::FindFilesInDirectory(files, "Data/Resources/Textures/*", ".ktx");
 				}
 
 				if (ImGui::BeginPopup("Choose texture"))

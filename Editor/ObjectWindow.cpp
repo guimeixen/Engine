@@ -830,6 +830,9 @@ void ObjectWindow::HandleTransform()
 			if (selectedRB)
 				selectedRB->SetPosition(localToWorld[3]);
 
+			// Also update all child triggers, colliders, rbs
+
+
 			//TransformCommand *tc = new TransformCommand(obj, position, rotation, scale);
 			//tc->Execute();
 			//editorManager->GetUndoStack().push(tc);
@@ -871,7 +874,16 @@ void ObjectWindow::HandleModel()
 				const Engine::MeshMaterial &mm = meshesAndMaterials[i];
 
 				std::string matPath = "Material: ";
-				matPath += mm.mat->name;
+
+				// Display the name if we have otherwise display the path
+				if (strlen(mm.mat->name) > 0)
+				{
+					matPath += mm.mat->name;
+				}
+				else
+				{
+					matPath += mm.mat->path;
+				}			
 
 				if (ImGui::Selectable(matPath.c_str()))
 				{
@@ -1375,9 +1387,12 @@ void ObjectWindow::HandleScript()
 			}
 			ImGui::SameLine();
 			ImGui::Text(": ");
-			ImGui::SameLine();
-			ImGui::Text(editorManager->GetEditorNameManager().GetName(properties[i].e));
 
+			if (properties[i].e.IsValid())
+			{
+				ImGui::SameLine();
+				ImGui::Text(editorManager->GetEditorNameManager().GetName(properties[i].e));
+			}
 
 			/*if (ImGui::BeginDragDropTarget())
 			{

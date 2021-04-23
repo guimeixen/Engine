@@ -201,16 +201,20 @@ namespace Engine
 		functions[id] = func;
 	}
 
-	void Script::AddProperty(const std::string &name)
+	bool Script::AddProperty(const std::string &name)
 	{
 		for (size_t i = 0; i < properties.size(); i++)
 		{
-			if (properties[i].name == name)		// Don't repeat a property if the name is the same as the parameters
+			if (properties[i].name == name)		// Don't repeat a property if the name is the same as the parameter
 			{
 				newProperties.push_back(i);
-				return;
+				return true;
 			}
 		}
+
+		// Check if a variable with this name exists in the Lua script. Eg. When adding the property in the script to display in the Editor (via Editor:AddEntityProperty) it could be mistyped and would crash
+		if (table[name].isNil())
+			return false;
 
 		ScriptProperty p = {};
 		p.name = name;
@@ -218,6 +222,8 @@ namespace Engine
 
 		properties.push_back(p);
 		newProperties.push_back(properties.size() - 1);		// Push back the index of the last properties element
+
+		return true;
 	}
 
 	void Script::SetProperty(const std::string &name, Entity e)

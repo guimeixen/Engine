@@ -1404,5 +1404,10 @@ void EditorManager::AddEntityScriptProperty(const std::string &propName, Engine:
 	if (!eWithProp.IsValid())
 		return;
 
-	game->GetScriptManager().GetScript(eWithProp)->AddProperty(propName);
+	Engine::Script* s = game->GetScriptManager().GetScript(eWithProp);
+
+	if (!s->AddProperty(propName))
+	{
+		Engine::Log::Print(Engine::LogLevel::LEVEL_ERROR, "Can't add script property. No variable with name \"%s\" exists in the script \"%s\" for entity \"%s\". Is it mistyped?\n", propName.c_str(), s->GetName().c_str(), editorNameManager.GetName(eWithProp));
+	}
 }

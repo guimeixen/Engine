@@ -1,3 +1,10 @@
+v0.0.5
+- Material path is displayed if the material name of the material is empty in the Model Component in the Object Window
+- Fixed the old/previous texture not being deleted after changing the texture of a material to a new one in the Editor
+- Fixed crash when trying to display the name of an empty script entity property in the Editor
+- Only select an entity in the Scene Window list when the mouse is released instead of when it's clicked
+- Fixed crash when in Play mode if the name of a script property wasn't the same as the script variable name
+
 v0.0.4
 - It's now possible to add new input mappings per project
 - Input mappings are now saved in a file which is global to a project
@@ -7,8 +14,9 @@ v0.0.4
   instead of closing immediately
 - Fixed a bug when clicking on the input mappings window or the exit popup when you close the editor and it would
   also click on the entity behind the window in the game view
-- Fixed a bug with GetAxis and GetAction which would create a new input mapping if it didn't existe when they were
+- Fixed a bug with GetAxis and GetAction which would create a new input mapping if it didn't exist when they were
   called
+  
 v0.0.3
 - Added project export using MSBuild
 - Fixed input mappings not loading on a standalone build

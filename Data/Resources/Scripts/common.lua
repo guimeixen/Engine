@@ -39,10 +39,10 @@ end
 function vec3Normalize(a)
 	local length = math.sqrt(vecLengthSq(a))
 	local multiplier
-	if (length > 0) then
-		multiplier=1 / length
+	if (length > 0.0) then
+		multiplier = 1.0 / length
 	else
-		multiplier=0.0001
+		multiplier = 0.0001
 	end
 	a.x = a.x * multiplier
 	a.y = a.y * multiplier
