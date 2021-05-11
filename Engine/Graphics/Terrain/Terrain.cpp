@@ -75,6 +75,7 @@ namespace Engine
 
 		matInstance = renderer->CreateMaterialInstance(game->GetScriptManager(), terrainInfo.matPath, terrainInputDescs);
 		matInstance->baseMaterial->SetShowInEditor(false);
+		baseShaderPassIndex = matInstance->baseMaterial->GetShaderPassIndex("base");		// Alternative instead of using the name?
 
 		if (matInstance->textures.size() < 1)
 			return false;
@@ -467,7 +468,7 @@ namespace Engine
 		RenderItem ri = {};
 		ri.mesh = &mesh;
 		ri.matInstance = matInstance;
-		ri.shaderPass = 0;
+		ri.shaderPass = baseShaderPassIndex;
 
 		if (!isTerrainDataUpdated)
 		{
@@ -801,6 +802,7 @@ namespace Engine
 		renderer->RemoveMaterialInstance(matInstance);	
 
 		matInstance = mat;
+		baseShaderPassIndex = matInstance->baseMaterial->GetShaderPassIndex("base");
 
 		SetHeightmap(matInstance->textures[0]->GetPath());
 	}

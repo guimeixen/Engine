@@ -134,6 +134,7 @@ namespace Engine
 		float *heights;
 		Mesh mesh;
 		MaterialInstance *matInstance;
+		unsigned int baseShaderPassIndex;
 		Buffer *terrainInstancingBuffer;
 		int terrainShapeID = -1;
 

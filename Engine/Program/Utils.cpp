@@ -150,7 +150,33 @@ namespace Engine
 			return distSqr < (r * r);*/
 		}
 
-		glm::vec3 GetRayDirection(const glm::vec2 &point, Camera *camera)
+		bool CheckAABBPoint(const AABB &aabb, const glm::vec3 &point)
+		{
+			if (point.x >= aabb.min.x && point.x <= aabb.max.x)
+			{
+				if (point.y >= aabb.min.y && point.y <= aabb.max.y)
+				{
+					if (point.z >= aabb.min.z && point.z <= aabb.max.z)
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		bool AABBABBBIntersection(const AABB &a, const AABB &b)
+		{
+			// Two AABBs only intersect if they intersect on all 3 axes
+			if (a.max.x < b.min.x || a.min.x > a.max.x) return false;
+			if (a.max.y < b.min.y || a.min.y > a.max.y) return false;
+			if (a.max.z < b.min.z || a.min.z > a.max.z) return false;
+
+			return true;		// Intersecting on all 3 axes
+		}
+
+		glm::vec3 GetRayDirection(const glm::vec2& point, Camera* camera)
 		{
 			glm::vec2 ndcCoords;
 			ndcCoords.x = 2.0f * point.x / camera->GetWidth() - 1.0f;
@@ -176,30 +202,12 @@ namespace Engine
 			return glm::normalize(glm::vec3(worldSpaceCoords));
 		}
 
-		bool CheckAABBPoint(const AABB &aabb, const glm::vec3 &point)
+		glm::vec3 ProjectToUnitSphere(const glm::vec3& position)
 		{
-			if (point.x >= aabb.min.x && point.x <= aabb.max.x)
-			{
-				if (point.y >= aabb.min.y && point.y <= aabb.max.y)
-				{
-					if (point.z >= aabb.min.z && point.z <= aabb.max.z)
-					{
-						return true;
-					}
-				}
-			}
+			glm::vec3 point = glm::normalize(position);
+			point = (1.0f / point) * position;
 
-			return false;
-		}
-
-		bool AABBABBBIntersection(const AABB &a, const AABB &b)
-		{
-			// Two AABBs only intersect if they intersect on all 3 axes
-			if (a.max.x < b.min.x || a.min.x > a.max.x) return false;
-			if (a.max.y < b.min.y || a.min.y > a.max.y) return false;
-			if (a.max.z < b.min.z || a.min.z > a.max.z) return false;
-
-			return true;		// Intersecting on all 3 axes
+			return point;
 		}
 
 		unsigned int Align(unsigned int value, unsigned int alignment)

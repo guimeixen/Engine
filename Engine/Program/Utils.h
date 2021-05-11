@@ -14,10 +14,11 @@ namespace Engine
 		float AngleFromPoint(const glm::vec2 &point);
 		float WrapAngle(float startAngle, float goalAngle);
 		bool RayAABBIntersection(const glm::vec3 &o, const glm::vec3 &d, const AABB &aabb);
-		bool AABBSphereIntersection(const AABB &aabb, const glm::vec3 &center, float r);
-		glm::vec3 GetRayDirection(const glm::vec2 &point, Camera *camera);
+		bool AABBSphereIntersection(const AABB &aabb, const glm::vec3 &center, float r);		
 		bool CheckAABBPoint(const AABB &aabb, const glm::vec3 &point);
 		bool AABBABBBIntersection(const AABB &a, const AABB &b);
+		glm::vec3 GetRayDirection(const glm::vec2& point, Camera* camera);
+		glm::vec3 ProjectToUnitSphere(const glm::vec3& position);
 
 		unsigned int Align(unsigned int value, unsigned int alignment);
 
