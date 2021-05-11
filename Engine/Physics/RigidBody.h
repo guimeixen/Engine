@@ -23,6 +23,8 @@ namespace Engine
 		void SetDamping(float linearDamping, float angularDamping);
 		void SetRestitution(float restitution);
 		void SetAngularFactor(const glm::vec3 &angFactor);
+		void EnableCollision();
+		void DisableCollision();
 
 		void ApplyForce(const glm::vec3 &dir);
 

@@ -284,6 +284,16 @@ namespace Engine
 		rigidBody->setAngularFactor(btVector3(angFactor.x, angFactor.y, angFactor.z));
 	}
 
+	void RigidBody::EnableCollision()
+	{
+		rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() & ~btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+	}
+
+	void RigidBody::DisableCollision()
+	{
+		rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CollisionFlags::CF_NO_CONTACT_RESPONSE);
+	}
+
 	void RigidBody::ApplyForce(const glm::vec3 &dir)
 	{
 		rigidBody->activate();
@@ -437,6 +447,7 @@ namespace Engine
 			SetRestitution(restitution);
 			SetAngularFactor(angFactor);
 			rigidBody->setSleepingThresholds(linSleepThres, angSleepThres);
+			EnableCollision();
 		}
 	}
 }

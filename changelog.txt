@@ -13,6 +13,9 @@ v0.0.5
       Second script name: pickup1, property name: pickup1Text
   As you can see the name of the second script needs to be altered and this was also changing the name for every ocurrence
   of the word pickup
+- Scripts with errors no longer make the Editor crash when loading a project. The script error message is displayed in the
+  console window and in the script component section of the Object Window
+- Rigid bodies now have collision disabled if the entity is disabled
 
 v0.0.4
 - It's now possible to add new input mappings per project

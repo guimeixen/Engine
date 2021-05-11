@@ -23,7 +23,7 @@ namespace Engine
 		void ReloadAll();
 		void ReloadScripts();
 		void ReloadProperties();
-		void ReloadFile(Script *script);
+		void ReloadFile(const ScriptInstance &si);
 		void PartialDispose();
 		void Dispose();
 
@@ -34,6 +34,7 @@ namespace Engine
 		void SetScriptEnabled(Entity e, bool enable);
 		void ExecuteFile(const std::string &fileName);
 		void CallFunction(const std::string &functionName);
+		std::string GetScriptErrorStr(Entity e);
 
 		bool HasScript(Entity e) const;
 		Script *GetScript(Entity e) const;
@@ -45,12 +46,12 @@ namespace Engine
 		template <class T>
 		inline void Call(const std::string &tableName, const std::string &functionName, T t)
 		{
-			lua_getglobal(L, tableName.c_str());		// Get table into the stack
+			lua_getglobal(L, tableName.c_str());				// Get table into the stack
 			int table = lua_gettop(L);							// Get the table index which is at the top of the stack
 			lua_getfield(L, table, functionName.c_str());		// Get the function into the stack as well
-			luabridge::push(L, t);							// Push the parameter
+			luabridge::push(L, t);								// Push the parameter
 			lua_pcall(L, 1, 0, 0);
-			lua_settop(L, table - 1);				// If we have the table index then it's easy to clean the stack
+			lua_settop(L, table - 1);							// If we have the table index then it's easy to clean the stack
 		}
 
 		template <class T>
@@ -66,8 +67,7 @@ namespace Engine
 		const std::vector<ScriptInstance> &GetScripts() const { return scripts; }
 
 	private:
-		void ReadTable(Script *script, const luabridge::LuaRef &table);
-		Script *LoadScript(const std::string &fileName);
+		Script *LoadScript(Entity e, const std::string &fileName);
 		void ExecuteString(const char *str);
 
 		void InsertScriptInstance(const ScriptInstance &si);
@@ -80,5 +80,7 @@ namespace Engine
 		std::unordered_map<unsigned int, unsigned int> map;
 		unsigned int usedScripts = 0;
 		unsigned int disabledScripts = 0;
+
+		std::unordered_map<unsigned int, std::string> scriptErrorsMap;
 	};
 }

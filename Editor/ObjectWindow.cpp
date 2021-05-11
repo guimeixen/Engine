@@ -1406,6 +1406,16 @@ void ObjectWindow::HandleScript()
 		size_t lastBar = name.find_last_of('/');
 		name.erase(0, lastBar + 1);		// +1 to remove the /
 
+		if (!selectedScript->IsValid())
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Script has errors");
+
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip(game->GetScriptManager().GetScriptErrorStr(selectedEntity).c_str());
+			}
+		}
+
 		ImGui::Text(name.c_str());
 
 		const std::vector<Engine::ScriptProperty> &properties = selectedScript->GetProperties();

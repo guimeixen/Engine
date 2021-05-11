@@ -6,11 +6,65 @@
 
 namespace Engine
 {
-	Script::Script(lua_State *L, const std::string &name, const std::string &path, const luabridge::LuaRef &table) : table(table)
+	Script::Script(lua_State* L, const std::string& name, const std::string& path, const luabridge::LuaRef& table) : table(table)
 	{
 		this->L = L;
 		this->name = name;
 		this->path = path;
+		isValid = true;
+	}
+
+	Script::Script(lua_State* L, const std::string& name, const std::string& path) : table(L)
+	{
+		this->L = L;
+		this->name = name;
+		this->path = path;
+		isValid = false;
+	}
+
+	void Script::ReadTable(const luabridge::LuaRef& table)
+	{
+		this->table = table;
+		isValid = true;
+
+		if (table["onAddEditorProperty"].isFunction())
+			SetFunction(OnAddEditorProperty, new luabridge::LuaRef(table["onAddEditorProperty"]));
+
+		if (table["onInit"].isFunction())
+			SetFunction(OnInit, new luabridge::LuaRef(table["onInit"]));
+
+		if (table["onUpdate"].isFunction())
+			SetFunction(OnUpdate, new luabridge::LuaRef(table["onUpdate"]));
+
+		if (table["onEvent"].isFunction())
+			SetFunction(OnEvent, new luabridge::LuaRef(table["onEvent"]));
+
+		if (table["onRender"].isFunction())
+			SetFunction(OnRender, new luabridge::LuaRef(table["onRender"]));
+
+		if (table["onDamage"].isFunction())
+			SetFunction(OnDamage, new luabridge::LuaRef(table["onDamage"]));
+
+		if (table["onTriggerEnter"].isFunction())
+			SetFunction(OnTriggerEnter, new luabridge::LuaRef(table["onTriggerEnter"]));
+
+		if (table["onTriggerStay"].isFunction())
+			SetFunction(OnTriggerStay, new luabridge::LuaRef(table["onTriggerStay"]));
+
+		if (table["onTriggerExit"].isFunction())
+			SetFunction(OnTriggerExit, new luabridge::LuaRef(table["onTriggerExit"]));
+
+		if (table["onResize"].isFunction())
+			SetFunction(OnResize, new luabridge::LuaRef(table["onResize"]));
+
+		if (table["onTargetSeen"].isFunction())
+			SetFunction(OnTargetSeen, new luabridge::LuaRef(table["onTargetSeen"]));
+
+		if (table["onTargetInRange"].isFunction())
+			SetFunction(OnTargetInRange, new luabridge::LuaRef(table["onTargetInRange"]));
+
+		if (table["onButtonPressed"].isFunction())
+			SetFunction(OnButtonPressed, new luabridge::LuaRef(table["onButtonPressed"]));
 	}
 
 	void Script::CallOnAddEditorProperty(Entity e)

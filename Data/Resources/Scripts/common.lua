@@ -33,11 +33,11 @@ function vec3LengthSq(a)
 end
 
 function vec3Length(a)
-	return math.sqrt(vecLengthSq(a))
+	return math.sqrt(vec3LengthSq(a))
 end
 
 function vec3Normalize(a)
-	local length = math.sqrt(vecLengthSq(a))
+	local length = math.sqrt(vec3LengthSq(a))
 	local multiplier
 	if (length > 0.0) then
 		multiplier = 1.0 / length

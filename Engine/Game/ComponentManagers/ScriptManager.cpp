@@ -341,7 +341,7 @@ namespace Engine
 		for (size_t i = 0; i < usedScripts; i++)
 		{
 			const ScriptInstance &si = scripts[i];
-			ReloadFile(si.s);
+			ReloadFile(si);
 
 			if (si.s)
 			{
@@ -359,7 +359,7 @@ namespace Engine
 		{
 			const ScriptInstance& si = scripts[i];
 
-			ReloadFile(si.s);
+			ReloadFile(si);
 
 			if (si.s)
 				si.s->ReloadProperties();
@@ -407,7 +407,7 @@ namespace Engine
 		if (HasScript(e))
 			return scripts[map.at(e.id)].s;
 
-		Script *s = LoadScript(fileName);
+		Script *s = LoadScript(e, fileName);
 
 		// If the script fails to load, then just return nullptr and continue as if AddScript wasn't called so it doesn't crash
 		if (!s)
@@ -431,7 +431,7 @@ namespace Engine
 
 		const Script *s = GetScript(e);
 
-		Script *newS = LoadScript(s->GetPath());
+		Script *newS = LoadScript(e, s->GetPath());
 		const std::vector<ScriptProperty> &props = s->GetProperties();
 		for (size_t i = 0; i < props.size(); i++)
 		{
@@ -456,7 +456,7 @@ namespace Engine
 		ScriptInstance si = {};
 
 		si.e = e;
-		si.s = LoadScript(path);
+		si.s = LoadScript(e, path);
 
 		if (!si.s)
 			return;
@@ -668,6 +668,14 @@ namespace Engine
 		}
 	}
 
+	std::string ScriptManager::GetScriptErrorStr(Entity e)
+	{
+		if (scriptErrorsMap.find(e.id) != scriptErrorsMap.end())
+			return scriptErrorsMap[e.id];
+
+		return "No errors found in script";
+	}
+
 	bool ScriptManager::HasScript(Entity e) const
 	{
 		return map.find(e.id) != map.end();
@@ -724,7 +732,7 @@ namespace Engine
 				std::string path;
 				s.Read(path);
 
-				si.s = LoadScript(path);
+				si.s = LoadScript(si.e, path);
 
 				// Set these two before CallOnAddEditorProperty otherwise the entity won't be in the map when it gets called
 				scripts[i] = si;
@@ -818,14 +826,14 @@ namespace Engine
 		return result;
 	}
 
-	void ScriptManager::ReloadFile(Script *script)
+	void ScriptManager::ReloadFile(const ScriptInstance &si)
 	{
-		if (!script)
+		if (!si.s)
 			return;
 
-		script->Dispose();
+		si.s->Dispose();
 
-		std::string tableName = script->GetPath();
+		std::string tableName = si.s->GetPath();
 		size_t lastBar = tableName.find_last_of('/');
 
 		tableName.erase(0, lastBar + 1);		// +1 to remove the /
@@ -838,7 +846,7 @@ namespace Engine
 
 		std::string fileStr;
 
-		std::ifstream file(script->GetPath());
+		std::ifstream file(si.s->GetPath());
 		if (file.is_open())
 		{
 			std::stringstream buffer;
@@ -846,7 +854,7 @@ namespace Engine
 			fileStr = buffer.str();
 
 			size_t tableNamePos = fileStr.find(tableName);
-			fileStr.replace(tableNamePos, tableName.length(), script->GetName());
+			fileStr.replace(tableNamePos, tableName.length(), si.s->GetName());
 			/*while (tableNamePos != std::string::npos)
 			{
 				fileStr.replace(tableNamePos, tableName.length(), script->GetName());
@@ -857,83 +865,25 @@ namespace Engine
 		}
 		else
 		{
-			std::cout << "Failed to open script file to change: " << script->GetPath() << '\n';
+			std::cout << "Failed to open script file: " << si.s->GetPath() << '\n';
 			return;
 		}
 
 		if (luaL_dostring(L, fileStr.c_str()) == 0)
 		{
-			luabridge::LuaRef table = luabridge::getGlobal(L, script->GetName().c_str());
+			luabridge::LuaRef table = luabridge::getGlobal(L, si.s->GetName().c_str());
 
 			if (table.isTable())
-			{
-				ReadTable(script, table);
-			}
+				si.s->ReadTable(table);
 		}
 		else
 		{
-			std::cout << "Error in script: " << script->GetPath() << "\n";
-			std::cout << lua_tostring(L, -1) << "\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Error in script: %s\n", si.s->GetPath().c_str());
+			Log::Print(LogLevel::LEVEL_ERROR, "%s\n", lua_tostring(L, -1));
 		}
 	}
 
-	void ScriptManager::ReadTable(Script *script, const luabridge::LuaRef &table)
-	{
-		if (table["onAddEditorProperty"].isFunction())
-		{
-			script->SetFunction(OnAddEditorProperty, new luabridge::LuaRef(table["onAddEditorProperty"]));
-		}
-		if (table["onInit"].isFunction())
-		{
-			script->SetFunction(OnInit, new luabridge::LuaRef(table["onInit"]));
-		}
-		if (table["onUpdate"].isFunction())
-		{
-			script->SetFunction(OnUpdate, new luabridge::LuaRef(table["onUpdate"]));
-		}
-		if (table["onEvent"].isFunction())
-		{
-			script->SetFunction(OnEvent, new luabridge::LuaRef(table["onEvent"]));
-		}
-		if (table["onRender"].isFunction())
-		{
-			script->SetFunction(OnRender, new luabridge::LuaRef(table["onRender"]));
-		}
-		if (table["onDamage"].isFunction())
-		{
-			script->SetFunction(OnDamage, new luabridge::LuaRef(table["onDamage"]));
-		}
-		if (table["onTriggerEnter"].isFunction())
-		{
-			script->SetFunction(OnTriggerEnter, new luabridge::LuaRef(table["onTriggerEnter"]));
-		}
-		if (table["onTriggerStay"].isFunction())
-		{
-			script->SetFunction(OnTriggerStay, new luabridge::LuaRef(table["onTriggerStay"]));
-		}
-		if (table["onTriggerExit"].isFunction())
-		{
-			script->SetFunction(OnTriggerExit, new luabridge::LuaRef(table["onTriggerExit"]));
-		}
-		if (table["onResize"].isFunction())
-		{
-			script->SetFunction(OnResize, new luabridge::LuaRef(table["onResize"]));
-		}
-		if (table["onTargetSeen"].isFunction())
-		{
-			script->SetFunction(OnTargetSeen, new luabridge::LuaRef(table["onTargetSeen"]));
-		}
-		if (table["onTargetInRange"].isFunction())
-		{
-			script->SetFunction(OnTargetInRange, new luabridge::LuaRef(table["onTargetInRange"]));
-		}
-		if (table["onButtonPressed"].isFunction())
-		{
-			script->SetFunction(OnButtonPressed, new luabridge::LuaRef(table["onButtonPressed"]));
-		}
-	}
-
-	Script *ScriptManager::LoadScript(const std::string &fileName)
+	Script *ScriptManager::LoadScript(Entity e, const std::string &fileName)
 	{
 		// Get the file name from the path
 		std::string tableName = fileName;
@@ -1001,16 +951,23 @@ namespace Engine
 
 				if (table.isTable())
 				{
-					Script *script = new Script(L, newTableName, fileName, table);		// Use the old table name so we can keep track of the number of occurrences
-					ReadTable(script, table);
+					Script *script = new Script(L, newTableName, fileName, table);
+					script->ReadTable(table);
 					return script;
 				}
 			}
 			else
 			{
+				// Instead of crashing when loading a project if a script has an error we will create an empty script
+				// and the error will display in the editor so the user knows. The script will then be reloaded like
+				// any other script when the editor gets focus.
 				Log::Print(LogLevel::LEVEL_ERROR, "Error in script: %s\n", fileName.c_str());
 				Log::Print(LogLevel::LEVEL_ERROR, "%s\n", lua_tostring(L, -1));
-				return nullptr;
+
+				Engine::Log::Print(Engine::LogLevel::LEVEL_WARNING, "Loaded empty script because script has errors\n");
+				Script* script = new Script(L, newTableName, fileName);
+
+				return script;
 			}
 		}
 		else
@@ -1042,15 +999,28 @@ namespace Engine
 				{
 					Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Reading table\n");
 					Script *script = new Script(L, tableName, fileName, table);
-					ReadTable(script, table);
+					script->ReadTable(table);
+
 					return script;
 				}
 			}
 			else
 			{
+				// Instead of crashing when loading a project if a script has an error we will create an empty script
+				// and the error will display in the editor so the user knows. The script will then be reloaded like
+				// any other script when the editor gets focus.
+
+				std::string errorStr = lua_tostring(L, -1);
+
 				Log::Print(LogLevel::LEVEL_ERROR, "Error in script: %s\n", fileName.c_str());
-				Log::Print(LogLevel::LEVEL_ERROR, "%s\n", lua_tostring(L, -1));
-				return nullptr;
+				Log::Print(LogLevel::LEVEL_ERROR, "%s\n", errorStr.c_str());
+
+				Engine::Log::Print(Engine::LogLevel::LEVEL_WARNING, "Loaded empty script because script has errors\n");
+				Script* script = new Script(L, tableName, fileName);
+
+				scriptErrorsMap[e.id] = errorStr;
+
+				return script;
 			}
 		}
 

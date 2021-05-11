@@ -43,7 +43,10 @@ namespace Engine
 	private:
 		friend class ScriptManager;
 	public:
-		Script(lua_State *L, const std::string &name, const std::string &path, const luabridge::LuaRef &table);
+		Script(lua_State* L, const std::string& name, const std::string& path, const luabridge::LuaRef& table);
+		Script(lua_State* L, const std::string& name, const std::string& path);
+
+		void ReadTable(const luabridge::LuaRef& table);
 
 		void CallOnAddEditorProperty(Entity e);
 		void CallOnInit(Entity e);
@@ -70,6 +73,8 @@ namespace Engine
 
 		const std::vector<ScriptProperty> &GetProperties() const { return properties; }
 
+		bool IsValid() const { return isValid; }
+
 		void Serialize(Serializer &s);
 		void Deserialize(Serializer &s);
 
@@ -86,5 +91,6 @@ namespace Engine
 		std::vector<ScriptProperty> properties;
 		std::vector<int> newProperties;
 		luabridge::LuaRef table;
+		bool isValid;
 	};
 }

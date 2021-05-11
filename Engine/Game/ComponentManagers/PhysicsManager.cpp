@@ -1235,6 +1235,10 @@ namespace Engine
 				if (disabledRigidBodies == 1)
 				{
 					disabledRigidBodies--;
+
+					RigidBodyInstance rbi1 = rigidBodies[rbMap.at(e.id)];
+					rbi1.rb->EnableCollision();
+
 					return;
 				}
 				else
@@ -1253,6 +1257,8 @@ namespace Engine
 					rbMap[rbi2.e.id] = entityIndex;
 
 					disabledRigidBodies--;
+
+					rbi2.rb->EnableCollision();
 				}
 			}
 			else
@@ -1273,6 +1279,8 @@ namespace Engine
 				rbMap[rbi2.e.id] = entityIndex;
 
 				disabledRigidBodies++;
+
+				rbi1.rb->DisableCollision();
 			}
 		}
 	}
