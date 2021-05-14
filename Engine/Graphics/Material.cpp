@@ -421,6 +421,14 @@ namespace Engine
 		mi->graphicsSetID = std::numeric_limits<unsigned int>::max();
 		memset(mi->name, 0, 64);
 
+		std::string name = path.substr(path.find_last_of("\\/") + 1);
+
+		const size_t extIdx = name.rfind('.');
+		if (extIdx != std::string::npos)
+			name = name.erase(extIdx);
+
+		strncpy(mi->name, name.c_str(), 64);
+
 		std::string line;
 		unsigned int options = 0;
 		unsigned int textureIdx = 0;

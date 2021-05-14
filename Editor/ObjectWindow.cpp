@@ -938,7 +938,7 @@ void ObjectWindow::HandleModel()
 							if (ImGui::Selectable(files[j].c_str()))
 							{
 								Engine::MaterialInstance *mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), files[j], mm.mesh.vao->GetVertexInputDescs());
-								strncpy(mat->name, mm.mat->name, 64);
+								//strncpy(mat->name, mm.mat->name, 64);
 								selectedModel->SetMeshMaterial((unsigned short)i, mat);
 							}
 						}
