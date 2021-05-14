@@ -133,9 +133,13 @@ private:
 	bool isProjectOpen = false;
 	bool displayProjectLoadErrorPopup = false;
 	bool displayAddInputMappingPopup;
+	bool displayAddNewMaterialPopup;
 
 	Engine::InputMapping newInputMapping;
 	char inputMappingName[64];
+
+	
+	char newMaterialName[64];
 
 	ImVec2 availableSize;
 	ImVec2 gameViewSize;

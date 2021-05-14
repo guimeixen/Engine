@@ -197,6 +197,8 @@ namespace Engine
 
 	bool VKTexture2D::Load(VKBase* base)
 	{	
+		Log::Print(LogLevel::LEVEL_INFO, "Loading texture %s\n", path.c_str());
+
 		if ((std::strstr(path.c_str(), ".png") > 0) || (std::strstr(path.c_str(), ".jpg") > 0))
 			return LoadPNGJPG(base);
 

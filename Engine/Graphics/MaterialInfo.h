@@ -4,7 +4,7 @@ namespace Engine
 {
 	enum MaterialOptions
 	{
-		NORMAL_MATRIX = 1,
+		NORMAL_MAP = 1,
 		INSTANCING = (1 << 1),
 		ANIMATED = (1 << 2),
 		ALPHA = (1 << 3),

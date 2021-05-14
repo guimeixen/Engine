@@ -1,3 +1,7 @@
+v0.0.6
+- Added normal mapping
+- Improvements in material creation
+
 v0.0.5
 - Material path is displayed if the material name of the material is empty in the Model Component in the Object Window
 - Fixed the old/previous texture not being deleted after changing the texture of a material to a new one in the Editor
@@ -16,6 +20,7 @@ v0.0.5
 - Scripts with errors no longer make the Editor crash when loading a project. The script error message is displayed in the
   console window and in the script component section of the Object Window
 - Rigid bodies now have collision disabled if the entity is disabled
+- Fixed validation layers error on terrain rendering during the refraction pass
 
 v0.0.4
 - It's now possible to add new input mappings per project

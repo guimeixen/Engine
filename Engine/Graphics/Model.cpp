@@ -107,14 +107,14 @@ namespace Engine
 			s.Read(numVertices);
 			s.Read(numIndices);
 
-			std::vector<VertexPOS3D_UV_NORMAL> vertices(numVertices);
+			std::vector<VertexPOS3D_UV_NORMAL_TANGENT> vertices(numVertices);
 			std::vector<unsigned short> indices(numIndices);
-			s.Read(vertices.data(), (unsigned int)vertices.size() * sizeof(VertexPOS3D_UV_NORMAL));
+			s.Read(vertices.data(), (unsigned int)vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_TANGENT));
 			s.Read(indices.data(), (unsigned int)indices.size() * sizeof(unsigned short));
 
 			Log::Print(LogLevel::LEVEL_INFO, "Creating buffers\n");
 
-			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL), BufferUsage::STATIC);
+			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_TANGENT), BufferUsage::STATIC);
 			Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
 
 			Mesh m = {};
@@ -124,18 +124,20 @@ namespace Engine
 			m.instanceCount = 0;
 			m.instanceOffset = 0;
 
-			VertexAttribute attribs[3] = {};
+			VertexAttribute attribs[4] = {};
 			attribs[0].count = 3;						// Position
 			attribs[1].count = 2;						// UV
 			attribs[2].count = 3;						// Normal
+			attribs[3].count = 3;						// Tangent
 
 			attribs[0].offset = 0;
 			attribs[1].offset = 3 * sizeof(float);
 			attribs[2].offset = 5 * sizeof(float);
+			attribs[3].offset = 8 * sizeof(float);
 
 			VertexInputDesc desc = {};
-			desc.stride = sizeof(VertexPOS3D_UV_NORMAL);
-			desc.attribs = { attribs[0], attribs[1], attribs[2] };
+			desc.stride = sizeof(VertexPOS3D_UV_NORMAL_TANGENT);
+			desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3] };
 
 			m.vao = renderer->CreateVertexArray(&desc, 1, { vb }, ib);
 			m.vao->AddReference();

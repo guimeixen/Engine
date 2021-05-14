@@ -9,11 +9,15 @@ layout(location = 1) in vec3 normal;
 layout(location = 2) in vec3 worldPos;
 layout(location = 3) in float clipSpaceDepth;
 layout(location = 4) in vec4 lightSpacePos[3];
+layout(location = 7) in mat3 TBN;
 
 #include "include/shadow.glsl"
 #include "include/voxel_cone_tracing.glsl"
 
-tex2D_u(0) tex;
+tex2D_u(0) diffuseTexture;
+#ifdef NORMAL_MAP
+tex2D_u(1) normalMap;
+#endif
 
 #ifdef FORWARD_PLUS
 #include "include/forward_plus.glsl"
@@ -24,17 +28,22 @@ layout(std140, set = 0, binding = OPAQUE_LIGHT_INDEX_LIST_SSBO) readonly buffer 
 };
 
 uimage2D_g(LIGHT_GRID_TEXTURE, rg32ui, readonly) oLightGrid;
-//layout(set = 0, binding = LIGHT_GRID_BINDING, rg32ui) uniform readonly uimage2D oLightGrid;
 #endif
 
 void main()
 {
-	outColor = texture(tex, uv);
+	outColor = texture(diffuseTexture, uv);
 	
 	if (outColor.a < 0.35)
 		discard;
 	
+#ifdef NORMAL_MAP
+	vec3 N = texture(normalMap, uv).rgb * 2.0 - 1.0;
+	N = normalize(TBN * N);
+#else
 	vec3 N = normalize(normal);
+#endif
+	
 	vec3 V = normalize(camPos.xyz - worldPos);
 	vec3 H = normalize(dirAndIntensity.xyz + V);
 	vec3 lighting = vec3(0.0);
@@ -92,5 +101,11 @@ void main()
 	
 	outColor.rgb *= lighting;
 	//outColor.rgb = indirectDiffuse.rgb;
+	
+/*#ifdef NORMAL_MAP
+	outColor.rgb = texture(normalMap,uv).rgb;
+#endif*/
+	//outColor.rgb = N;
+	
 	outColor.a = 1.0;
 }

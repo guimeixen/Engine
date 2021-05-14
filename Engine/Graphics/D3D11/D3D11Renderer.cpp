@@ -1047,11 +1047,17 @@ namespace Engine
 
 			if (tex == t)
 			{
-				if (tex->GetRefCount() != 1)
-					Log::Print(LogLevel::LEVEL_ERROR, "Calling Renderer::RemoveTexture on a texture with more than 1 reference!\n");
-
-				tex->RemoveReference();
-				textures.erase(it);
+				if (tex->GetRefCount() > 1)
+				{
+					Log::Print(LogLevel::LEVEL_WARNING, "Calling Renderer::RemoveTexture on a texture with more than 1 reference\n");
+					Log::Print(LogLevel::LEVEL_WARNING, "Texture %s still has %u references\n", tex->GetPath().c_str(), tex->GetRefCount());
+				}
+				else
+				{
+					Log::Print(LogLevel::LEVEL_INFO, "Removed texture %s\n", tex->GetPath().c_str());
+					tex->RemoveReference();
+					textures.erase(it);
+				}
 				return;
 			}
 		}

@@ -28,7 +28,7 @@ namespace Engine
 		model->SetOriginalAABB({ glm::vec3(100000.0f), glm::vec3(-100000.0f) });
 
 		Assimp::Importer importer;
-		const aiScene* aiscene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs); //| aiProcess_GenSmoothNormals); //| aiProcess_CalcTangentSpace);
+		const aiScene* aiscene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs | aiProcess_CalcTangentSpace); //| aiProcess_GenSmoothNormals);
 
 		if (!aiscene || aiscene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !aiscene->mRootNode)
 		{
@@ -142,7 +142,7 @@ namespace Engine
 
 		Assimp::Importer importer;
 
-		const aiScene *aiscene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights); //| aiProcess_CalcTangentSpace);
+		const aiScene *aiscene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights | aiProcess_CalcTangentSpace);
 
 		if (!aiscene || aiscene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !aiscene->mRootNode)
 		{
@@ -412,14 +412,18 @@ namespace Engine
 		}
 		else
 		{
-			std::vector<VertexPOS3D_UV_NORMAL> vertices(aimesh->mNumVertices);
+			std::vector<VertexPOS3D_UV_NORMAL_TANGENT> vertices(aimesh->mNumVertices);
 
 			for (unsigned int i = 0; i < aimesh->mNumVertices; i++)
 			{
-				VertexPOS3D_UV_NORMAL &v = vertices[i];
+				VertexPOS3D_UV_NORMAL_TANGENT &v = vertices[i];
 
-				v.pos = glm::vec3(aimesh->mVertices[i].x, aimesh->mVertices[i].y, aimesh->mVertices[i].z);
-				v.normal = glm::vec3(aimesh->mNormals[i].x, aimesh->mNormals[i].y, aimesh->mNormals[i].z);
+				if (aimesh->mVertices)
+					v.pos = glm::vec3(aimesh->mVertices[i].x, aimesh->mVertices[i].y, aimesh->mVertices[i].z);
+				if (aimesh->mNormals)
+					v.normal = glm::vec3(aimesh->mNormals[i].x, aimesh->mNormals[i].y, aimesh->mNormals[i].z);
+				if (aimesh->mTangents)
+					v.tangent = glm::vec3(aimesh->mTangents[i].x, aimesh->mTangents[i].y, aimesh->mTangents[i].z);
 
 				const AABB &originalAABB = model->GetOriginalAABB();
 				model->SetOriginalAABB({ glm::min(originalAABB.min, v.pos),glm::max(originalAABB.max, v.pos) });
@@ -436,7 +440,7 @@ namespace Engine
 				}
 			}
 
-			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL), BufferUsage::STATIC);
+			Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_TANGENT), BufferUsage::STATIC);
 			Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
 
 			Mesh m = {};
@@ -446,18 +450,20 @@ namespace Engine
 			m.instanceCount = 0;
 			m.instanceOffset = 0;
 
-			VertexAttribute attribs[3] = {};
+			VertexAttribute attribs[4] = {};
 			attribs[0].count = 3;						// Position
 			attribs[1].count = 2;						// UV
 			attribs[2].count = 3;						// Normal
+			attribs[3].count = 3;						// Tangent
 
 			attribs[0].offset = 0;
 			attribs[1].offset = 3 * sizeof(float);
 			attribs[2].offset = 5 * sizeof(float);
+			attribs[3].offset = 8 * sizeof(float);
 
 			VertexInputDesc desc = {};
-			desc.stride = sizeof(VertexPOS3D_UV_NORMAL);
-			desc.attribs = { attribs[0], attribs[1], attribs[2] };
+			desc.stride = sizeof(VertexPOS3D_UV_NORMAL_TANGENT);
+			desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3] };
 
 			if (willUseInstancing)
 			{
@@ -498,7 +504,7 @@ namespace Engine
 			model->SetOriginalAABB(originalAABB);
 
 
-			s.Write(vertices.data(), (unsigned int)vertices.size() * sizeof(VertexPOS3D_UV_NORMAL));
+			s.Write(vertices.data(), (unsigned int)vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_TANGENT));
 			s.Write(indices.data(), (unsigned int)indices.size() * sizeof(unsigned short));
 
 			return m;
@@ -678,6 +684,8 @@ namespace Engine
 
 				if (utils::DirectoryExists(path))
 					mat->textures[0] = renderer->CreateTexture2D(directory + '/' + filename, params);
+				else
+					Log::Print(LogLevel::LEVEL_WARNING, "Texture  %s  not found in directory: %s    -- Loading default\n", filename.c_str(), directory.c_str());
 
 				if (mat->textures[0] == nullptr)
 				{

@@ -9,7 +9,7 @@ public:
 	MaterialWindow();
 
 	void Render();
-	void CreateMaterial();
+	void CreateMaterial(const std::string &name, const std::string &path);
 
 	void SetCurrentMaterial(Engine::Material *mat) { currentMaterial = mat; }
 	void SetCurrentMaterialInstance(Engine::MaterialInstance *mat) { if (!mat)return; currentMaterialInstance = mat; currentMaterial = mat->baseMaterial; }
@@ -32,6 +32,13 @@ private:
 	int textureFilterComboIndex = 0;
 	int textureWrapComboIndex = 0;
 	int matParamTypeComboIndex = 0;
+
+	bool displayCreateMaterialInstance;
+	bool isNormalMap;
+	char newMaterialInstanceName[64];
+	bool baseMaterialsInProjectLoaded;
+	std::vector<std::string> baseMaterialsInProjectStr;
+	std::string selectedBaseMaterialPath;
 
 	float tempF = 0.0f;
 	int tempI = 0;

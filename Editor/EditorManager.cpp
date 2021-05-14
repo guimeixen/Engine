@@ -40,6 +40,7 @@
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <filesystem>
 
 EditorManager::EditorManager()
 {
@@ -51,11 +52,13 @@ EditorManager::EditorManager()
 	memset(vitaAppName, 0, 128);
 	memset(vitaAppTitleID, 0, 10);
 	memset(inputMappingName, 0, 64);
+	memset(newMaterialName, 0, 64);
 
 	changingPositiveKey = false;
 	changingNegativeKey = false;
 	isInputMappingWindowOpen = false;
 	displayAddInputMappingPopup = false;
+	displayAddNewMaterialPopup = false;
 	newInputMapping = {};
 	newInputMapping.mouseButton = Engine::MouseButtonType::None;
 	currentPositiveKeyIndex = 0;
@@ -656,7 +659,7 @@ void EditorManager::ShowMainMenuBar()
 		{
 			if (ImGui::MenuItem("Default"))
 			{
-				materialWindow.CreateMaterial();
+				displayAddNewMaterialPopup = true;
 			}
 			if (ImGui::MenuItem("PBR"))
 			{
@@ -978,6 +981,37 @@ void EditorManager::ShowMainMenuBar()
 			}
 
 			ImGui::EndPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+
+
+	if (displayAddNewMaterialPopup)
+	{
+		ImGui::OpenPopup("New Material");
+		displayAddNewMaterialPopup = false;
+	}
+
+	if (ImGui::BeginPopup("New Material"))
+	{
+		if (ImGui::InputText("Name", newMaterialName, 64, ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::Button("Create"))
+		{
+			std::string name = newMaterialName;
+			name += "_mat";
+			std::string path = curLevelDir + '/' + name + ".lua";
+
+			if (std::filesystem::exists(path))
+			{
+				// File already exists
+				// TODO show alert
+			}
+			else
+			{
+				materialWindow.CreateMaterial(name, path);
+				memset(newMaterialName, 0, 64);
+			}
+			ImGui::CloseCurrentPopup();
 		}
 
 		ImGui::EndPopup();

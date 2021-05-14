@@ -129,6 +129,7 @@ namespace Engine
 		//fpsCamera->SetFrontAndUp(glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		fpsCamera->SetMoveSpeed(2.0f);
 
+		editorCam.SetPosition(glm::vec3(0.0f, 8.0f, 0.0f));
 		editorCam.SetProjectionMatrix(70.0f, renderer->GetWidth(), renderer->GetHeight(), 0.2f, 700.0f);
 		
 #ifndef VITA

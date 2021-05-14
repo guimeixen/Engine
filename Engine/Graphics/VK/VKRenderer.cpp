@@ -2082,14 +2082,17 @@ namespace Engine
 
 			if (tex == t)
 			{
-				//vkDeviceWaitIdle(base.GetDevice());
-
-				if (tex->GetRefCount() != 1)
-					Log::Print(LogLevel::LEVEL_ERROR, "Calling Renderer::RemoveTexture on a texture with more than 1 reference!\n");
-
-				//tex->RemoveReference();
-				texturesToRemove.push_back(tex);
-				textures.erase(it);
+				if (tex->GetRefCount() > 1)
+				{
+					Log::Print(LogLevel::LEVEL_WARNING, "Calling Renderer::RemoveTexture on a texture with more than 1 reference\n");
+					Log::Print(LogLevel::LEVEL_WARNING, "Texture %s still has %u references\n", tex->GetPath().c_str(), tex->GetRefCount());
+				}
+				else
+				{
+					Log::Print(LogLevel::LEVEL_INFO, "Removed texture %s\n", tex->GetPath().c_str());
+					texturesToRemove.push_back(tex);
+					textures.erase(it);
+				}		
 				return;
 			}
 		}

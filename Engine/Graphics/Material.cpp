@@ -456,8 +456,8 @@ namespace Engine
 			else if (line.substr(0, 8) == "baseMat=")
 			{
 				std::string defines = "";
-				/*if ((options & NORMAL_MATRIX) == NORMAL_MATRIX)
-					defines += "#define NORMAL_MATRIX\n";*/
+				if ((options & NORMAL_MAP) == NORMAL_MAP)
+					defines += "#define NORMAL_MAP\n";
 				if ((options & INSTANCING) == INSTANCING)
 					defines += "#define INSTANCING\n";
 				if ((options & ANIMATED) == ANIMATED)
@@ -581,8 +581,8 @@ namespace Engine
 
 	unsigned int Material::SetOptions(unsigned int options, const std::string &define)
 	{
-		if (define == "NORMAL_MATRIX")
-			options |= NORMAL_MATRIX;
+		if (define == "NORMAL_MAP")
+			options |= NORMAL_MAP;
 		else if (define == "INSTANCING")
 			options |= INSTANCING;
 		else if (define == "ANIMATED")

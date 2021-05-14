@@ -299,7 +299,7 @@ namespace Engine
 			}
 			else
 			{
-				std::vector<VertexPOS3D_UV_NORMAL> vertices;
+				std::vector<VertexPOS3D_UV_NORMAL_TANGENT> vertices;
 				std::vector<unsigned short> indices;
 
 				for (int y = 0; y <= latBands; y++)
@@ -316,7 +316,7 @@ namespace Engine
 						float sinPhi = glm::sin(phi);
 						float cosPhi = glm::cos(phi);
 
-						VertexPOS3D_UV_NORMAL v = {};
+						VertexPOS3D_UV_NORMAL_TANGENT v = {};
 						v.pos.x = radius * cosPhi * sinTheta;
 						v.pos.y = radius * cosTheta;
 						v.pos.z = radius * sinPhi * sinTheta;
@@ -325,6 +325,7 @@ namespace Engine
 						v.normal.x = v.pos.x;
 						v.normal.y = v.pos.y;
 						v.normal.z = v.pos.z;
+						v.tangent = glm::vec3(0.0f);
 						vertices.push_back(v);
 					}
 				}
@@ -361,11 +362,16 @@ namespace Engine
 				normal.vertexAttribFormat = VertexAttributeFormat::FLOAT;
 				normal.offset = 5 * sizeof(float);
 
-				VertexInputDesc desc = {};
-				desc.attribs = { position, uv, normal };
-				desc.stride = 8 * sizeof(float);
+				VertexAttribute tangent = {};
+				tangent.count = 3;
+				tangent.vertexAttribFormat = VertexAttributeFormat::FLOAT;
+				tangent.offset = 8 * sizeof(float);
 
-				Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL), BufferUsage::STATIC);
+				VertexInputDesc desc = {};
+				desc.attribs = { position, uv, normal, tangent };
+				desc.stride = 11 * sizeof(float);
+
+				Buffer *vb = renderer->CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(VertexPOS3D_UV_NORMAL_TANGENT), BufferUsage::STATIC);
 				Buffer *ib = renderer->CreateIndexBuffer(indices.data(), indices.size() * sizeof(unsigned short), BufferUsage::STATIC);
 
 				Mesh m = {};

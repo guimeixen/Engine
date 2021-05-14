@@ -5,6 +5,7 @@
 layout(location = 0) in vec3 inPos;
 layout(location = 1) in vec2 inUv;
 layout(location = 2) in vec3 inNormal;
+layout(location = 3) in vec3 inTangent;
 #ifdef INSTANCING
 layout(location = 3) in mat4 instanceMatrix;
 #endif
@@ -20,6 +21,7 @@ layout(location = 1) out vec3 normal;
 layout(location = 2) out vec3 worldPos;
 layout(location = 3) out float clipSpaceDepth;
 layout(location = 4) out vec4 lightSpacePos[3];
+layout(location = 7) out mat3 TBN;
 
 PROPERTIES
 {
@@ -75,10 +77,23 @@ void main()
 	wPos = instanceMatrix * pos;
 	vec3 objPos = vec3(instanceMatrix[3][0], instanceMatrix[3][1], instanceMatrix[3][2]);
 	wPos.xyz = MainBending(wPos.xyz, objPos);
+	TBN = mat3(1.0);
 #else	
 	mat4 toWorldSpace = GetModelMatrix(startIndex);
 	normal = (toWorldSpace * N).xyz;
 	wPos = toWorldSpace * pos;
+#endif
+
+#ifdef NORMAL_MAP
+	vec3 T = normalize(vec3(toWorldSpace * vec4(inTangent,   0.0)));
+	//vec3 B = normalize(vec3(toWorldSpace * vec4(inBitangent, 0.0)));
+	vec3 Nn = normalize(vec3(toWorldSpace * vec4(inNormal,    0.0)));
+	// re-orthogonalize T with respect to N
+	T = normalize(T - dot(T, Nn) * Nn);
+	// then retrieve perpendicular vector B with the cross product of T and N
+	vec3 B = cross(Nn, T);
+	
+	TBN = mat3(T,B,Nn);
 #endif
 
 	worldPos = wPos.xyz;

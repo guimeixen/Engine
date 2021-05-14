@@ -27,6 +27,12 @@ MaterialWindow::MaterialWindow()
 	tempColV3 = glm::vec3();
 	tempColV4 = glm::vec4();
 
+	displayCreateMaterialInstance = false;
+	baseMaterialsInProjectLoaded = false;
+	isNormalMap = false;
+
+	memset(newMaterialInstanceName, 0, 64);
+
 	basePassID = Engine::SID("base");
 }
 
@@ -36,7 +42,12 @@ void MaterialWindow::Render()
 	{
 		const std::map<unsigned int, Engine::MaterialRefInfo> materials = Engine::ResourcesLoader::GetMaterials();
 
-		if (ImGui::CollapsingHeader("Base materials list"))
+		if (ImGui::Button("Create base material"))
+		{
+
+		}
+
+		if (ImGui::CollapsingHeader("Loaded Base Materials"))
 		{
 			ImGui::Indent();
 			for (auto &m : materials)
@@ -44,6 +55,7 @@ void MaterialWindow::Render()
 				if (ImGui::TreeNode(m.second.mat->GetPath().c_str()))
 				{
 					std::vector<Engine::ShaderPass>& shaderPasses = m.second.mat->GetShaderPasses();
+					const std::vector<Engine::TextureInfo>& texturesInfo = m.second.mat->GetTexturesInfo();
 
 					for (size_t i = 0; i < shaderPasses.size(); i++)
 					{
@@ -78,9 +90,28 @@ void MaterialWindow::Render()
 						}
 						
 					}
+
+					for (size_t i = 0; i < texturesInfo.size(); i++)
+					{
+						ImGui::Text(texturesInfo[i].name.c_str());
+					}
+
+
 					ImGui::TreePop();
 				}
 
+				if (ImGui::BeginPopupContextItem())
+				{
+					std::string text = "Create material instance from base material: " + m.second.mat->GetName();
+
+					if (ImGui::Button(text.c_str()))
+					{
+						selectedBaseMaterialPath = m.second.mat->GetPath();
+						displayCreateMaterialInstance = true;
+						
+					}
+					ImGui::EndPopup();
+				}
 				/*if(m.second.mat->ShowInEditor() && ImGui::Selectable(m.second.mat->GetPath().c_str()))
 				{
 					currentMaterial = m.second.mat;
@@ -88,6 +119,67 @@ void MaterialWindow::Render()
 			}
 			ImGui::Unindent();
 		}
+
+		if (ImGui::CollapsingHeader("Base materials in project folder"))
+		{
+			if (!baseMaterialsInProjectLoaded)
+			{
+				baseMaterialsInProjectStr.clear();
+				Engine::utils::FindFilesInDirectory(baseMaterialsInProjectStr, editorManager->GetCurrentProjectDir() + "/*", "_mat.lua");
+
+				baseMaterialsInProjectLoaded = true;
+			}
+
+			ImGui::Indent();
+			for (const std::string& s : baseMaterialsInProjectStr)
+			{
+				ImGui::Text(s.c_str());
+
+				if (ImGui::BeginPopupContextItem("NewMatContextPopup"))
+				{
+					std::string text = "Create material instance from base material: " + s;
+
+					if (ImGui::Button(text.c_str()))
+					{
+						displayCreateMaterialInstance = true;
+						selectedBaseMaterialPath = s;
+					}
+					ImGui::EndPopup();
+				}
+			}
+			ImGui::Unindent();
+		}
+
+		if (displayCreateMaterialInstance)
+		{
+			ImGui::OpenPopup("Create material instance");
+			displayCreateMaterialInstance = false;
+		}
+
+		if (ImGui::BeginPopup("Create material instance"))
+		{
+			if (ImGui::InputText("Name", newMaterialInstanceName, 64, ImGuiInputTextFlags_EnterReturnsTrue) || ImGui::Button("Create"))
+			{
+				std::string path = editorManager->GetCurrentProjectDir() + '/' + newMaterialInstanceName + ".mat";
+
+				if (std::filesystem::exists(path))
+				{
+					// File already exists
+					// TODO show alert
+				}
+				else
+				{
+					std::ofstream file = game->GetFileManager()->OpenForWriting(path);
+					file << "baseMat=" << selectedBaseMaterialPath << "\ndiffuse=Data/Textures/white.dds\nnormal=Data/Textures/normal.dds";
+					file.close();
+					memset(newMaterialInstanceName, 0, 64);
+				}
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+
 		if (ImGui::CollapsingHeader("Current material"))
 		{
 			ImGui::Text("Base Material");
@@ -168,13 +260,13 @@ void MaterialWindow::Render()
 	EndWindow();
 }
 
-void MaterialWindow::CreateMaterial()
+void MaterialWindow::CreateMaterial(const std::string& name, const std::string& path)
 {
 	Engine::VertexAttribute attribs[4] = {};
 	attribs[0].count = 3;						// Position
 	attribs[1].count = 2;						// UV
 	attribs[2].count = 3;						// Normal
-	attribs[3].count = 3;						// Color
+	attribs[3].count = 3;						// Tangent
 
 	attribs[0].offset = 0;
 	attribs[1].offset = 3 * sizeof(float);
@@ -182,21 +274,23 @@ void MaterialWindow::CreateMaterial()
 	attribs[3].offset = 8 * sizeof(float);
 
 	Engine::VertexInputDesc desc = {};
-	desc.stride = sizeof(Engine::VertexPOS3D_UV_NORMAL_COLOR);
+	desc.stride = sizeof(Engine::VertexPOS3D_UV_NORMAL_TANGENT);
 	desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3] };
 
-	Engine::MaterialInstance* m = game->GetRenderer()->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Resources/Materials/default_mat.lua", { desc });
-	SetCurrentMaterialInstance(m);
-
-	std::string newMatPath = editorManager->GetCurrentProjectDir() + "/default_mat.lua";
-
-	std::ofstream file = game->GetFileManager()->OpenForWriting(newMatPath);
-	file << "default_mat =\n{\n\tpasses =\n\t{\n\t\tbase =\n\t\t{\n\t\t\tqueue='opaque',\n\t\t\tshader='model',\n\t\t}\n\t}\n}";
+	std::ofstream file = game->GetFileManager()->OpenForWriting(path);
+	file << name << " =\n{\n\tpasses =\n\t{\n\t\tbase =\n\t\t{\n\t\t\tqueue='opaque',\n\t\t\tshader='model',\n\t\t}\n\t},\n\tresources =\n\t{\n\t\tdiffuse =\n\t\t{\n\t\t\tresType=\"texture2D\"\n\t\t},\n\t\tnormal =\n\t\t{\n\t\t\tresType=\"texture2D\"\n\t\t}\n\t}\n}";
 	file.close();
+
+	Engine::MaterialInstance* m = game->GetRenderer()->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), path, { desc });
+	//SetCurrentMaterialInstance(m);
+
+	baseMaterialsInProjectLoaded = false;
 }
 
 void MaterialWindow::AddTexture()
 {
+	ImGui::Checkbox("Is Normal Map?", &isNormalMap);
+
 	static ImGuiTextFilter filter;
 	filter.Draw("Find");
 	for (size_t i = 0; i < files.size(); i++)
@@ -208,11 +302,15 @@ void MaterialWindow::AddTexture()
 				Engine::TextureParams params = {};
 				params.enableCompare = false;
 				params.filter = Engine::TextureFilter::LINEAR;
-				params.format = Engine::TextureFormat::RGBA;
-				params.internalFormat = Engine::TextureInternalFormat::SRGB8_ALPHA8;
+				params.format = Engine::TextureFormat::RGBA;				
 				params.type = Engine::TextureDataType::UNSIGNED_BYTE;
 				params.useMipmapping = true;
 				params.wrap = Engine::TextureWrap::REPEAT;
+
+				if (isNormalMap)
+					params.internalFormat = Engine::TextureInternalFormat::RGBA8;
+				else
+					params.internalFormat = Engine::TextureInternalFormat::SRGB8_ALPHA8;
 
 				currentMaterialInstance->textures[textureIndex]->RemoveReference();
 				game->GetRenderer()->RemoveTexture(currentMaterialInstance->textures[textureIndex]);
