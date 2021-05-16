@@ -38,6 +38,7 @@ namespace Engine
 		viewportPos = glm::vec2();
 		currentMaterial = nullptr;
 		materialUBO = nullptr;
+		defaultMaterial = nullptr;
 		renderStats = {};
 
 		currentAPI = GraphicsAPI::OpenGL;
@@ -126,8 +127,18 @@ namespace Engine
 		return true;
 	}
 
-	void GLRenderer::PostLoad()
+	bool GLRenderer::PostLoad(ScriptManager& scriptManager)
 	{
+		VertexInputDesc desc = {};
+		desc.attribs.push_back({ VertexAttributeFormat::FLOAT, 2, 0 });
+		desc.stride = 2 * sizeof(float);
+
+		defaultMaterial = CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Materials/default_mat.lua", { desc });
+
+		if (!defaultMaterial)
+			return false;
+
+		return true;
 	}
 
 	void GLRenderer::Resize(unsigned int width, unsigned int height)

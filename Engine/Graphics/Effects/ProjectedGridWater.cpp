@@ -31,13 +31,17 @@ namespace Engine
 		projectedGridMesh = MeshDefaults::CreateScreenSpaceGrid(renderer, 128);
 
 		mat = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/water_disp_mat.lua", projectedGridMesh.vao->GetVertexInputDescs());
-		TextureParams params = { TextureWrap::REPEAT, TextureFilter::LINEAR,TextureFormat::RGBA, TextureInternalFormat::RGBA8, TextureDataType::UNSIGNED_BYTE, true, false };
-		normalMap = renderer->CreateTexture2D("Data/Resources/Textures/oceanwaves_ddn2.png", params);
-		mat->textures[1] = normalMap;	
-		foamTexture = renderer->CreateTexture2D("Data/Resources/Textures/foam.png", params);
-		mat->textures[4] = foamTexture;
 
-		renderer->UpdateMaterialInstance(mat);
+		if (mat && mat->textures.size() > 0)
+		{
+			TextureParams params = { TextureWrap::REPEAT, TextureFilter::LINEAR,TextureFormat::RGBA, TextureInternalFormat::RGBA8, TextureDataType::UNSIGNED_BYTE, true, false };
+			normalMap = renderer->CreateTexture2D("Data/Resources/Textures/oceanwaves_ddn2.png", params);
+			mat->textures[1] = normalMap;
+			foamTexture = renderer->CreateTexture2D("Data/Resources/Textures/foam.png", params);
+			mat->textures[4] = foamTexture;
+
+			renderer->UpdateMaterialInstance(mat);
+		}	
 	}
 
 	void ProjectedGridWater::Update(Camera *camera, float deltaTime)

@@ -269,10 +269,10 @@ namespace Engine
 		}
 	}
 
-	void VKShader::Compile(VkDevice device)
+	bool VKShader::Compile(VkDevice device)
 	{
 		if (isCompiled)
-			return;
+			return true;
 
 		// Load the shader with the defines and compile it and then delete the file
 
@@ -286,22 +286,26 @@ namespace Engine
 			if (vertexName.length() != 0 && (!vertexExists || vertexNeedsCompile))
 			{
 				vertexShaderWithDefines = "Data/Shaders/Vulkan/src/" + idStr + ".vert";
-				CompileShader(vertexShaderWithDefines, ShaderType::VERTEX);
+				if (!CompileShader(vertexShaderWithDefines, ShaderType::VERTEX))
+					return false;
 			}
 			if (geometryName.length() != 0 && (!geometryExists || geometryNeedsCompile))
 			{
 				geometryShaderWithDefines = "Data/Shaders/Vulkan/src/" + idStr + ".geom";
-				CompileShader(geometryShaderWithDefines, ShaderType::GEOMETRY);
+				if (!CompileShader(geometryShaderWithDefines, ShaderType::GEOMETRY))
+					return false;
 			}
 			if (fragmentName.length() != 0 && (!fragmentExists || fragmentNeedsCompile))
 			{
 				fragmentShaderWithDefines = "Data/Shaders/Vulkan/src/" + idStr + ".frag";
-				CompileShader(fragmentShaderWithDefines, ShaderType::FRAGMENT);
+				if (!CompileShader(fragmentShaderWithDefines, ShaderType::FRAGMENT))
+					return false;
 			}
 			if (computeName.length() != 0 && (!computeExists || computeNeedsCompile))
 			{
 				computeShaderWithDefines = "Data/Shaders/Vulkan/src/" + idStr + ".comp";
-				CompileShader(computeShaderWithDefines, ShaderType::COMPUTE);
+				if (!CompileShader(computeShaderWithDefines, ShaderType::COMPUTE))
+					return false;
 			}
 		}
 		else
@@ -309,26 +313,31 @@ namespace Engine
 			if (vertexName.length() != 0 && (!vertexExists || vertexNeedsCompile))
 			{
 				vertexShaderWithDefines = "Data/Shaders/Vulkan/src/" + vertexName + ".vert";
-				CompileShader(vertexShaderWithDefines, ShaderType::VERTEX);
+				if (!CompileShader(vertexShaderWithDefines, ShaderType::VERTEX))
+					return false;
 			}
 			if (geometryName.length() != 0 && (!geometryExists || geometryNeedsCompile))
 			{
 				geometryShaderWithDefines = "Data/Shaders/Vulkan/src/" + geometryName + ".geom";
-				CompileShader(geometryShaderWithDefines, ShaderType::GEOMETRY);
+				if (!CompileShader(geometryShaderWithDefines, ShaderType::GEOMETRY))
+					return false;
 			}
 			if (fragmentName.length() != 0 && (!fragmentExists || fragmentNeedsCompile))
 			{
 				fragmentShaderWithDefines = "Data/Shaders/Vulkan/src/" + fragmentName + ".frag";
-				CompileShader(fragmentShaderWithDefines, ShaderType::FRAGMENT);
+				if (!CompileShader(fragmentShaderWithDefines, ShaderType::FRAGMENT))
+					return false;
 			}
 			if (computeName.length() != 0 && (!computeExists || computeNeedsCompile))
 			{
 				computeShaderWithDefines = "Data/Shaders/Vulkan/src/" + computeName + ".comp";
-				CompileShader(computeShaderWithDefines, ShaderType::COMPUTE);
+				if (!CompileShader(computeShaderWithDefines, ShaderType::COMPUTE))
+					return false;
 			}
 		}
 			
 		isCompiled = true;
+		return true;
 	}
 
 	void VKShader::ReadShaderFile(const std::string& path, ShaderType type)
@@ -403,7 +412,7 @@ namespace Engine
 		}			
 	}
 
-	void VKShader::CompileShader(const std::string& path, ShaderType type)
+	bool VKShader::CompileShader(const std::string& path, ShaderType type)
 	{
 		std::string command = "glslangValidator.exe -V ";
 		command += path;
@@ -438,7 +447,7 @@ namespace Engine
 			if (!std::filesystem::create_directory("Data/Shaders/Vulkan/spirv"))
 			{
 				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create spirv directory!\n");
-				return;
+				return false;
 			}
 		}
 
@@ -450,10 +459,12 @@ namespace Engine
 			//if (defines.length() != 0)
 				//std::remove(path.c_str());
 
-			return;
+			return false;
 		}
 		if (defines.length() != 0)
 			std::remove(path.c_str());
+
+		return true;
 	}
 
 	bool VKShader::CreateShaderModule(VkDevice device)

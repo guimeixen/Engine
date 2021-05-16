@@ -668,12 +668,22 @@ namespace Engine
 		reflectionPass.OnSetup([this](const Pass *thisPass)
 		{
 			reflectionFB = thisPass->GetFramebuffer();
-			projectedGridWater.GetMaterialInstance()->textures[0] = thisPass->GetFramebuffer()->GetColorTexture();
+
+			MaterialInstance* mat = projectedGridWater.GetMaterialInstance();
+			if (mat && mat->textures.size() > 0)
+			{
+				projectedGridWater.GetMaterialInstance()->textures[0] = thisPass->GetFramebuffer()->GetColorTexture();
+				renderer->UpdateMaterialInstance(mat);
+			}
 		});
 		reflectionPass.OnResized([this](const Pass *thisPass)
 		{
-			projectedGridWater.GetMaterialInstance()->textures[0] = thisPass->GetFramebuffer()->GetColorTexture();
-			renderer->UpdateMaterialInstance(projectedGridWater.GetMaterialInstance());
+			MaterialInstance* mat = projectedGridWater.GetMaterialInstance();
+			if (mat && mat->textures.size() > 0)
+			{
+				projectedGridWater.GetMaterialInstance()->textures[0] = thisPass->GetFramebuffer()->GetColorTexture();
+				renderer->UpdateMaterialInstance(mat);
+			}			
 		});
 		reflectionPass.OnExecute([this]() {PerformReflectionPass(); });
 	}
@@ -700,15 +710,24 @@ namespace Engine
 			refractionFB = thisPass->GetFramebuffer();
 			// Projected grid water
 			projectedGridWater.Init(renderer, game->GetScriptManager(), 4.0f);
-			projectedGridWater.GetMaterialInstance()->textures[2] = thisPass->GetFramebuffer()->GetColorTexture();
-			projectedGridWater.GetMaterialInstance()->textures[3] = thisPass->GetFramebuffer()->GetDepthTexture();
-			renderer->UpdateMaterialInstance(projectedGridWater.GetMaterialInstance());
+
+			MaterialInstance* mat = projectedGridWater.GetMaterialInstance();
+			if (mat && mat->textures.size() > 0)
+			{
+				projectedGridWater.GetMaterialInstance()->textures[2] = thisPass->GetFramebuffer()->GetColorTexture();
+				projectedGridWater.GetMaterialInstance()->textures[3] = thisPass->GetFramebuffer()->GetDepthTexture();
+				renderer->UpdateMaterialInstance(mat);
+			}
 		});
 		refractionPass.OnResized([this](const Pass *thisPass)
 		{
-			projectedGridWater.GetMaterialInstance()->textures[2] = thisPass->GetFramebuffer()->GetColorTexture();
-			projectedGridWater.GetMaterialInstance()->textures[3] = thisPass->GetFramebuffer()->GetDepthTexture();
-			renderer->UpdateMaterialInstance(projectedGridWater.GetMaterialInstance());
+			MaterialInstance* mat = projectedGridWater.GetMaterialInstance();
+			if (mat && mat->textures.size() > 0)
+			{
+				projectedGridWater.GetMaterialInstance()->textures[2] = thisPass->GetFramebuffer()->GetColorTexture();
+				projectedGridWater.GetMaterialInstance()->textures[3] = thisPass->GetFramebuffer()->GetDepthTexture();
+				renderer->UpdateMaterialInstance(mat);
+			}		
 		});
 		refractionPass.OnExecute([this]() {PerformRefractionPass(); });
 	}

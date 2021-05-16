@@ -1,6 +1,9 @@
 v0.0.6
 - Added normal mapping
 - Improvements in material creation
+- Fixed error for image views with different formats
+- Fixed Vulkan shader compilation error if the spirv directory was missing
+- Fixed crash when failing to load a shader
 
 v0.0.5
 - Material path is displayed if the material name of the material is empty in the Model Component in the Object Window

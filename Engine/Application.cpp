@@ -37,9 +37,10 @@ namespace Engine
 		/*game.GetRenderingPath()->GetFrameGraph().Bake(renderer);
 		game.GetRenderingPath()->GetFrameGraph().Setup();*/
 
-		game.GetRenderingPath()->GetFrameGraph().Setup();
+		if (!renderer->PostLoad(game.GetScriptManager()))
+			return false;
 
-		renderer->PostLoad();
+		game.GetRenderingPath()->GetFrameGraph().Setup();
 
 		allocator.PrintStats();
 

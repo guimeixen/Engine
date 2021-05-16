@@ -26,9 +26,9 @@ namespace Engine
 {
 	GraphicsAPI Renderer::currentAPI;
 
-	Renderer *Renderer::Create(GLFWwindow *window, GraphicsAPI api, FileManager *fileManager, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight)
+	Renderer* Renderer::Create(GLFWwindow* window, GraphicsAPI api, FileManager* fileManager, unsigned int width, unsigned int height, unsigned int monitorWidth, unsigned int monitorHeight)
 	{
-		Renderer *renderer = nullptr;
+		Renderer* renderer = nullptr;
 
 #ifndef VITA
 		if (api == GraphicsAPI::OpenGL)
@@ -47,8 +47,6 @@ namespace Engine
 			}*/
 
 			renderer->AddGlobalDefine("OPENGL_API");
-
-			return renderer;
 		}
 		else if (api == GraphicsAPI::Vulkan)
 		{
@@ -57,8 +55,6 @@ namespace Engine
 				return nullptr;
 
 			renderer->AddGlobalDefine("VULKAN_API");
-
-			return renderer;
 		}
 #else
 		if (api == GraphicsAPI::GXM)
@@ -66,8 +62,6 @@ namespace Engine
 			renderer = new GXMRenderer(fileManager);
 			if (!renderer->Init())
 				return nullptr;
-
-			return renderer;
 		}
 #endif
 
@@ -79,12 +73,10 @@ namespace Engine
 			renderer = new D3D11Renderer(hwnd, width, height);
 			if (!renderer->Init())
 				return nullptr;
-
-			return renderer;
 		}
 #endif
 
-		return nullptr;
+		return renderer;
 	}
 
 	unsigned int Renderer::GetBlendFactorValue(BlendFactor blendFactor)

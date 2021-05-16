@@ -44,6 +44,8 @@ namespace Engine
 		depthStencilTexture = nullptr;
 		depthStencilView = nullptr;
 
+		defaultMaterial = nullptr;
+
 		currentStateID = std::numeric_limits<unsigned int>::max();
 	}
 
@@ -196,8 +198,17 @@ namespace Engine
 		return true;
 	}
 
-	void D3D11Renderer::PostLoad()
+	bool D3D11Renderer::PostLoad(ScriptManager& scriptManager)
 	{
+		VertexInputDesc desc = {};
+		desc.attribs.push_back({ VertexAttributeFormat::FLOAT, 2, 0 });
+		desc.stride = 2 * sizeof(float);
+
+		defaultMaterial = CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Materials/default_mat.lua", { desc });
+
+		if (!defaultMaterial)
+			return false;
+
 		/*for (size_t i = 0; i < ubos.size(); i++)
 		{
 			ID3D11Buffer *ubo = ubos[i]->GetBuffer();
@@ -208,6 +219,8 @@ namespace Engine
 		}
 
 		srvOffset += 1;		// For the csm texture*/
+
+		return true;
 	}
 
 	void D3D11Renderer::Resize(unsigned int width, unsigned int height)

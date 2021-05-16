@@ -223,10 +223,21 @@ namespace Engine
 		return true;
 	}
 
-	void VKRenderer::PostLoad()
+	bool VKRenderer::PostLoad(ScriptManager &scriptManager)
 	{
+		VertexInputDesc desc = {};
+		desc.attribs.push_back({VertexAttributeFormat::FLOAT, 2, 0});
+		desc.stride = 2 * sizeof(float);
+
+		defaultMaterial = CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Materials/default_mat.lua", { desc });
+
+		if (!defaultMaterial)
+			return false;
+
 		base.GetAllocator()->PrintStats();
-		Log::Print(LogLevel::LEVEL_INFO, "Total piplines: %u\n", pipelines.size());
+		Log::Print(LogLevel::LEVEL_INFO, "Total pipelines: %u\n", pipelines.size());
+
+		return true;
 	}
 
 	VertexArray *VKRenderer::CreateVertexArray(const VertexInputDesc &desc, Buffer *vertexBuffer, Buffer *indexBuffer)
@@ -404,7 +415,7 @@ namespace Engine
 				ShaderPass &p = shaderPasses[i];
 				
 				if (!CreatePipeline(p, m))
-					return nullptr;
+					return defaultMaterial;
 				
 				p.pipelineID = static_cast<unsigned int>(pipelines.size() - 1);
 			}
@@ -422,14 +433,15 @@ namespace Engine
 
 	MaterialInstance *VKRenderer::CreateMaterialInstanceFromBaseMat(ScriptManager &scriptManager, const std::string &baseMatPath, const std::vector<VertexInputDesc> &inputDescs)
 	{
-		size_t oldMatSize = ResourcesLoader::GetMaterials().size();
+		const std::map<unsigned int, MaterialRefInfo>& materials = ResourcesLoader::GetMaterials();
+
+		size_t oldMatSize = materials.size();
 
 		MaterialInstance *m = Material::LoadMaterialInstanceFromBaseMat(this, baseMatPath, scriptManager, inputDescs);
 		m->graphicsSetID = std::numeric_limits<unsigned int>::max();
 		m->computeSetID = std::numeric_limits<unsigned int>::max();
 		materialInstances.push_back(m);
-
-		const std::map<unsigned int, MaterialRefInfo> &materials = ResourcesLoader::GetMaterials();
+	
 		size_t newMatSize = materials.size();
 
 		PipelineType type = PipelineType::GRAPHICS;
@@ -444,7 +456,7 @@ namespace Engine
 				ShaderPass& p = shaderPasses[i];
 
 				if (!CreatePipeline(p, m))
-					return nullptr;
+					return defaultMaterial;
 
 				p.pipelineID = static_cast<unsigned int>(pipelines.size() - 1);
 
@@ -2363,14 +2375,23 @@ namespace Engine
 
 			VkPipelineLayout pipelineLayout;
 			if (vkCreatePipelineLayout(base.GetDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
-				std::cout << "Failed to create pipeline layout\n";
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create compute pipeline layout\n");
+				return false;
+			}
 
 			computePipelineLayouts.push_back(pipelineLayout);
 
 			// Compile the shader instead of loading the spirv so that we can set flags. Could use a bool to know if we load or compile shader. Eg compile when in editor but don't compile when loading a game
 			VKShader *s = static_cast<VKShader*>(p.shader);
-			s->Compile(base.GetDevice());
-			s->CreateShaderModule(base.GetDevice());
+			if (!s->Compile(base.GetDevice()))
+				return false;
+
+			if (!s->CreateShaderModule(base.GetDevice()))
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create shader modules!");
+				return false;
+			}
 
 			VkComputePipelineCreateInfo pipelineInfo = {};
 			pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -2381,8 +2402,10 @@ namespace Engine
 			pipelineInfo.stage = s->GetComputeStageInfo();
 
 			if (vkCreateComputePipelines(base.GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
-				std::cout << "Failed to create graphics pipeline!\n";
-
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create graphics pipeline!\n");
+				return false;
+			}
 			// We don't need the shader modules after pipeline creation
 			s->Dispose(base.GetDevice());
 		}
@@ -2405,7 +2428,7 @@ namespace Engine
 
 			if (renderPass == VK_NULL_HANDLE)
 			{
-				std::cout << "Failed to find compatible render pass for material! Using default\n";
+				Log::Print(LogLevel::LEVEL_INFO, "Failed to find compatible render pass for material! Using default\n");
 				renderPass = defaultRenderPass;
 			}
 
@@ -2514,7 +2537,9 @@ namespace Engine
 
 			// Compile the shader instead of loading the spirv so that we can set flags. Could use a bool to know if we load or compile shader. Eg compile when in editor but don't compile when loading a game
 			VKShader *s = static_cast<VKShader*>(p.shader);
-			s->Compile(base.GetDevice());
+			if(!s->Compile(base.GetDevice()))
+				return false;
+
 			if (!s->CreateShaderModule(base.GetDevice()))
 			{
 				Log::Print(LogLevel::LEVEL_ERROR, "Failed to create shader modules!");
@@ -2528,7 +2553,10 @@ namespace Engine
 				pipelineInfo.pStages = shaderStages;
 
 				if (vkCreateGraphicsPipelines(base.GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
-					std::cout << "Failed to create graphics pipeline!\n";
+				{
+					Log::Print(LogLevel::LEVEL_ERROR, "Failed to create graphics pipeline!\n");
+					return false;
+				}
 			}
 			else
 			{
@@ -2537,7 +2565,10 @@ namespace Engine
 				pipelineInfo.pStages = shaderStages;
 
 				if (vkCreateGraphicsPipelines(base.GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
-					std::cout << "Failed to create graphics pipeline!\n";
+				{
+					Log::Print(LogLevel::LEVEL_ERROR, "Failed to create graphics pipeline!\n");
+					return false;
+				}
 			}
 
 			// We don't need the shader modules after pipeline creation

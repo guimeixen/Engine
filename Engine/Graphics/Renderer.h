@@ -76,7 +76,7 @@ namespace Engine
 		virtual ~Renderer() {}
 
 		virtual bool Init() = 0;
-		virtual void PostLoad() = 0;
+		virtual bool PostLoad(ScriptManager &scriptManager) = 0;
 		virtual void Resize(unsigned int width, unsigned int height) = 0;
 		virtual void SetCamera(Camera *camera, const glm::vec4 &clipPlane = glm::vec4(0.0f)) = 0;
 		virtual void UpdateBuffer(Buffer *ubo, const void* data, unsigned int size, unsigned int offset) = 0;
@@ -175,7 +175,7 @@ namespace Engine
 	protected:
 		static GraphicsAPI currentAPI;
 
-		FileManager *fileManager;
+		FileManager* fileManager;
 
 		unsigned int width;
 		unsigned int height;
@@ -183,8 +183,9 @@ namespace Engine
 		RenderStats renderStats;
 		float frameTime = 0.0f;
 
-		Camera *camera;
-		Material *currentMaterial;
+		Camera* camera;
+		Material* currentMaterial;
+		MaterialInstance* defaultMaterial;
 
 		std::vector<RenderQueueGenerator*> renderQueueGenerators;
 		std::vector<MaterialInstance*> materialInstances;

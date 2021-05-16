@@ -13,7 +13,7 @@ namespace Engine
 		VKShader(unsigned int id, const std::string &vertexName, const std::string &geometryName, const std::string &fragmentName, const std::string &defines);
 		VKShader(unsigned int id, const std::string &computeName, const std::string &defines);
 
-		void Compile(VkDevice device);
+		bool Compile(VkDevice device);
 		bool CreateShaderModule(VkDevice device);
 		bool CheckIfModified() override;
 		void Reload() override;
@@ -27,7 +27,7 @@ namespace Engine
 	private:
 		void ReadShaderFile(const std::string &path, ShaderType type);
 		void WriteShaderFileWithDefines(ShaderType type);
-		void CompileShader(const std::string &path, ShaderType type);
+		bool CompileShader(const std::string &path, ShaderType type);
 
 	private:
 		unsigned int id;

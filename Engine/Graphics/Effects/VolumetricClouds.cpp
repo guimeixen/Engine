@@ -41,7 +41,7 @@ namespace Engine
 		{
 			cloudsLowResFB = thisPass->GetFramebuffer();
 			cloudMaterial = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/clouds_mat.lua", this->quadMesh.vao->GetVertexInputDescs());
-			if (cloudMaterial)
+			if (cloudMaterial && cloudMaterial->textures.size() > 0)
 			{
 				cloudMaterial->textures[0] = baseNoiseTexture;
 				cloudMaterial->textures[1] = highFreqNoiseTexture;
@@ -63,7 +63,7 @@ namespace Engine
 		{
 			cloudReprojectionFB = thisPass->GetFramebuffer();
 			cloudReprojectionMaterial = renderer->CreateMaterialInstanceFromBaseMat(scriptManager, "Data/Resources/Materials/clouds_reprojection_mat.lua", this->quadMesh.vao->GetVertexInputDescs());
-			if (cloudReprojectionMaterial)
+			if (cloudReprojectionMaterial && cloudMaterial->textures.size() > 0)
 			{
 				cloudReprojectionMaterial->textures[0] = cloudsLowResFB->GetColorTexture();
 				cloudReprojectionMaterial->textures[1] = previousFrameTexture;
