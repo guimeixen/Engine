@@ -433,6 +433,15 @@ namespace Engine
 			break;
 		}
 
+		if (!std::filesystem::exists("Data/Shaders/Vulkan/spirv"))
+		{
+			if (!std::filesystem::create_directory("Data/Shaders/Vulkan/spirv"))
+			{
+				Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create spirv directory!\n");
+				return;
+			}
+		}
+
 		if (std::system(command.c_str()) != 0)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Failed to compile shader\n");
@@ -511,7 +520,7 @@ namespace Engine
 			std::vector<char> fragmentCode(fragFileSize);
 
 			vertexFile.seekg(0);									// Go back the beginning of the file
-			vertexFile.read(vertexCode.data(), vertFileSize);		// Now read it all at once
+			vertexFile.read(vertexCode.data(), vertFileSize);		// Now read it all at oncecompil
 			vertexFile.close();
 
 			fragmentFile.seekg(0);

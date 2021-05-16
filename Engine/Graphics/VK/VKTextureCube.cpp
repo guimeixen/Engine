@@ -2,6 +2,7 @@
 
 #include "VKBase.h"
 #include "VKBuffer.h"
+#include "Program/Log.h"
 
 #include "include/gli/gli.hpp"
 
@@ -98,14 +99,14 @@ namespace Engine
 			width = (uint32_t)texCube.extent().x;
 			height = (uint32_t)texCube.extent().y;
 			mipLevels = (uint32_t)texCube.levels();
-			size = (uint32_t)texCube.size();
+			size = (VkDeviceSize)texCube.size();
 
 			usageFlags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;			// The image is going to be used as a dst for a buffer copy and we will also access it from the shader
 			aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 
 			//stagingBuffer = new VKBuffer();
 			//stagingBuffer->Create(allocator, physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, false);
-			stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
+			stagingBuffer = new VKBuffer(base, nullptr, (unsigned int)size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
 			stagingBuffer->Map();
 			stagingBuffer->Update(texCube.data(), (unsigned int)size, 0);
 			stagingBuffer->Unmap();
