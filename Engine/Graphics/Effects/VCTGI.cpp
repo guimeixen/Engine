@@ -37,6 +37,8 @@ namespace Engine
 
 	void VCTGI::Init(Renderer *renderer, FrameGraph &frameGraph, ScriptManager &scriptManager)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Initializing VCTGI\n");
+
 		this->renderer = renderer;
 
 		struct DrawElementsIndirectCommand
@@ -63,6 +65,7 @@ namespace Engine
 		params.useMipmapping = true;
 		params.usedAsStorageInGraphics = true;
 		params.sampled = true;
+		params.imageViewsWithDifferentFormats = true;
 
 		voxelTexture = renderer->CreateTexture3DFromData(VOXEL_RES, VOXEL_RES, VOXEL_RES, params, nullptr);
 		voxelsPositionsBuffer = renderer->CreateSSBO(VOXEL_RES * VOXEL_RES * VOXEL_RES * sizeof(glm::vec4), nullptr, sizeof(glm::vec4), BufferUsage::STATIC);

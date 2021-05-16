@@ -223,14 +223,19 @@ namespace Engine
 		imageInfo.usage = usageFlags;
 		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.flags = 0;
 		imageInfo.format = format;
 		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
+		if (params.imageViewsWithDifferentFormats)
+			imageInfo.flags = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+		else
+			imageInfo.flags = 0;
+
 		if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
 		{
-			std::cout << "Error -> Failed to create image!\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create image!\n");
+			return;
 		}
 
 		VkMemoryRequirements memReqs;
@@ -315,7 +320,8 @@ namespace Engine
 
 		if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS)
 		{
-			std::cout << "Error -> Failed to create sampler!\n";
+			Log::Print(LogLevel::LEVEL_ERROR, "Error -> Failed to create sampler!\n");
+			return;
 		}
 	}
 	

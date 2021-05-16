@@ -81,6 +81,7 @@ namespace Engine
 		bool usedAsStorageInCompute;
 		bool usedAsStorageInGraphics;
 		bool sampled;
+		bool imageViewsWithDifferentFormats;
 	};
 
 	class Texture

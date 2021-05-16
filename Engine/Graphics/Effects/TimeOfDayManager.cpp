@@ -29,6 +29,8 @@ namespace Engine
 
 	void TimeOfDayManager::Init(Game *game)
 	{
+		Log::Print(LogLevel::LEVEL_INFO, "Initializing Time of Day Manager\n");
+
 		this->game = game;
 
 		FILE *file = fopen("Data/Resources/Textures/transmittance.raw", "rb");
