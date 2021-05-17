@@ -2,15 +2,18 @@
 #include "include/ubos.glsl"
 
 layout(location = 0) out vec4 outColor;
-//layout(location = 1) out vec4 outNormal;
 
 layout(location = 0) in vec2 uv;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec3 worldPos;
 layout(location = 3) in float clipSpaceDepth;
 layout(location = 4) in vec4 lightSpacePos[3];
+layout(location = 7) in mat3 TBN;
 
-tex2D_u(0) tex;
+tex2D_u(0) diffuseTexture;
+#ifdef NORMAL_MAP
+tex2D_u(1) normalMap;
+#endif
 
 #include "include/voxel_cone_tracing.glsl"
 #include "include/shadow.glsl"
@@ -28,19 +31,17 @@ layout(binding = LIGHT_GRID_TEXTURE, rg32ui) uniform readonly uimage2D oLightGri
 
 void main()
 {
-	vec3 N = normalize(normal);
-	//outNormal.rgb = N;
-	//outNormal.a = 1.0;
-
-	outColor = texture(tex, uv);
+	outColor = texture(diffuseTexture, uv);
 	
-//#ifndef ALPHA
 	if (outColor.a < 0.35)
 		discard;
-/*#else
-	outColor.rgb = vec3(0.01, 0.793, 0.696) * 2.5; 
-	return;
-#endif*/
+
+#ifdef NORMAL_MAP
+	vec3 N = texture(normalMap, uv).rgb * 2.0 - 1.0;
+	N = normalize(TBN * N);
+#else
+	vec3 N = normalize(normal);
+#endif
 	
 	vec3 lighting = vec3(0.0);
 	
@@ -56,7 +57,6 @@ void main()
 	//vec3 spec = pow(max(dot(N, H), 0.0), 32.0) * dirLightColor;
 	//lighting += (diff + vec3(ambient) + spec);
 	lighting += diff * shadow;
-	//lighting += vec3(0.25, 0.4, 0.92) * 0.2;
 
 	// Point lights
 #ifdef FORWARD_PLUS
