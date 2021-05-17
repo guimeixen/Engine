@@ -49,10 +49,30 @@ void MaterialWindow::Render()
 
 		if (ImGui::CollapsingHeader("Loaded Base Materials"))
 		{
+			bool open = false;
+
 			ImGui::Indent();
 			for (auto &m : materials)
 			{
-				if (ImGui::TreeNode(m.second.mat->GetPath().c_str()))
+				bool open = ImGui::TreeNode(m.second.mat->GetPath().c_str());
+
+				// The context item needs to be right after the call to TreeNode because it uses the last submitted item
+				//ImGui::PushID(1010 + idx);
+				if (ImGui::BeginPopupContextItem())
+				{
+					std::string text = "Create material instance from base material: " + m.second.mat->GetName();
+
+					if (ImGui::Button(text.c_str()))
+					{
+						selectedBaseMaterialPath = m.second.mat->GetPath();
+						displayCreateMaterialInstance = true;
+
+					}
+					ImGui::EndPopup();
+				}
+				//ImGui::PopID();
+
+				if (open)
 				{
 					std::vector<Engine::ShaderPass>& shaderPasses = m.second.mat->GetShaderPasses();
 					const std::vector<Engine::TextureInfo>& texturesInfo = m.second.mat->GetTexturesInfo();
@@ -96,21 +116,7 @@ void MaterialWindow::Render()
 						ImGui::Text(texturesInfo[i].name.c_str());
 					}
 
-
 					ImGui::TreePop();
-				}
-
-				if (ImGui::BeginPopupContextItem())
-				{
-					std::string text = "Create material instance from base material: " + m.second.mat->GetName();
-
-					if (ImGui::Button(text.c_str()))
-					{
-						selectedBaseMaterialPath = m.second.mat->GetPath();
-						displayCreateMaterialInstance = true;
-						
-					}
-					ImGui::EndPopup();
 				}
 				/*if(m.second.mat->ShowInEditor() && ImGui::Selectable(m.second.mat->GetPath().c_str()))
 				{
@@ -130,12 +136,15 @@ void MaterialWindow::Render()
 				baseMaterialsInProjectLoaded = true;
 			}
 
+			int idx = 0;
+
 			ImGui::Indent();
 			for (const std::string& s : baseMaterialsInProjectStr)
 			{
 				ImGui::Text(s.c_str());
 
-				if (ImGui::BeginPopupContextItem("NewMatContextPopup"))
+				ImGui::PushID(1050 + idx);
+				if (ImGui::BeginPopupContextItem("Context"))
 				{
 					std::string text = "Create material instance from base material: " + s;
 
@@ -146,6 +155,9 @@ void MaterialWindow::Render()
 					}
 					ImGui::EndPopup();
 				}
+				ImGui::PopID();
+
+				idx++;
 			}
 			ImGui::Unindent();
 		}
@@ -278,7 +290,7 @@ void MaterialWindow::CreateMaterial(const std::string& name, const std::string& 
 	desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3] };
 
 	std::ofstream file = game->GetFileManager()->OpenForWriting(path);
-	file << name << " =\n{\n\tpasses =\n\t{\n\t\tbase =\n\t\t{\n\t\t\tqueue='opaque',\n\t\t\tshader='model',\n\t\t}\n\t},\n\tresources =\n\t{\n\t\tdiffuse =\n\t\t{\n\t\t\tresType=\"texture2D\"\n\t\t},\n\t\tnormal =\n\t\t{\n\t\t\tresType=\"texture2D\"\n\t\t}\n\t}\n}";
+	file << name << " =\n{\n\tpasses =\n\t{\n\t\tbase =\n\t\t{\n\t\t\tqueue='opaque',\n\t\t\tshader='model',\n\t\t}\n\t},\n\tresources =\n\t{\n\t\t[0] =\n\t\t{\n\t\t\tname=\"diffuse\",\n\t\t\tresType=\"texture2D\"\n\t\t},\n\t\t[1] =\n\t\t{\n\t\t\tname=\"normal\",\n\t\t\tresType=\"texture2D\",\n\t\t\ttexFormat=\"rgba8\"\n\t\t}\n\t}\n}";
 	file.close();
 
 	Engine::MaterialInstance* m = game->GetRenderer()->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), path, { desc });

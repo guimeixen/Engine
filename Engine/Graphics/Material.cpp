@@ -363,6 +363,8 @@ namespace Engine
 								texInfo.params.format = TextureFormat::RGB;
 							else if (texInfo.params.internalFormat == TextureInternalFormat::R16F)
 								texInfo.params.format = TextureFormat::RED;
+							else if (texInfo.params.internalFormat == TextureInternalFormat::RGBA8)
+								texInfo.params.format = TextureFormat::RGBA;
 						}
 
 						luabridge::LuaRef texFilterRef = it->second["filter"];
@@ -665,8 +667,10 @@ namespace Engine
 			return TextureInternalFormat::RGB8;
 		else if (str == "r16")
 			return TextureInternalFormat::R16F;
-		/*else if (str == "rgba")
-			return TextureFormat::RGBA;*/
+		else if (str == "rgba8")
+			return TextureInternalFormat::RGBA8;
+		else if (str == "srgb8_alpha8")
+			return TextureInternalFormat::SRGB8_ALPHA8;
 
 		return TextureInternalFormat::RGBA8;
 	}
