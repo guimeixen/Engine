@@ -11,16 +11,19 @@ clouds_mat =
 	},
 	resources =
 	{
-		baseNoiseTexture =
+		[0] =
 		{
+			name="baseNoiseTexture",
 			resType="texture3D"
 		},
-		highFreqNoiseTexture =
+		[1] =
 		{
+			name="highFreqNoiseTexture",
 			resType="texture3D"
 		},
-		weatherTexture =
+		[2] =
 		{
+			name="weatherTexture",
 			resType="texture2D"
 		},
 	}

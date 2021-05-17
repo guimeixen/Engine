@@ -12,13 +12,15 @@ clouds_reprojection_mat =
 	},
 	resources =
 	{
-		cloudLowResTexture =
+		[0] =
 		{
-			resType="texture3D"
+			name="cloudLowResTexture",
+			resType="texture2D"
 		},
-		previousFrameTexture =
+		[1] =
 		{
-			resType="texture3D"
+			name="previousFrameTexture",
+			resType="texture2D"
 		},
 	}
 }

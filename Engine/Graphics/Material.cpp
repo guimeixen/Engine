@@ -308,7 +308,11 @@ namespace Engine
 				if (it->second.isTable())
 				{
 					TextureInfo texInfo = {};
-					texInfo.name = it->first;
+
+					luabridge::LuaRef nameRef = it->second["name"];
+					if (nameRef.isString())
+						texInfo.name = nameRef.cast<std::string>();
+
 					texInfo.params = { TextureWrap::REPEAT, TextureFilter::LINEAR, TextureFormat::RGBA, TextureInternalFormat::SRGB8_ALPHA8, TextureDataType::UNSIGNED_BYTE, true, false, false, false };
 
 					BufferInfo bufInfo = {};
@@ -419,7 +423,9 @@ namespace Engine
 		mi->lastParamOffset = 0;
 		mi->computeSetID = std::numeric_limits<unsigned int>::max();
 		mi->graphicsSetID = std::numeric_limits<unsigned int>::max();
+
 		memset(mi->name, 0, 64);
+		memset(mi->materialData, 0, 128);
 
 		std::string name = path.substr(path.find_last_of("\\/") + 1);
 
@@ -563,7 +569,22 @@ namespace Engine
 	MaterialInstance *Material::LoadMaterialInstanceFromBaseMat(Renderer *renderer, const std::string &baseMatPath, ScriptManager &scriptManager, const std::vector<VertexInputDesc> &inputDescs)
 	{
 		MaterialInstance *mi = new MaterialInstance;
+		mi->path = baseMatPath;
 		mi->lastParamOffset = 0;
+		mi->computeSetID = std::numeric_limits<unsigned int>::max();
+		mi->graphicsSetID = std::numeric_limits<unsigned int>::max();
+		
+		memset(mi->name, 0, 64);
+		memset(mi->materialData, 0, 128);
+
+		std::string name = baseMatPath.substr(baseMatPath.find_last_of("\\/") + 1);
+
+		const size_t extIdx = name.rfind('.');
+		if (extIdx != std::string::npos)
+			name = name.erase(extIdx);
+
+		strncpy(mi->name, name.c_str(), 64);
+
 
 		std::string defines = "";
 
@@ -572,7 +593,6 @@ namespace Engine
 #endif
 
 		mi->baseMaterial = ResourcesLoader::LoadMaterial(renderer, baseMatPath, defines, scriptManager, inputDescs);
-
 		mi->textures.resize(mi->baseMaterial->texturesInfo.size());
 		mi->buffers.resize(mi->baseMaterial->buffersInfo.size());
 

@@ -24,8 +24,9 @@ model_inst_mat_gi =
 	},
 	resources =
 	{
-		diffuse =
+		[0] =
 		{
+			name="diffuse",
 			resType="texture2D"
 		}
 	}

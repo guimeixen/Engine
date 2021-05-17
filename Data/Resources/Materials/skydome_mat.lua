@@ -13,12 +13,14 @@ skydome_mat =
 	},
 	resources =
 	{
-		transmittanceTexture =
+		[0] =
 		{
+			name="transmittanceTexture",
 			resType="texture2D",
 		},
-		inscatterTexture = 
+		[1] = 
 		{
+			name="inscatterTexture",
 			resType="texture3D",
 		}
 	}

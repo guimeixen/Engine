@@ -11,24 +11,29 @@ post_process_mat =
 	},
 	resources =
 	{
-		hdrTexture =
+		[0] =
 		{
+			name="hdrTexture",
 			resType="texture2D"
 		},
-		depthTexture =
+		[1] =
 		{
+			name="depthTexture",
 			resType="texture2D"
 		},
-		bloomTexture =
+		[2] =
 		{
+			name="bloomTexture",
 			resType="texture2D"
 		},
-		normalsTexture =
+		[3] =
 		{
+			name="normalsTexture",
 			resType="texture2D"
 		},
-		computeTexture =
+		[4] =
 		{
+			name="computeTexture",
 			resType="texture2D"
 		},
 	}

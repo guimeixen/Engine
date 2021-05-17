@@ -813,10 +813,16 @@ namespace Engine
 		lua_pushnil(L);								// push nil, so lua_next removes it from stack and puts (k, v) on stack
 		while (lua_next(L, -2) != 0)				// -2, because we have table at -1
 		{
-			if (lua_isstring(L, -2))				 // only store stuff with string keys
+			if (lua_isnumber(L, -2))
+			{
+				std::string s = std::to_string((lua_tointeger(L, -2)));
+				result.emplace(s, luabridge::LuaRef::fromStack(L, -1));
+			}
+			else if(lua_isstring(L, -2))
 			{
 				std::string s = lua_tostring(L, -2);
 				result.emplace(s, luabridge::LuaRef::fromStack(L, -1));
+				Log::Print(LogLevel::LEVEL_WARNING, "Still using strings in material resources!\n");
 			}
 			lua_pop(L, 1);						// remove value, keep key for lua_next
 		}

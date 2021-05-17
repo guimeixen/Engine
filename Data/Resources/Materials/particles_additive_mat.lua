@@ -20,8 +20,9 @@ particles_additive_mat =
 	},
 	resources =
 	{
-		diffuse =
+		[0] =
 		{
+			name="diffuse",
 			resType="texture2D"
 		}
 	}

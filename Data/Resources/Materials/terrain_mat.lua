@@ -14,8 +14,9 @@ terrain_mat =
 	},
 	resources =
 	{
-		heightmap =
+		[0] =
 		{
+			name="heightmap",
 			resType='texture2D',
 			uv='clamp',
 			texFormat='red',
@@ -23,28 +24,34 @@ terrain_mat =
 			useMipMaps=false,
 			usedAsStorageInCompute=true,
 		},
-		diffuseR =
+		[1] =
 		{
+			name="diffuseR",
 			resType="texture2D"
 		},
-		diffuseG =
-		{
+		[2] =
+		{	
+			name="diffuseG",
 			resType="texture2D"
 		},
-		diffuseB =
+		[3] =
 		{
+			name="diffuseB",
 			resType="texture2D"
 		},
-		diffuseBlack =
+		[4] =
 		{
+			name="diffuseBlack",
 			resType="texture2D"
 		},
-		diffuseRNormal =
+		[5] =
 		{
+			name="diffuseRNormal",
 			resType="texture2D",
 		},
-		splatmap =
+		[6] =
 		{
+			name="splatmap",
 			resType="texture2D",
 		}
 	}

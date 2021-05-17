@@ -9,8 +9,9 @@ downsample_mat4 =
 	},
 	resources =
 	{
-		downsampleTexture =
+		[0] =
 		{
+			name="downsampleTexture",
 			resType="texture2D"
 		}
 	}

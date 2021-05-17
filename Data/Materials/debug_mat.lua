@@ -16,8 +16,9 @@ debug_mat =
 	},
 	resources =
 	{
-		debugTexture =
+		[0] =
 		{
+			name="debugTexture",
 			resType="texture2D",
 		},
 		--debug3DTexture =

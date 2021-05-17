@@ -4,6 +4,8 @@ v0.0.6
 - Fixed error for image views with different formats
 - Fixed Vulkan shader compilation error if the spirv directory was missing
 - Fixed crash when failing to load a shader
+- Fix the wrong order of the textures info loaded from the material file
+- 
 
 v0.0.5
 - Material path is displayed if the material name of the material is empty in the Model Component in the Object Window

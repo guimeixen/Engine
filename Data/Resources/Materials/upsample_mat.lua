@@ -13,12 +13,14 @@ upsample_mat =
 	},
 	resources =
 	{
-		upsampleTexture =
+		[0] =
 		{
+			name="upsampleTexture",
 			resType="texture2D"
 		},
-		baseTexture =
+		[1] =
 		{
+			name="baseTexture",
 			resType="texture2D"
 		},
 	}

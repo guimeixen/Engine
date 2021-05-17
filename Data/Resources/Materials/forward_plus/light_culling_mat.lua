@@ -9,8 +9,9 @@ light_culling_mat =
 	},
 	resources =
 	{
-		depth =
+		[0] =
 		{
+			name="depth",
 			resType="texture2D",
 		},
 	}

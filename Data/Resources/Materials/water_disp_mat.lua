@@ -10,30 +10,31 @@ water_disp_mat =
 			blending=true,
 		}
 	},
-	--objectUBO = 
-	--{
-	--	params="vec2",
-	--},
 	resources =
 	{
-		reflectionTexture =
+		[0] =
 		{
+			name="reflectionTexture",
 			resType="texture2D"
 		},
-		normalMap =
+		[1] =
 		{
+			name="normalMap",
 			resType="texture2D"
 		},
-		refractionTexture =
+		[2] =
 		{
+			name="refractionTexture",
 			resType="texture2D"
 		},
-		refractionDepthTexture =
+		[3] =
 		{
+			name="refractionDepthTexture",
 			resType="texture2D"
 		},
-		foamTexture =
+		[4] =
 		{
+			name="foamTexture",
 			resType="texture2D"
 		},
 	}

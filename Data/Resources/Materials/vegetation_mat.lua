@@ -19,8 +19,9 @@ vegetation_mat =
 	},
 	resources =
 	{
-		diffuse =
+		[0] =
 		{
+			name="diffuse",
 			resType="texture2D"
 		}
 	}

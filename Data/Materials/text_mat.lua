@@ -14,8 +14,9 @@ text_mat =
 	},
 	resources =
 	{
-		texture =
+		[0] =
 		{
+			name="texture",
 			resType="texture2D",
 			useMipmaps=false
 		}

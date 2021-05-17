@@ -438,8 +438,6 @@ namespace Engine
 		size_t oldMatSize = materials.size();
 
 		MaterialInstance *m = Material::LoadMaterialInstanceFromBaseMat(this, baseMatPath, scriptManager, inputDescs);
-		m->graphicsSetID = std::numeric_limits<unsigned int>::max();
-		m->computeSetID = std::numeric_limits<unsigned int>::max();
 		materialInstances.push_back(m);
 	
 		size_t newMatSize = materials.size();

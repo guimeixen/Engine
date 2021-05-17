@@ -9,8 +9,9 @@ brightpass_mat =
 	},
 	resources =
 	{
-		sceneTexture =
+		[0] =
 		{
+			name="sceneTexture",
 			resType="texture2D"
 		},
 	}

@@ -10,8 +10,9 @@ fxaa_mat =
 	},
 	resources =
 	{
-		postProcessedTexture =
+		[0] =
 		{
+			name="postProcessedTexture",
 			resType="texture2D"
 		}
 	}
