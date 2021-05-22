@@ -27,6 +27,7 @@ namespace Engine
 		debugSettings.enableDebugDraw = true;
 
 		debugMatData = {};
+		assetTextureAtlas = nullptr;
 
 		mainDirectionalLight = {};
 		mainDirectionalLight.intensity = 1.4f;
@@ -319,6 +320,14 @@ namespace Engine
 	{
 		//frameGraph.RemovePass("terrainEdit");
 		isTerrainEditingEnabled = false;
+	}
+
+	void RenderingPath::SetAssetTextureAtlas(Texture* texture)
+	{
+		if (!texture)
+			return;
+
+		assetTextureAtlas = texture;
 	}
 
 	void RenderingPath::SetMainCamera(Camera *camera)

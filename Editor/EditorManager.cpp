@@ -62,6 +62,9 @@ EditorManager::EditorManager()
 	newInputMapping = {};
 	newInputMapping.mouseButton = Engine::MouseButtonType::None;
 	currentPositiveKeyIndex = 0;
+
+	assetTextureAtlas = nullptr;
+	iconsTexture = nullptr;
 }
 
 void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputManager *inputManager)
@@ -141,27 +144,18 @@ void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputMa
 
 	FindFilesInDirectory("Data/Levels/*");
 
-	// Add another render pass to which we will render the post process quad so it can be displayed as an image in the editor
-	Engine::Pass &editorImguiPass = game->GetRenderingPath()->GetFrameGraph().AddPass("EditorImGUI");
-	editorImguiPass.AddTextureInput("final");
-	editorImguiPass.OnSetup([this](const Engine::Pass *thisPass)
-	{ 
-		if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
-		{
-			ImGUI_ImplVulkan_SetGameViewTexture(this->game->GetRenderingPath()->GetFinalFBForEditor()->GetColorTexture());
-		}
-	});
+	LoadPasses();
 
-	editorImguiPass.OnResized([this](const Engine::Pass *thisPass){});
-	editorImguiPass.OnExecute([this]()
-	{
-		//if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
-		//	ImGUI_ImplVulkan_CreateOrResizeBuffers(ImGui::GetDrawData()->TotalVtxCount, ImGui::GetDrawData()->TotalIdxCount);
+	Engine::TextureParams params = {};
+	params.filter = Engine::TextureFilter::LINEAR;
+	params.format = Engine::TextureFormat::RGBA;
+	params.internalFormat = Engine::TextureInternalFormat::RGBA8;
+	params.type = Engine::TextureDataType::UNSIGNED_BYTE;
+	params.wrap = Engine::TextureWrap::REPEAT;
+	params.useMipmapping = true;
+	iconsTexture = game->GetRenderer()->CreateTexture2D("Data/Textures/Assets/assets.png", params);
 
-		Render();
-	});
-
-	game->GetRenderingPath()->GetFrameGraph().SetBackbufferSource("EditorImGUI");		// Post process pass writes to backbuffer
+	ImGUI_ImplVulkan_SetIconsTexture(iconsTexture);
 }
 
 void EditorManager::Update(float dt)
@@ -429,6 +423,10 @@ void EditorManager::Render()
 
 void EditorManager::Dispose()
 {
+	iconsTexture->RemoveReference();
+
+	assetsBrowserWindow.Dispose();
+
 	while (undoStack.empty() == false)
 	{
 		EditorCommand *cmd = undoStack.top();
@@ -1422,6 +1420,117 @@ void EditorManager::Redo()
 
 		undoStack.push(cmd);
 	}
+}
+
+void EditorManager::LoadPasses()
+{
+	// Create render target like 1024x1024
+	// Render a model with the viewport set to render in an area of 32x32
+	// Render the next model in the next area
+	// When rendering the image button pass the correct uv so the thumbnail is displayed correctly
+
+	assetBrowserCamera.SetProjectionMatrix(70.0f, 64, 64, 0.1f, 40.0f);
+	assetBrowserCamera.SetViewMatrix(glm::vec3(0.0f, 5.0f, 12.0f), glm::vec3(0.0f, 5.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	Engine::Pass& editorModelsThumbnailPass = game->GetRenderingPath()->GetFrameGraph().AddPass("EditorModelsThumbnail");
+
+	Engine::AttachmentInfo thumbnailsAttachment = {};
+	thumbnailsAttachment.width = 512;
+	thumbnailsAttachment.height = 512;
+	thumbnailsAttachment.params = { Engine::TextureWrap::CLAMP_TO_EDGE, Engine::TextureFilter::LINEAR, Engine::TextureFormat::RGBA, Engine::TextureInternalFormat::RGBA8, Engine::TextureDataType::UNSIGNED_BYTE };
+
+	Engine::AttachmentInfo depthAttachment = {};
+	depthAttachment.params = { Engine::TextureWrap::CLAMP_TO_EDGE, Engine::TextureFilter::NEAREST, Engine::TextureFormat::DEPTH_COMPONENT, Engine::TextureInternalFormat::DEPTH_COMPONENT16, Engine::TextureDataType::FLOAT, false, false };
+	depthAttachment.width = 512;
+	depthAttachment.height = 512;
+
+	editorModelsThumbnailPass.AddTextureInput("color");
+	editorModelsThumbnailPass.AddTextureOutput("thumbnailsTexture", thumbnailsAttachment);
+	editorModelsThumbnailPass.AddDepthOutput("thumbnailsDepth", depthAttachment);
+
+	editorModelsThumbnailPass.OnSetup([this](const Engine::Pass* thisPass)
+	{
+			this->assetsBrowserWindow.CreateModelMaterial();			
+			this->assetTextureAtlas = thisPass->GetFramebuffer()->GetColorTexture();
+			this->game->GetRenderingPath()->SetAssetTextureAtlas(this->assetTextureAtlas);
+			ImGUI_ImplVulkan_SetAssetTexture(this->assetTextureAtlas);
+	});
+	editorModelsThumbnailPass.OnResized([this](const Engine::Pass* thisPass) {});
+	editorModelsThumbnailPass.OnExecute([this]()
+		{
+			Engine::Renderer* renderer = this->game->GetRenderer();
+
+			const std::vector<Engine::Model*>& models = this->assetsBrowserWindow.GetModelsInCurrentDir();
+			Engine::MaterialInstance* modelThumbnailMat = this->assetsBrowserWindow.GetModelThumbnailMaterial();
+
+			renderer->SetCamera(&this->assetBrowserCamera);
+
+			int x = 0;
+			int y = 0;
+
+			for (size_t i = 0; i < models.size(); i++)
+			{
+				const std::vector<Engine::MeshMaterial>& meshes = models[i]->GetMeshesAndMaterials();
+
+				const Engine::AABB& aabb = models[i]->GetOriginalAABB();
+
+				glm::vec3 largestV = glm::max(aabb.min, aabb.max);
+				float largest = std::max(std::max(largestV.x, largestV.y), largestV.z);
+
+				float scale = 10.0f / largest;
+
+				Engine::Viewport viewport = {};
+				viewport.x = x;
+				viewport.y = y;
+				viewport.width = 64;
+				viewport.height = 64;
+
+				renderer->SetViewport(viewport);		
+
+				for (size_t j = 0; j < meshes.size(); j++)
+				{
+					Engine::RenderItem ri = {};
+					ri.mesh = &meshes[j].mesh;
+					ri.matInstance = modelThumbnailMat;
+					ri.materialData = &scale;
+					ri.materialDataSize = sizeof(scale);
+					renderer->Submit(ri);
+				}
+
+				if (x < 512)
+				{
+					x += 64;
+				}
+				else
+				{
+					x = 0;
+					y += 64;
+
+					if (y >= 512)
+						Engine::Log::Print(Engine::LogLevel::LEVEL_WARNING, "Asset texture full\n");
+				}
+			}
+		});
+
+	// Add another render pass to which we will render the post process quad so it can be displayed as an image in the editor
+	Engine::Pass& editorImguiPass = game->GetRenderingPath()->GetFrameGraph().AddPass("EditorImGUI");
+	editorImguiPass.AddTextureInput("final");
+	editorImguiPass.AddTextureInput("thumbnailsTexture");
+	editorImguiPass.OnSetup([this](const Engine::Pass* thisPass)
+	{
+		if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
+			ImGUI_ImplVulkan_SetGameViewTexture(this->game->GetRenderingPath()->GetFinalFBForEditor()->GetColorTexture());
+	});
+
+	editorImguiPass.OnResized([this](const Engine::Pass* thisPass) {});
+	editorImguiPass.OnExecute([this]()
+	{
+		//if (Engine::Renderer::GetCurrentAPI() == Engine::GraphicsAPI::Vulkan)
+		//	ImGUI_ImplVulkan_CreateOrResizeBuffers(ImGui::GetDrawData()->TotalVtxCount, ImGui::GetDrawData()->TotalIdxCount);
+		Render();
+	});
+
+	game->GetRenderingPath()->GetFrameGraph().SetBackbufferSource("EditorImGUI");		// Post process pass writes to backbuffer
 }
 
 bool EditorManager::IsMouseInsideGameView() const

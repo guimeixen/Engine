@@ -1,6 +1,6 @@
 #include "imconfig.h"
 
-#include "imgui.h"
+#include "imgui_internal.h"
 
 bool ImGui::Combo(const char *label, int *currIndex, std::vector<std::string> &values)
 {

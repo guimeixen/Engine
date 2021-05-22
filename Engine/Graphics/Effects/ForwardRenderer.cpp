@@ -303,6 +303,14 @@ namespace Engine
 					renderer->UpdateMaterialInstance(debugMat);
 				}
 			}
+			else if (debugSettings.type == DebugType::ASSET_TEXTURE)
+			{
+				if (debugMat->textures[0] != assetTextureAtlas && assetTextureAtlas != nullptr)
+				{
+					debugMat->textures[0] = assetTextureAtlas;
+					renderer->UpdateMaterialInstance(debugMat);
+				}
+			}
 
 			RenderItem ri = {};
 			ri.mesh = &quadMesh;

@@ -52,6 +52,9 @@ public:
 	// Return Data/Levels/project_name  Does not put the last slash
 	const std::string &GetCurrentProjectDir() const { return curLevelDir; }
 
+	Engine::Texture* GetAssetTextureAtlas() const { return assetTextureAtlas; }
+	Engine::Texture* GetIconsTexture() const { return iconsTexture; }
+
 	Gizmo &GetGizmo() { return gizmo; }
 	SceneWindow &GetSceneWindow() { return sceneWindow; }
 	ObjectWindow &GetObjectWindow() { return objectWindow; }
@@ -88,6 +91,8 @@ private:
 	void Undo();
 	void Redo();
 
+	void LoadPasses();
+
 private:
 	Engine::Game *game;
 	Engine::InputManager *inputManager;
@@ -107,6 +112,10 @@ private:
 	Gizmo gizmo;
 
 	Engine::PSVCompiler psvCompiler;
+
+	Engine::Texture* iconsTexture;
+	Engine::Texture* assetTextureAtlas;
+	Engine::Camera assetBrowserCamera;
 
 	EditorNameManager editorNameManager;
 

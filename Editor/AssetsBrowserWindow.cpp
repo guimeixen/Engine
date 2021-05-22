@@ -3,10 +3,15 @@
 #include "Program/Utils.h"
 #include "Program/Log.h"
 #include "Program/Input.h"
+#include "Graphics/Model.h"
 #include "EditorManager.h"
+#include "AssimpLoader.h"
+#include "Graphics/VertexArray.h"
 
 #include <iostream>
 #include <filesystem>
+
+#include "imgui/imgui_user.h"
 
 AssetsBrowserWindow::AssetsBrowserWindow()
 {
@@ -15,6 +20,7 @@ AssetsBrowserWindow::AssetsBrowserWindow()
 	openContext = false;
 	openAddScript = false;
 	isFileHovered = false;
+	wasDirectoryChanged = false;
 	contextFileIndex = 0;
 }
 
@@ -121,75 +127,198 @@ void AssetsBrowserWindow::Render()
 			filesInCurrentDir.clear();
 			Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false);
 			directoriesDepth--;
+			wasDirectoryChanged = true;
 		}
-
 
 		isFileHovered = false;
 
-		for (size_t i = 0; i < filesInCurrentDir.size(); i++)
-		{
-			size_t lastSlashIdx = filesInCurrentDir[i].find_last_of('/') + 1;		// +1 to removed the slash
-			if (ImGui::Selectable(filesInCurrentDir[i].c_str() + lastSlashIdx, false, ImGuiSelectableFlags_AllowDoubleClick) && ImGui::IsMouseDoubleClicked(0))
-			{
-				// Right now we assume if the file doesn't have a dot (for the extension) it is a directory
-				if (filesInCurrentDir[i].rfind('.') == std::string::npos)
-				{
-					currentDir = filesInCurrentDir[i];
-					filesInCurrentDir.clear();
-					Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false, false);
-					directoriesDepth++;
-				}
-				else
-				{
-					// Try open the file
-					if (std::strstr(filesInCurrentDir[i].c_str(), ".lua") > 0)
-					{
-						std::cout << std::filesystem::current_path() << '\n';
-						std::string path = std::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[i];
+		RenderThumbnails();
+	}
 
-						Engine::utils::OpenFileWithDefaultProgram(path);
-					}
-				}
+	if (wasDirectoryChanged)
+	{
+		// Render the thumbnails
+	}
+
+
+	EndWindow();
+}
+
+void AssetsBrowserWindow::Dispose()
+{
+	for (size_t i = 0; i < modelsForThumbnails.size(); i++)
+	{
+		delete modelsForThumbnails[i];
+	}
+}
+
+void AssetsBrowserWindow::RenderThumbnails()
+{
+	ImGuiStyle& style = ImGui::GetStyle();
+	float thumbSize = 80.0f;
+	float windowVisibleWidth = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+
+	size_t lastIdx = 0;
+
+	Engine::Texture* iconTexture = editorManager->GetIconsTexture();
+	Engine::Texture* assetTextureAtlas = editorManager->GetAssetTextureAtlas();
+
+	float increase = 64.0f / 512.0f;
+
+	float uMin = 0.0f;
+	float vMin = 0.0f;
+	float uMax = increase;
+	float vMax = increase;
+
+	for (size_t i = 0; i < filesInCurrentDir.size(); i++)
+	{
+		size_t lastSlashIdx = filesInCurrentDir[i].find_last_of('/') + 1;		// +1 to removed the slash
+
+		// Right now we assume if the file doesn't have a dot (for the extension) it is a directory
+		if (filesInCurrentDir[i].rfind('.') == std::string::npos)
+		{
+			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.0f, 0.0f), ImVec2(0.125f, 0.125f));
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+			{
+				currentDir = filesInCurrentDir[i];
+				filesInCurrentDir.clear();
+				Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false, false);
+				directoriesDepth++;
+				wasDirectoryChanged = true;
+				break;
 			}
 
-			if (ImGui::IsItemHovered() && Engine::Input::WasMouseButtonReleased(1))
+		}
+		else if (std::strstr(filesInCurrentDir[i].c_str(), ".model") > 0)
+		{
+			ImGui::ImageButton(assetTextureAtlas, ImVec2(thumbSize, thumbSize), ImVec2(uMin, vMin), ImVec2(uMax, vMax));
+
+			if (uMax < 1.0f)
+			{
+				uMin += increase;
+				uMax += increase;
+			}
+			else
+			{
+				uMin = 0.0f;
+				uMax = increase;
+
+				vMin += increase;
+				vMax += increase;
+			}
+		}
+		else if (std::strstr(filesInCurrentDir[i].c_str(), ".lua") > 0 && std::strstr(filesInCurrentDir[i].c_str(), "_mat.lua") == 0)
+		{
+			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.25f, 0.0f), ImVec2(0.375f, 0.125f));
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+			{
+				std::cout << std::filesystem::current_path() << '\n';
+				std::string path = std::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[i];
+
+				Engine::utils::OpenFileWithDefaultProgram(path);
+			}
+		}
+		else if (std::strstr(filesInCurrentDir[i].c_str(), ".mat") > 0)
+		{
+			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.375f, 0.0f), ImVec2(0.5f, 0.125f));
+		}
+		else if (std::strstr(filesInCurrentDir[i].c_str(), ".vert") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".frag") > 0)
+		{
+			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.5f, 0.0f), ImVec2(0.625f, 0.125f));
+		}
+		else
+		{
+			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.125f, 0.0f), ImVec2(0.25f, 0.125f));
+		}
+
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip(filesInCurrentDir[i].c_str() + lastSlashIdx);
+
+			if (Engine::Input::WasMouseButtonReleased(1))
 			{
 				isFileHovered = true;
 				contextFileIndex = i;
-
-				/*if (std::strstr(filesInCurrentDir[i].c_str(), ".fbx") > 0)
-				{
-					// Load model
-					// Render to fbo
-					// Render fbo texture has a thumbnail
-
-				}*/
 			}
 		}
 
-		if (isFileHovered)
-			ImGui::OpenPopup("File context popup");
+		float lastButtonX = ImGui::GetItemRectMax().x;
+		float nextButtonX = lastButtonX + style.ItemSpacing.x + thumbSize; // Expected position if next button was on same line
 
-		if (ImGui::BeginPopup("File context popup"))
+		if (i + 1 < filesInCurrentDir.size() && nextButtonX < windowVisibleWidth)
 		{
-			if (ImGui::Button("Open"))
-			{
-				std::string path = std::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[contextFileIndex];
-				Engine::utils::OpenFileWithDefaultProgram(path);
-				ImGui::CloseCurrentPopup();
-			}
-			if (ImGui::Button("Delete"))
-			{
-				std::remove(filesInCurrentDir[contextFileIndex].c_str());
-				ImGui::CloseCurrentPopup();
-			}
+			ImGui::SameLine();
+		}
+		else
+		{
+			float buttonSizeX = nextButtonX - lastButtonX;
+			float buttonHalfSizeX = buttonSizeX / 2.0f;
+			std::string textCut;
+			size_t k = 0;
+			float prevSideSpace = 0.0f;
 
-			ImGui::EndPopup();
+			for (size_t j = lastIdx; j <= i; j++)
+			{
+				size_t lastSlashIdx = filesInCurrentDir[j].find_last_of('/') + 1;		// +1 to removed the slash
+				textCut = filesInCurrentDir[j].substr(lastSlashIdx);
+
+				if (textCut.length() > 10)
+				{
+					textCut.erase(10);
+				}
+
+				ImVec2 size = ImGui::CalcTextSize(textCut.c_str());
+
+				float sideSpace = buttonSizeX - size.x;
+				sideSpace /= 2.0f;
+
+				if (j > lastIdx)
+					ImGui::SameLine(lastButtonX + style.ItemSpacing.x + prevSideSpace  +sideSpace);
+				else if (j == lastIdx)
+					ImGui::SetCursorPosX(sideSpace + style.ItemSpacing.x);			
+
+				ImGui::Text(textCut.c_str());
+				
+				lastButtonX = ImGui::GetItemRectMax().x;
+				nextButtonX = lastButtonX + style.ItemSpacing.x + thumbSize; // Expected position if next button was on same line
+
+				k++;
+				prevSideSpace = sideSpace;
+			}
+			lastIdx = i + 1;
+		}
+	}
+
+	if (isFileHovered)
+		ImGui::OpenPopup("File context popup");
+
+	if (ImGui::BeginPopup("File context popup"))
+	{
+		std::string path = std::filesystem::current_path().generic_string() + '/' + filesInCurrentDir[contextFileIndex];
+
+		if (ImGui::Button("Open"))
+		{
+			Engine::utils::OpenFileWithDefaultProgram(path);
+			ImGui::CloseCurrentPopup();
+		}
+		if (std::strstr(path.c_str(), "_mat.lua") > 0)
+		{
+			if (ImGui::Button("Create material instance from base material"))
+			{
+
+			}
+		}
+		if (ImGui::Button("Delete"))
+		{
+			int err = std::remove(filesInCurrentDir[contextFileIndex].c_str());
+			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "%d\n", err);
+			ImGui::CloseCurrentPopup();
 		}
 
-		//ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetCursorScreenPos(), ImVec2(50.0f, 50.0f), IM_COL32(255, 0, 0, 255));
+		ImGui::EndPopup();
 	}
-	EndWindow();
 }
 
 void AssetsBrowserWindow::SetFiles(const std::string &projectDir)
@@ -197,4 +326,63 @@ void AssetsBrowserWindow::SetFiles(const std::string &projectDir)
 	currentDir = projectDir;
 	filesInCurrentDir.clear();
 	Engine::utils::FindFilesInDirectory(filesInCurrentDir, projectDir + "/*", "", false, false);
+
+	LoadModelsInCurrentDir();
+}
+
+void AssetsBrowserWindow::CreateModelMaterial()
+{
+	Engine::VertexAttribute attribs[4] = {};
+	attribs[0].count = 3;						// Position
+	attribs[1].count = 2;						// UV
+	attribs[2].count = 3;						// Normal
+	attribs[3].count = 3;						// Tangent
+
+	attribs[0].offset = 0;
+	attribs[1].offset = 3 * sizeof(float);
+	attribs[2].offset = 5 * sizeof(float);
+	attribs[3].offset = 8 * sizeof(float);
+
+	Engine::VertexInputDesc desc = {};
+	desc.stride = sizeof(Engine::VertexPOS3D_UV_NORMAL_TANGENT);
+	desc.attribs = { attribs[0], attribs[1], attribs[2], attribs[3] };
+
+	modelThumbnailMat = game->GetRenderer()->CreateMaterialInstanceFromBaseMat(game->GetScriptManager(), "Data/Materials/model_thumbnail_mat.lua", { desc });
+}
+
+void AssetsBrowserWindow::LoadModelsInCurrentDir()
+{
+	// Load the models in the current directory if they haven't been already loaded
+	for (size_t i = 0; i < filesInCurrentDir.size(); i++)
+	{
+		if (std::strstr(filesInCurrentDir[i].c_str(), ".fbx") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".obj") > 0)
+		{
+			// Check if we already have the model loaded
+
+			// Check if the model in the custom format exists, if not loaded the obj, fbx, etc with Assimp and save it in the custom format
+			std::string newPath = Engine::utils::RemoveExtensionFromFilePath(filesInCurrentDir[i]) + "model";
+			bool loadedSuccessfuly = false;
+
+			if (Engine::utils::DirectoryExists(newPath) == false)
+			{
+				loadedSuccessfuly = Engine::AssimpLoader::LoadModel(game, filesInCurrentDir[i], {});
+			}
+			else
+			{
+				loadedSuccessfuly = true;		// .model file already exists
+			}
+
+			if (loadedSuccessfuly)
+			{
+				Engine::Model* model = new Engine::Model(game->GetRenderer(), game->GetScriptManager(), newPath, {});
+
+				for (size_t i = 0; i < model->GetMeshesAndMaterials().size(); i++)
+				{
+					model->SetMeshMaterial(i, modelThumbnailMat);
+				}
+
+				modelsForThumbnails.push_back(model);
+			}		
+		}
+	}
 }

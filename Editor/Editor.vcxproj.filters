@@ -513,5 +513,13 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>Header files\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="imgui\imgui_user.h">
+      <Filter>Header files\imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="imgui\imgui_user.inl">
+      <Filter>Source files\imgui</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -34,6 +34,7 @@ void RenderingWindow::Init(Engine::Game *game, EditorManager *editorManager)
 	debugTypesStr.push_back("Reflection");
 	debugTypesStr.push_back("Voxel Texture");
 	debugTypesStr.push_back("Refraction");
+	debugTypesStr.push_back("Asset Texture Atlas");
 
 	month = 1;
 	day = 1;
@@ -218,6 +219,8 @@ void RenderingWindow::Render()
 				debugSettings.type = Engine::DebugType::VOXELS_TEXTURE;
 			else if (selectedDebugType == 4)
 				debugSettings.type = Engine::DebugType::REFRACTION;
+			else if (selectedDebugType == 5)
+				debugSettings.type = Engine::DebugType::ASSET_TEXTURE;
 
 		}
 	}

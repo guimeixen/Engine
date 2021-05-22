@@ -2,11 +2,7 @@
 
 #include "Mesh.h"
 #include "Physics/BoundingVolumes.h"
-#include "Program/Serializer.h"
 #include "Game/ComponentManagers/ScriptManager.h"
-
-#include <string>
-#include <vector>
 
 struct aiMesh;
 struct aiScene;

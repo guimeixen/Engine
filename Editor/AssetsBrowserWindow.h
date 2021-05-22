@@ -5,14 +5,30 @@
 #include <string>
 #include <vector>
 
+namespace Engine
+{
+	class Model;
+	struct MaterialInstance;
+}
+
 class AssetsBrowserWindow : public EditorWindow
 {
 public:
 	AssetsBrowserWindow();
 
 	void Render();
+	void Dispose();
+
+	void RenderThumbnails();
 
 	void SetFiles(const std::string &projectDir);
+	void CreateModelMaterial();
+
+	const std::vector<Engine::Model*>& GetModelsInCurrentDir() const { return modelsForThumbnails; }
+	Engine::MaterialInstance* GetModelThumbnailMaterial() const { return modelThumbnailMat; }
+
+private:
+	void LoadModelsInCurrentDir();
 
 private:
 	std::string currentDir;
@@ -23,6 +39,10 @@ private:
 	char fileName[64];
 	bool openAddScript;
 	bool isFileHovered;
+	bool wasDirectoryChanged;
 	size_t contextFileIndex;
+
+	std::vector<Engine::Model*> modelsForThumbnails;
+	Engine::MaterialInstance* modelThumbnailMat;
 };
 

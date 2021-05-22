@@ -170,6 +170,9 @@ namespace Engine
 			Log::Print(LogLevel::LEVEL_INFO, "Mesh loaded\n");
 		}
 
+		s.Read(originalAABB.min);
+		s.Read(originalAABB.max);
+
 		s.Close();
 	}
 

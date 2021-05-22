@@ -106,7 +106,12 @@ static VkBuffer                 g_UploadBuffer = VK_NULL_HANDLE;
 static ImGui_ImplVulkanH_WindowRenderBuffers    g_MainWindowRenderBuffers;
 
 static VkDescriptorSet gameViewDescSet = VK_NULL_HANDLE;
+static VkDescriptorSet assetTextureDescSet = VK_NULL_HANDLE;
+static VkDescriptorSet iconTextureDescSet = VK_NULL_HANDLE;
 Engine::Texture* gameViewTexture = nullptr;
+Engine::Texture* assetTexture = nullptr;
+Engine::Texture* iconTexture = nullptr;
+
 
 // Forward Declarations
 bool ImGui_ImplVulkan_CreateDeviceObjects();
@@ -515,6 +520,10 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
                     // Guimeixen
                     if ((Engine::Texture*)pcmd->TextureId == gameViewTexture)
                         curSet = gameViewDescSet;
+                    else if ((Engine::Texture*)pcmd->TextureId == assetTexture)
+                        curSet = assetTextureDescSet;
+                    else if ((Engine::Texture*)pcmd->TextureId == iconTexture)
+                        curSet = iconTextureDescSet;
                     else
                         curSet = g_DescriptorSet;
 
@@ -525,6 +534,16 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
                         {
                             vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_PipelineLayout, 0, 1, &gameViewDescSet, 0, NULL);
                             lastSet = gameViewDescSet;
+                        }
+                        else if ((Engine::Texture*)pcmd->TextureId == assetTexture)
+                        {
+                            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_PipelineLayout, 0, 1, &assetTextureDescSet, 0, NULL);
+                            lastSet = assetTextureDescSet;
+                        }
+                        else if ((Engine::Texture*)pcmd->TextureId == iconTexture)
+                        {
+                            vkCmdBindDescriptorSets(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, g_PipelineLayout, 0, 1, &iconTextureDescSet, 0, NULL);
+                            lastSet = iconTextureDescSet;
                         }
                         else
                         {
@@ -540,6 +559,78 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
         }
         global_idx_offset += cmd_list->IdxBuffer.Size;
         global_vtx_offset += cmd_list->VtxBuffer.Size;
+    }
+}
+
+void ImGUI_ImplVulkan_SetAssetTexture(Engine::Texture* texture)
+{
+    ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
+    assetTexture = texture;
+
+    if (assetTextureDescSet == VK_NULL_HANDLE)
+    {
+        VkDescriptorSetAllocateInfo setAllocInfo = {};
+        setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        setAllocInfo.descriptorPool = v->DescriptorPool;
+        setAllocInfo.descriptorSetCount = 1;
+        setAllocInfo.pSetLayouts = &g_DescriptorSetLayout;
+
+        check_vk_result(vkAllocateDescriptorSets(v->Device, &setAllocInfo, &assetTextureDescSet));
+
+        Engine::VKTexture2D* tex = static_cast<Engine::VKTexture2D*>(texture);
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = tex->GetImageView();
+        imageInfo.sampler = tex->GetSampler();
+
+        VkWriteDescriptorSet write = {};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.dstArrayElement = 0;
+        write.dstBinding = 0;
+        write.dstSet = assetTextureDescSet;
+        write.pImageInfo = &imageInfo;
+
+        VkWriteDescriptorSet writes[] = { write };
+
+        vkUpdateDescriptorSets(v->Device, 1, &write, 0, nullptr);
+    }
+}
+
+void ImGUI_ImplVulkan_SetIconsTexture(Engine::Texture* texture)
+{
+    ImGui_ImplVulkan_InitInfo* v = &g_VulkanInitInfo;
+    iconTexture = texture;
+
+    if (iconTextureDescSet == VK_NULL_HANDLE)
+    {
+        VkDescriptorSetAllocateInfo setAllocInfo = {};
+        setAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        setAllocInfo.descriptorPool = v->DescriptorPool;
+        setAllocInfo.descriptorSetCount = 1;
+        setAllocInfo.pSetLayouts = &g_DescriptorSetLayout;
+
+        check_vk_result(vkAllocateDescriptorSets(v->Device, &setAllocInfo, &iconTextureDescSet));
+
+        Engine::VKTexture2D* tex = static_cast<Engine::VKTexture2D*>(texture);
+        VkDescriptorImageInfo imageInfo = {};
+        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageView = tex->GetImageView();
+        imageInfo.sampler = tex->GetSampler();
+
+        VkWriteDescriptorSet write = {};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        write.dstArrayElement = 0;
+        write.dstBinding = 0;
+        write.dstSet = iconTextureDescSet;
+        write.pImageInfo = &imageInfo;
+
+        VkWriteDescriptorSet writes[] = { write };
+
+        vkUpdateDescriptorSets(v->Device, 1, &write, 0, nullptr);
     }
 }
 

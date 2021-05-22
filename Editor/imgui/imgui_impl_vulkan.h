@@ -67,10 +67,13 @@ IMGUI_IMPL_API bool     ImGui_ImplVulkan_Init(Engine::Renderer* renderer, ImGui_
 IMGUI_IMPL_API void     ImGui_ImplVulkan_Shutdown();
 IMGUI_IMPL_API void     ImGui_ImplVulkan_NewFrame();
 IMGUI_IMPL_API void     ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer command_buffer, VkPipeline pipeline = VK_NULL_HANDLE);
-IMGUI_IMPL_API void 	ImGUI_ImplVulkan_SetGameViewTexture(Engine::Texture* texture, bool updateDescSet = false);
 IMGUI_IMPL_API bool     ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer);
 IMGUI_IMPL_API void     ImGui_ImplVulkan_DestroyFontUploadObjects();
 IMGUI_IMPL_API void     ImGui_ImplVulkan_SetMinImageCount(uint32_t min_image_count); // To override MinImageCount after initialization (e.g. if swap chain is recreated)
+
+IMGUI_IMPL_API void 	ImGUI_ImplVulkan_SetAssetTexture(Engine::Texture* texture);
+IMGUI_IMPL_API void 	ImGUI_ImplVulkan_SetIconsTexture(Engine::Texture* texture);
+IMGUI_IMPL_API void 	ImGUI_ImplVulkan_SetGameViewTexture(Engine::Texture* texture, bool updateDescSet = false);
 
 // Optional: load Vulkan functions with a custom function loader
 // This is only useful with IMGUI_IMPL_VULKAN_NO_PROTOTYPES / VK_NO_PROTOTYPES

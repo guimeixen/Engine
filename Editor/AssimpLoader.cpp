@@ -19,13 +19,12 @@
 
 namespace Engine
 {
-	void AssimpLoader::LoadModel(Game *game, const std::string &path, const std::vector<std::string> &matPaths, bool willUseInstancing, bool isAnimated, bool loadVertexColors)
+	bool AssimpLoader::LoadModel(Game *game, const std::string &path, const std::vector<std::string> &matPaths, bool willUseInstancing, bool isAnimated, bool loadVertexColors)
 	{
 		Renderer *renderer = game->GetRenderer();
 		ScriptManager &scriptManager = game->GetScriptManager();
 
 		Model *model = new Model();
-		model->SetOriginalAABB({ glm::vec3(100000.0f), glm::vec3(-100000.0f) });
 
 		Assimp::Importer importer;
 		const aiScene* aiscene = importer.ReadFile(path, aiProcess_JoinIdenticalVertices | aiProcess_FlipUVs | aiProcess_CalcTangentSpace); //| aiProcess_GenSmoothNormals);
@@ -33,7 +32,7 @@ namespace Engine
 		if (!aiscene || aiscene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !aiscene->mRootNode)
 		{
 			Log::Print(LogLevel::LEVEL_ERROR, "Assimp Error: %s\n", importer.GetErrorString());
-			return;
+			return false;
 		}
 
 		Log::Print(LogLevel::LEVEL_INFO, "Model imported\n");
@@ -126,10 +125,16 @@ namespace Engine
 
 		model->SetPath(p);
 
+		// Save the AABB
+		s.Write(model->GetOriginalAABB().min);
+		s.Write(model->GetOriginalAABB().max);
+
 		s.Save(p);
 		s.Close();
 
 		delete model;
+
+		return true;
 	}
 
 	void AssimpLoader::LoadAnimatedModel(Game *game, const std::string &path, const std::vector<std::string> &matPaths)
@@ -138,7 +143,6 @@ namespace Engine
 		ScriptManager &scriptManager = game->GetScriptManager();
 
 		AnimatedModel *am = new AnimatedModel();
-		am->SetOriginalAABB({ glm::vec3(100000.0f), glm::vec3(-100000.0f) });
 
 		Assimp::Importer importer;
 

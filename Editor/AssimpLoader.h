@@ -28,7 +28,7 @@ namespace Engine
 	public:
 
 		// Loads the model with Assimp and saves it in the custom model format
-		static void LoadModel(Game *game, const std::string &path, const std::vector<std::string> &matPaths, bool willUseInstancing = false, bool isAnimated = false, bool loadVertexColors = false);
+		static bool LoadModel(Game *game, const std::string &path, const std::vector<std::string> &matPaths, bool willUseInstancing = false, bool isAnimated = false, bool loadVertexColors = false);
 		// Returns a string with the new path of the model in the custom format
 		static void LoadAnimatedModel(Game *game, const std::string &path, const std::vector<std::string> &matPaths);
 		// Returns a new animation and also saves it in the custom animation format

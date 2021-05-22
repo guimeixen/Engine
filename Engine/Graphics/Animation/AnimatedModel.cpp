@@ -23,8 +23,8 @@ namespace Engine
 		type = ModelType::ANIMATED;
 		animController = nullptr;
 		castShadows = true;
-		originalAABB.min = glm::vec3();
-		originalAABB.max = glm::vec3();
+		originalAABB.min = glm::vec3(100000.0f);
+		originalAABB.max = glm::vec3(-100000.0f);
 		lodDistance = 10000.0f;
 		rootBone = new Bone;
 
@@ -43,8 +43,8 @@ namespace Engine
 		this->path = path;
 		animController = nullptr;
 		castShadows = true;
-		originalAABB.min = glm::vec3();
-		originalAABB.max = glm::vec3();
+		originalAABB.min = glm::vec3(100000.0f);
+		originalAABB.max = glm::vec3(-100000.0f);
 		lodDistance = 10000.0f;
 		rootBone = new Bone;
 
