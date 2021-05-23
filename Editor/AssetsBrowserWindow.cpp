@@ -186,6 +186,7 @@ void AssetsBrowserWindow::RenderThumbnails()
 				Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false, false);
 				directoriesDepth++;
 				wasDirectoryChanged = true;
+				editorManager->ReloadThumbnails();
 				break;
 			}
 
@@ -385,4 +386,8 @@ void AssetsBrowserWindow::LoadModelsInCurrentDir()
 			}		
 		}
 	}
+
+	// Refind the files in the current dir so the new .model files show up
+	filesInCurrentDir.clear();
+	Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false, false);
 }

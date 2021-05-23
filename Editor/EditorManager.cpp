@@ -65,6 +65,7 @@ EditorManager::EditorManager()
 
 	assetTextureAtlas = nullptr;
 	iconsTexture = nullptr;
+	reloadThumbnails = true;
 }
 
 void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputManager *inputManager)
@@ -509,6 +510,11 @@ void EditorManager::OnFocus()
 		game->GetScriptManager().ReloadAll();
 		game->GetRenderer()->ReloadShaders();
 	}
+}
+
+void EditorManager::ReloadThumbnails()
+{
+	reloadThumbnails = true;
 }
 
 void EditorManager::ShowMainMenuBar()
@@ -1458,6 +1464,9 @@ void EditorManager::LoadPasses()
 	editorModelsThumbnailPass.OnResized([this](const Engine::Pass* thisPass) {});
 	editorModelsThumbnailPass.OnExecute([this]()
 		{
+			if (!reloadThumbnails)
+				return;
+
 			Engine::Renderer* renderer = this->game->GetRenderer();
 
 			const std::vector<Engine::Model*>& models = this->assetsBrowserWindow.GetModelsInCurrentDir();
@@ -1510,6 +1519,8 @@ void EditorManager::LoadPasses()
 						Engine::Log::Print(Engine::LogLevel::LEVEL_WARNING, "Asset texture full\n");
 				}
 			}
+
+			reloadThumbnails = false;
 		});
 
 	// Add another render pass to which we will render the post process quad so it can be displayed as an image in the editor

@@ -43,6 +43,8 @@ public:
 	void OnWindowClose();
 	void OnFocus();
 
+	void ReloadThumbnails();
+
 	std::stack<EditorCommand*> &GetUndoStack() { return undoStack; }
 
 	bool IsProjectOpen() const { return isProjectOpen; }
@@ -116,6 +118,7 @@ private:
 	Engine::Texture* iconsTexture;
 	Engine::Texture* assetTextureAtlas;
 	Engine::Camera assetBrowserCamera;
+	bool reloadThumbnails;
 
 	EditorNameManager editorNameManager;
 
