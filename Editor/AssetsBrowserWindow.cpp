@@ -276,7 +276,7 @@ void AssetsBrowserWindow::RenderThumbnails()
 				sideSpace /= 2.0f;
 
 				if (j > lastIdx)
-					ImGui::SameLine(lastButtonX + style.ItemSpacing.x + prevSideSpace  +sideSpace);
+					ImGui::SameLine(lastButtonX + style.ItemSpacing.x + prevSideSpace + sideSpace);
 				else if (j == lastIdx)
 					ImGui::SetCursorPosX(sideSpace + style.ItemSpacing.x);			
 
@@ -329,6 +329,7 @@ void AssetsBrowserWindow::SetFiles(const std::string &projectDir)
 	Engine::utils::FindFilesInDirectory(filesInCurrentDir, projectDir + "/*", "", false, false);
 
 	LoadModelsInCurrentDir();
+	editorManager->ReloadThumbnails();
 }
 
 void AssetsBrowserWindow::CreateModelMaterial()

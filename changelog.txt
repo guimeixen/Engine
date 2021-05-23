@@ -1,11 +1,12 @@
 v0.0.6
 - Added normal mapping
+- Improved asset browser. Now it display the assets as thumbnails and renders the models to use for the thumbnails
 - Improvements in material creation
 - Fixed error for image views with different formats
 - Fixed Vulkan shader compilation error if the spirv directory was missing
 - Fixed crash when failing to load a shader
 - Fix the wrong order of the textures info loaded from the material file
-- 
+- Fixed material window context menu not working correctly
 
 v0.0.5
 - Material path is displayed if the material name of the material is empty in the Model Component in the Object Window

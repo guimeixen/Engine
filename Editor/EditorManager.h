@@ -118,7 +118,6 @@ private:
 	Engine::Texture* iconsTexture;
 	Engine::Texture* assetTextureAtlas;
 	Engine::Camera assetBrowserCamera;
-	bool reloadThumbnails;
 
 	EditorNameManager editorNameManager;
 

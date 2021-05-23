@@ -65,7 +65,6 @@ EditorManager::EditorManager()
 
 	assetTextureAtlas = nullptr;
 	iconsTexture = nullptr;
-	reloadThumbnails = true;
 }
 
 void EditorManager::Init(GLFWwindow *window, Engine::Game *game, Engine::InputManager *inputManager)
@@ -514,7 +513,7 @@ void EditorManager::OnFocus()
 
 void EditorManager::ReloadThumbnails()
 {
-	reloadThumbnails = true;
+	game->GetRenderingPath()->GetFrameGraph().GetPass("EditorModelsThumbnail").SetIsPaused(false);
 }
 
 void EditorManager::ShowMainMenuBar()
@@ -1462,11 +1461,8 @@ void EditorManager::LoadPasses()
 			ImGUI_ImplVulkan_SetAssetTexture(this->assetTextureAtlas);
 	});
 	editorModelsThumbnailPass.OnResized([this](const Engine::Pass* thisPass) {});
-	editorModelsThumbnailPass.OnExecute([this]()
+	editorModelsThumbnailPass.OnExecute([this, &editorModelsThumbnailPass]()
 		{
-			if (!reloadThumbnails)
-				return;
-
 			Engine::Renderer* renderer = this->game->GetRenderer();
 
 			const std::vector<Engine::Model*>& models = this->assetsBrowserWindow.GetModelsInCurrentDir();
@@ -1520,7 +1516,10 @@ void EditorManager::LoadPasses()
 				}
 			}
 
-			reloadThumbnails = false;
+			Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Rendering thumbnails\n");
+
+			// Only use the pass when we need to update the thumbnails, no need to keep rendering them every frame
+			editorModelsThumbnailPass.SetIsPaused(true);
 		});
 
 	// Add another render pass to which we will render the post process quad so it can be displayed as an image in the editor

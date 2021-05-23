@@ -31,6 +31,8 @@ namespace Engine
 		isCompute = false;
 		isSetup = false;
 		writesToFramebuffer = true;
+		isPaused = false;
+		orderedIndex = 0;
 	}
 
 	void Pass::Resize(unsigned int width, unsigned int height)
@@ -358,6 +360,9 @@ namespace Engine
 			unsigned int index = orderedPassesIndices[i];
 
 			Pass &pass = passes[index];
+
+			if (pass.isPaused)
+				continue;
 
 			renderer->ClearBoundImages();		// For D3D11
 

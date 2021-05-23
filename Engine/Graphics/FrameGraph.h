@@ -100,6 +100,7 @@ namespace Engine
 		unsigned int GetIndex() const { return passIndex; }
 		Framebuffer *GetFramebuffer() const { return fb; }
 
+		void SetIsPaused(bool isPaused) { this->isPaused = isPaused; };
 		void SetIsCompute(bool isComp) { isCompute = isComp; }
 		bool IsCompute() const { return isCompute; }
 		
@@ -148,6 +149,7 @@ namespace Engine
 		bool isCompute;
 		bool writesToFramebuffer;
 		bool isSetup;
+		bool isPaused;
 		//std::vector<OutputTextureInfo> outputTexturesInfo;
 
 		std::function<void()> onBarriers;
