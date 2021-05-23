@@ -1043,6 +1043,28 @@ ImVec2 EditorManager::HandleGameView()
 		else
 			ImGui::Image((ImTextureID)(game->GetRenderingPath()->GetFinalFBForEditor()->GetColorTexture()), availableSize, ImVec2(0, 1), ImVec2(1, 0));
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_MODEL_TO_ENTITY");
+
+			if (payload)
+			{
+				//IM_ASSERT(payload->DataSize == sizeof(int));
+				const char* modelPath = (const char*)payload->Data;
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "%s\n", modelPath);
+
+				Engine::Entity e = game->AddEntity();
+				char name[128];
+				sprintf(name, "%u", e.id);
+				editorNameManager.SetName(e, name);
+				objectWindow.SetEntity(e);
+				objectWindow.Focus();
+				gizmo.SetSelectedEntity(e);
+				game->GetModelManager().AddModel(e, modelPath, false);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 		glm::vec2 mousePos = Engine::Input::GetMousePosition();
 
 		ImVec2 minSize = ImGui::GetItemRectMin();

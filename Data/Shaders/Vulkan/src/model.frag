@@ -105,7 +105,7 @@ void main()
 /*#ifdef NORMAL_MAP
 	outColor.rgb = texture(normalMap,uv).rgb;
 #endif*/
-	outColor.rgb = N;
+	//outColor.rgb = N;
 	
 	outColor.a = 1.0;
 }

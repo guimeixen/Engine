@@ -24,7 +24,7 @@ public:
 	void SetFiles(const std::string &projectDir);
 	void CreateModelMaterial();
 
-	const std::vector<Engine::Model*>& GetModelsInCurrentDir() const { return modelsForThumbnails; }
+	const std::vector<Engine::Model*>& GetModelsInCurrentDir() const { return modelsInCurDir; }
 	Engine::MaterialInstance* GetModelThumbnailMaterial() const { return modelThumbnailMat; }
 
 private:
@@ -40,9 +40,11 @@ private:
 	bool openAddScript;
 	bool isFileHovered;
 	bool wasDirectoryChanged;
+	bool dragAndDropModelPayloadSet;
 	size_t contextFileIndex;
 
 	std::vector<Engine::Model*> modelsForThumbnails;
+	std::vector<Engine::Model*> modelsInCurDir;
 	Engine::MaterialInstance* modelThumbnailMat;
 };
 

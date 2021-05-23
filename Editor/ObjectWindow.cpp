@@ -114,6 +114,19 @@ void ObjectWindow::Render()
 
 		ImGui::Text(editorManager->GetEditorNameManager().GetName(selectedEntity));
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_MODEL_TO_ENTITY");
+
+			if (payload)
+			{
+				//IM_ASSERT(payload->DataSize == sizeof(int));
+				const char* modelPath = (const char*)payload->Data;
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "%s\n", modelPath);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 		//Engine::ObjectType type = obj->GetType();
 
 		/*if (type == Engine::ObjectType::DEFAULT_OBJECT)
@@ -415,6 +428,7 @@ void ObjectWindow::Render()
 		//ImGui::PopItemWidth();
 	}
 	EndWindow();
+
 
 	// If a component was removed, remove it from the object
 	if (!modelOpen && selectedModel)
@@ -924,6 +938,21 @@ void ObjectWindow::HandleModel()
 					files.clear();
 					Engine::utils::FindFilesInDirectory(files, dir, ".mat");
 					Engine::utils::FindFilesInDirectory(files, "Data/Materials/*", ".mat");
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_MAT_TO_MODEL_MESH");
+
+					if (payload)
+					{
+						const char* matPath = (const char*)payload->Data;
+						Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "%s\n", matPath);
+
+						Engine::MaterialInstance* mat = game->GetRenderer()->CreateMaterialInstance(game->GetScriptManager(), matPath, mm.mesh.vao->GetVertexInputDescs());
+						selectedModel->SetMeshMaterial((unsigned short)i, mat);
+					}
+					ImGui::EndDragDropTarget();
 				}
 
 				if (mm.mat->path.size() > 0 && ImGui::IsItemHovered())

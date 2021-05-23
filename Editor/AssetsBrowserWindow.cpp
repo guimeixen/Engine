@@ -128,6 +128,9 @@ void AssetsBrowserWindow::Render()
 			Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false);
 			directoriesDepth--;
 			wasDirectoryChanged = true;
+
+			LoadModelsInCurrentDir();
+			editorManager->ReloadThumbnails();
 		}
 
 		isFileHovered = false;
@@ -186,14 +189,34 @@ void AssetsBrowserWindow::RenderThumbnails()
 				Engine::utils::FindFilesInDirectory(filesInCurrentDir, currentDir + "/*", "", false, false);
 				directoriesDepth++;
 				wasDirectoryChanged = true;
+
+				LoadModelsInCurrentDir();
 				editorManager->ReloadThumbnails();
+
 				break;
 			}
 
 		}
 		else if (std::strstr(filesInCurrentDir[i].c_str(), ".model") > 0)
 		{
-			ImGui::ImageButton(assetTextureAtlas, ImVec2(thumbSize, thumbSize), ImVec2(uMin, vMin), ImVec2(uMax, vMax));
+			ImGui::ImageButtonID(i, assetTextureAtlas, ImVec2(thumbSize, thumbSize), ImVec2(uMin, vMin), ImVec2(uMax, vMax));
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+			{
+
+			}
+
+			// Our buttons are both drag sources and drag targets here!
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+			{
+				// Set payload to carry the index of our item (could be anything)
+				ImGui::SetDragDropPayload("DND_MODEL_TO_ENTITY", filesInCurrentDir[i].c_str(), filesInCurrentDir[i].length() + 1);
+
+				// Display preview (could be anything, e.g. when dragging an image we could decide to display
+				// the filename and a small preview of the image, etc.)
+				ImGui::Text(filesInCurrentDir[i].c_str() + lastSlashIdx);			
+				ImGui::EndDragDropSource();
+			}
 
 			if (uMax < 1.0f)
 			{
@@ -224,6 +247,13 @@ void AssetsBrowserWindow::RenderThumbnails()
 		else if (std::strstr(filesInCurrentDir[i].c_str(), ".mat") > 0)
 		{
 			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.375f, 0.0f), ImVec2(0.5f, 0.125f));
+
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+			{
+				ImGui::SetDragDropPayload("DND_MAT_TO_MODEL_MESH", filesInCurrentDir[i].c_str(), filesInCurrentDir[i].length() + 1);
+				ImGui::Text(filesInCurrentDir[i].c_str() + lastSlashIdx);
+				ImGui::EndDragDropSource();
+			}
 		}
 		else if (std::strstr(filesInCurrentDir[i].c_str(), ".vert") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".frag") > 0)
 		{
@@ -354,17 +384,32 @@ void AssetsBrowserWindow::CreateModelMaterial()
 
 void AssetsBrowserWindow::LoadModelsInCurrentDir()
 {
+	modelsInCurDir.clear();
+
 	// Load the models in the current directory if they haven't been already loaded
 	for (size_t i = 0; i < filesInCurrentDir.size(); i++)
 	{
-		if (std::strstr(filesInCurrentDir[i].c_str(), ".fbx") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".obj") > 0)
+		if (std::strstr(filesInCurrentDir[i].c_str(), ".fbx") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".obj") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".FBX") > 0)
 		{
-			// Check if we already have the model loaded
-
-			// Check if the model in the custom format exists, if not loaded the obj, fbx, etc with Assimp and save it in the custom format
+			// Check if we already have the model loaded		
 			std::string newPath = Engine::utils::RemoveExtensionFromFilePath(filesInCurrentDir[i]) + "model";
 			bool loadedSuccessfuly = false;
+			bool found = false;
 
+			for (size_t j = 0; j < modelsForThumbnails.size(); j++)
+			{
+				if (modelsForThumbnails[j]->GetPath() == newPath)
+				{
+					found = true;
+					modelsInCurDir.push_back(modelsForThumbnails[j]);
+					break;
+				}
+			}
+
+			if (found)
+				continue;
+			
+			// Check if the model in the custom format exists, if not loaded the obj, fbx, etc with Assimp and save it in the custom format
 			if (Engine::utils::DirectoryExists(newPath) == false)
 			{
 				loadedSuccessfuly = Engine::AssimpLoader::LoadModel(game, filesInCurrentDir[i], {});
@@ -378,12 +423,15 @@ void AssetsBrowserWindow::LoadModelsInCurrentDir()
 			{
 				Engine::Model* model = new Engine::Model(game->GetRenderer(), game->GetScriptManager(), newPath, {});
 
+				Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "Loading model for thumbnail: %s\n", newPath.c_str());
+
 				for (size_t i = 0; i < model->GetMeshesAndMaterials().size(); i++)
 				{
 					model->SetMeshMaterial(i, modelThumbnailMat);
 				}
 
 				modelsForThumbnails.push_back(model);
+				modelsInCurDir.push_back(model);
 			}		
 		}
 	}
