@@ -27,7 +27,6 @@ namespace Engine
 	{
 	public:
 		TimeOfDayManager();
-		~TimeOfDayManager();
 
 		void Init(Game *game);
 		void Update(float dt);
@@ -76,7 +75,7 @@ namespace Engine
 		float day = 25.0f;
 		float month = 1.0f;
 		float hour = 13.0f;
-		float offset = 1.0f;
+		float offset = 0.0f;
 		float minute = 51.0f;
 		float lat = 42.545f;
 		float longi = -8.428f;

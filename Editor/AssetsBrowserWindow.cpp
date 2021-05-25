@@ -40,8 +40,12 @@ void AssetsBrowserWindow::Render()
 			if (ImGui::Button("Lua script"))
 			{
 				openAddScript = true;
+				ImGui::CloseCurrentPopup();			
+			}
+			if (ImGui::Button("Material"))
+			{
 				ImGui::CloseCurrentPopup();
-				
+
 			}
 			ImGui::EndPopup();
 		}
@@ -114,7 +118,7 @@ void AssetsBrowserWindow::Render()
 
 			if (reloadFiles)
 			{
-				SetFiles(editorManager->GetCurrentProjectDir());
+				SetFiles(currentDir);
 			}
 
 			ImGui::EndPopup();

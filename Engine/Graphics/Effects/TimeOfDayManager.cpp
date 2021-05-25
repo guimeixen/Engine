@@ -23,10 +23,6 @@ namespace Engine
 		skydomeMesh = {};
 	}
 
-	TimeOfDayManager::~TimeOfDayManager()
-	{
-	}
-
 	void TimeOfDayManager::Init(Game *game)
 	{
 		Log::Print(LogLevel::LEVEL_INFO, "Initializing Time of Day Manager\n");
@@ -307,14 +303,14 @@ namespace Engine
 		double latitude = 42.545;
 		double longitude = -8.428;
 
-		double N1 = floor(275.0 * 2.0 / 9.0);
-		double N2 = floor((2.0 + 9.0) / 12.0);
-		double N3 = (1.0 + floor((2019.0 - 4.0 * floor(2019.0 / 4.0) + 2.0) / 3.0));
-		double day = N1 - (N2 * N3) + 2.0 - 30.0;
+		double N1 = floor(275.0 * (double)month / 9.0);
+		double N2 = floor(((double)month + 9.0) / 12.0);
+		double N3 = (1.0 + floor(((double)year - 4.0 * floor((double)year / 4.0) + 2.0) / 3.0));
+		double N = N1 - (N2 * N3) + (double)day - 30.0;
 
 		double longHour = longitude / 15.0;
-		double tRise = day + ((6.0 - longHour) / 24.0);
-		double tSet = day + ((18.0 - longHour) / 24.0);
+		double tRise = N + ((6.0 - longHour) / 24.0);
+		double tSet = N + ((18.0 - longHour) / 24.0);
 
 		// Calculate the Sun's mean anomaly
 		double MRise = (0.9856 * tRise) - 3.289;
