@@ -36,7 +36,7 @@ void main()
 	float texelSize = 1.0 / terrainRes;
 	vec2 newUv = uv * texelSize * inTrans.z + inTrans.xy * texelSize;
 	
-	float h = texture(heightmap, newUv).r * 256.0;
+	float h = texture(heightmap, newUv).r;
 	worldPos = vec3(uv.x * inTrans.z + inTrans.x, h, uv.y * inTrans.z + inTrans.y);
 
 	float dist = distance(camPos.xyz, worldPos);
@@ -50,13 +50,13 @@ void main()
 
 	newUv = worldPos.xz * texelSize;
 	uv = newUv;
-	h = texture(heightmap, newUv).r * 256.0;
+	h = texture(heightmap, newUv).r;
 
 	// Normal calculation
-	float left = textureOffset(heightmap, uv, off.xy).x * 256.0;
-    float right = textureOffset(heightmap, uv, off.zy).x * 256.0;
-    float down = textureOffset(heightmap, uv, off.yx).x * 256.0;
-    float up = textureOffset(heightmap, uv, off.yz).x * 256.0;
+	float left = textureOffset(heightmap, uv, off.xy).x;
+    float right = textureOffset(heightmap, uv, off.zy).x;
+    float down = textureOffset(heightmap, uv, off.yx).x;
+    float up = textureOffset(heightmap, uv, off.yz).x;
 	normal = normalize(vec3(left - right, 2.0, down - up));
 	
 	worldPos.y = (h + left + right + up + down) * 0.2;

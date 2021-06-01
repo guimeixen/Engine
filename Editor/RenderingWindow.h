@@ -32,5 +32,6 @@ private:
 	float waterHeight = 0.0f;
 
 	bool lockToTOD = true;
+	bool renderTerrainQuadTree = false;
 };
 

@@ -322,6 +322,15 @@ namespace Engine
 		isTerrainEditingEnabled = false;
 	}
 
+	void RenderingPath::UpdateTerrainEditTexture(Texture* texture)
+	{
+		if (terrainEditMat->textures.size() > 0)
+		{
+			terrainEditMat->textures[0] = texture;
+			renderer->UpdateMaterialInstance(terrainEditMat);
+		}
+	}
+
 	void RenderingPath::SetAssetTextureAtlas(Texture* texture)
 	{
 		if (!texture)

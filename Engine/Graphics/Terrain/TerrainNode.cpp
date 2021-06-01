@@ -1,8 +1,12 @@
 #include "TerrainNode.h"
 
-#include "Graphics/Camera/Camera.h"
+#include "Game/Game.h"
+#include "Graphics/Effects/DebugDrawManager.h"
 #include "Graphics/Model.h"
 #include "Program/Utils.h"
+#include "Program/Log.h"
+
+#include "include/glm/gtc/matrix_transform.hpp"
 
 #include <algorithm>
 
@@ -222,6 +226,92 @@ namespace Engine
 		}
 	}
 
+	bool TerrainNode::LODSelectDebug(float* lodVisRanges, int lodLevel, Camera* camera, Game* game)
+	{
+		if (!InSphere(lodVisRanges[lodLevel], camera->GetPosition()))
+			return false;
+
+		if (!InFrustum(camera))
+			return true;
+
+		if (lodLevel == 0)
+		{
+			glm::vec3 min = glm::vec3((float)x, minHeight, (float)z);
+			glm::vec3 max = glm::vec3((float)x + (float)size, maxHeight, (float)z + (float)size);
+
+			glm::mat4 m;
+			m = glm::translate(glm::mat4(1.0f), (min + max) / 2.0f);
+			m = glm::scale(m, glm::vec3((float)size, maxHeight - minHeight, (float)size));
+
+			game->GetDebugDrawManager()->AddCube(m);
+
+			return true;
+		}
+		else
+		{
+			if (!InSphere(lodVisRanges[lodLevel - 1], camera->GetPosition()))
+			{
+				glm::vec3 min = glm::vec3((float)x, minHeight, (float)z);
+				glm::vec3 max = glm::vec3((float)x + (float)size, maxHeight, (float)z + (float)size);
+
+				glm::mat4 m;
+				m = glm::translate(glm::mat4(1.0f), (min + max) / 2.0f);
+				m = glm::scale(m, glm::vec3((float)size, maxHeight - minHeight, (float)size));
+
+				game->GetDebugDrawManager()->AddCube(m);
+			}
+			else
+			{
+				if (!topLeft->LODSelectDebug(lodVisRanges, lodLevel - 1, camera, game))
+				{
+					glm::vec3 min = glm::vec3((float)topLeft->x, topLeft->minHeight, (float)topLeft->z);
+					glm::vec3 max = glm::vec3((float)topLeft->x + (float)topLeft->size, topLeft->maxHeight, (float)topLeft->z + (float)topLeft->size);
+
+					glm::mat4 m;
+					m = glm::translate(glm::mat4(1.0f), (min + max) / 2.0f);
+					m = glm::scale(m, glm::vec3((float)topLeft->size, topLeft->maxHeight - topLeft->minHeight, (float)topLeft->size));
+
+					game->GetDebugDrawManager()->AddCube(m);
+				}
+				if (!topRight->LODSelectDebug(lodVisRanges, lodLevel - 1, camera, game))
+				{
+					glm::vec3 min = glm::vec3((float)topRight->x, topRight->minHeight, (float)topRight->z);
+					glm::vec3 max = glm::vec3((float)topRight->x + (float)topRight->size, topRight->maxHeight, (float)topRight->z + (float)topRight->size);
+
+					glm::mat4 m;
+					m = glm::translate(glm::mat4(1.0f), (min + max) / 2.0f);
+					m = glm::scale(m, glm::vec3((float)topRight->size, topRight->maxHeight - topRight->minHeight, (float)topRight->size));
+
+					game->GetDebugDrawManager()->AddCube(m);
+				}
+				if (!bottomLeft->LODSelectDebug(lodVisRanges, lodLevel - 1, camera, game))
+				{
+					glm::vec3 min = glm::vec3((float)bottomLeft->x, bottomLeft->minHeight, (float)bottomLeft->z);
+					glm::vec3 max = glm::vec3((float)bottomLeft->x + (float)bottomLeft->size, bottomLeft->maxHeight, (float)bottomLeft->z + (float)bottomLeft->size);
+
+					glm::mat4 m;
+					m = glm::translate(glm::mat4(1.0f), (min + max) / 2.0f);
+					m = glm::scale(m, glm::vec3((float)bottomLeft->size, bottomLeft->maxHeight - bottomLeft->minHeight, (float)bottomLeft->size));
+
+					game->GetDebugDrawManager()->AddCube(m);
+				}
+				if (!bottomRight->LODSelectDebug(lodVisRanges, lodLevel - 1, camera, game))
+				{
+					glm::vec3 min = glm::vec3((float)bottomRight->x, bottomRight->minHeight, (float)bottomRight->z);
+					glm::vec3 max = glm::vec3((float)bottomRight->x + (float)bottomRight->size, bottomRight->maxHeight, (float)bottomRight->z + (float)bottomRight->size);
+
+					glm::mat4 m;
+					m = glm::translate(glm::mat4(1.0f), (min + max) / 2.0f);
+					m = glm::scale(m, glm::vec3((float)bottomRight->size, bottomRight->maxHeight - bottomRight->minHeight, (float)bottomRight->size));
+
+					game->GetDebugDrawManager()->AddCube(m);
+				}
+			}
+
+			return true;
+		}
+	}
+
 	void TerrainNode::RecalculateNode(int x, int z, int size, int level, float *heights, int resolution)
 	{
 		this->x = (unsigned short)x;
@@ -287,6 +377,69 @@ namespace Engine
 		}
 	}
 
+	void TerrainNode::UpdateHeights(float* heights, const glm::vec2& hitPos, float halfSize, int terrainResolution)
+	{
+		if (ContainsPoint(glm::vec2(hitPos.x - halfSize, hitPos.y - halfSize)) ||
+			ContainsPoint(glm::vec2(hitPos.x - halfSize, hitPos.y + halfSize)) ||
+			ContainsPoint(glm::vec2(hitPos.x + halfSize, hitPos.y - halfSize)) ||
+			ContainsPoint(glm::vec2(hitPos.x + halfSize, hitPos.y + halfSize)))
+		{
+			float maxval = -999999.0f;
+
+			for (size_t i = z; i < z + size; i++)
+			{
+				for (size_t j = x; j < x + size; j++)
+				{
+					float newval = GetVal(heights, i, j, terrainResolution);
+
+					if (newval > maxval)
+					{
+						maxval = newval;
+					}
+				}
+			}	
+
+			float minval = 999999.0f;
+
+			for (size_t i = z; i < z + size; i++)
+			{
+				for (size_t j = x; j < x + size; j++)
+				{
+					float newval = GetVal(heights, i, j, terrainResolution);
+
+					if (newval < minval)
+					{
+						minval = newval;
+					}
+				}
+			}
+
+
+			maxHeight = maxval;
+			minHeight = minval;
+
+			if (maxHeight > 2.0f)
+			{
+				Log::Print(LogLevel::LEVEL_INFO, "max height %.1f\n", maxHeight);
+			}
+
+			/*/*if(!topLeft || !topRight || !bottomLeft || !bottomRight)
+			{*/
+			//maxHeight = MaxValArea(x, z, size, size);		// calling these 2 caused significant performance drop. from 16,7ms (vsynced) to around 33,3ms (60 to 30fps)
+			//minHeight = MinValArea(x, z, size, size);		// now only update the heights after we've reached the last node
+		//}
+
+			if (topLeft)
+				topLeft->UpdateHeights(heights, hitPos, halfSize, terrainResolution);
+			if (topRight)
+				topRight->UpdateHeights(heights, hitPos, halfSize, terrainResolution);
+			if (bottomLeft)
+				bottomLeft->UpdateHeights(heights, hitPos, halfSize, terrainResolution);
+			if (bottomRight)
+				bottomRight->UpdateHeights(heights, hitPos, halfSize, terrainResolution);
+		}
+	}
+
 	bool TerrainNode::InBounds(int x, int z, int resolution)
 	{
 		if (x < 0 || x >= resolution - 1 || z < 0 || z >= resolution - 1)
@@ -335,5 +488,45 @@ namespace Engine
 		}
 
 		return b;
+	}
+
+	bool TerrainNode::ContainsPoint(const glm::vec2& point)
+	{
+		if (point.x > x && point.y > z && point.x < (x + size) && point.y < (z + size))
+			return true;
+
+		return false;
+	}
+
+	float TerrainNode::GetVal(float *heights, int x, int z, int terrainResolution)
+	{
+		int count = 1;
+
+		float h = heights[z * terrainResolution + x];
+
+		if (InBounds(x + 1, z, terrainResolution))
+		{
+			h += heights[z * terrainResolution + x + 1];
+			count++;
+		}
+		if (InBounds(x - 1, z, terrainResolution))
+		{
+			h += heights[z * terrainResolution + x - 1];
+			count++;
+		}
+		if (InBounds(x, z + 1, terrainResolution))
+		{
+			h += heights[(z + 1) * terrainResolution + x];
+			count++;
+		}
+		if (InBounds(x, z - 1, terrainResolution))
+		{
+			h += heights[(z - 1) * terrainResolution + x];
+			count++;
+		}
+
+		h /= count;
+
+		return h;
 	}
 }

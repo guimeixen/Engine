@@ -201,7 +201,11 @@ void RenderingWindow::Render()
 
 		ImGui::Checkbox("Enable debug draw", &debugSettings.enableDebugDraw);
 		ImGui::Checkbox("Enable voxel vis", &debugSettings.enableVoxelVis);
-
+		if (ImGui::Checkbox("Render terrain quad tree", &renderTerrainQuadTree))
+		{
+			if (game->GetTerrain())
+				game->GetTerrain()->ToggleQuadTreeDebugView();
+		}
 		ImGui::SliderInt("Mip level", &debugSettings.mipLevel, 0, 7);
 		int maxSlice = 128 >> debugSettings.mipLevel;
 		ImGui::SliderInt("Z Slice", &debugSettings.zSlice, 0, maxSlice);

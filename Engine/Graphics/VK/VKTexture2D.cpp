@@ -144,7 +144,7 @@ namespace Engine
 		this->path = path;
 		this->params = params;
 		this->storeTextureData = storeTextureData;
-		this->type = TextureType::TEXTURE2D;
+		type = TextureType::TEXTURE2D;
 		aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT;
 		sampler = VK_NULL_HANDLE;
 		format = vkutils::GetFormat(params.internalFormat);
@@ -458,39 +458,13 @@ namespace Engine
 			return Load(base);
 		}
 		
-
-		/*if (params.internalFormat == TextureInternalFormat::R16F)
-		{
-			half_float::half *d = new half_float::half(width * height * 1);
-			size_t size = width * height;
-			for (size_t i = 0; i < size; i++)
-			{
-				d[i] = half_float::half_cast<half_float::half>(image[i]);
-			}
-
-
-			if (storeTextureData)
-			{
-				data = new unsigned char[width * height * nChannels];
-				memcpy(data, image, width * height * nChannels * sizeof(unsigned char));
-			}
-		}
-		else
-		{*/
-			if (storeTextureData)
-			{
-				data = new unsigned char[width * height * nChannels];
-				memcpy(data, image, width * height * nChannels * sizeof(unsigned char));
-			}
-		//}
-
 		mipmapsGenerated = false;
 		this->width = static_cast<uint32_t>(width);
 		this->height = static_cast<uint32_t>(height);
 		addressMode = vkutils::GetAddressMode(params.wrap);
 		filter = vkutils::GetFilter(params.filter);
 		format = vkutils::GetFormat(params.internalFormat);
-		size = width * height * nChannels * sizeof(unsigned char);
+		size = width * height * nChannels;
 
 		VkFormatProperties formatProps;
 		vkGetPhysicalDeviceFormatProperties(base->GetPhysicalDevice(), format, &formatProps);	// We need to check if this format supports blits
@@ -505,12 +479,48 @@ namespace Engine
 			mipLevels = 1;
 		}
 
-		//stagingBuffer = new VKBuffer();
-		//stagingBuffer->Create(allocator, physicalDevice, device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, false);
-		stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
-		stagingBuffer->Map();
-		stagingBuffer->Update(image, (unsigned int)size, 0);
-		stagingBuffer->Unmap();
+
+
+		if (params.internalFormat == TextureInternalFormat::R16F)
+		{
+			half_float::half *d = new half_float::half[width * height * 1];
+			size_t s = width * height;
+			for (size_t i = 0; i < s; i++)
+			{
+				d[i] = half_float::half_cast<half_float::half>(image[i]);
+				//d[i] = 0.0f;
+			}
+
+			size *= sizeof(half_float::half);
+
+			stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
+			stagingBuffer->Map();
+			stagingBuffer->Update(d, (unsigned int)size, 0);
+			stagingBuffer->Unmap();
+
+			if (storeTextureData)
+			{
+				data = new unsigned char[width * height * nChannels];
+				memcpy(data, image, width * height * nChannels * sizeof(unsigned char));
+			}
+
+			delete[] d;
+		}
+		else
+		{
+			size *= sizeof(unsigned char);
+
+			stagingBuffer = new VKBuffer(base, nullptr, size, BufferType::StagingBuffer, BufferUsage::DYNAMIC);
+			stagingBuffer->Map();
+			stagingBuffer->Update(image, (unsigned int)size, 0);
+			stagingBuffer->Unmap();
+
+			if (storeTextureData)
+			{
+				data = new unsigned char[width * height * nChannels];
+				memcpy(data, image, width * height * nChannels * sizeof(unsigned char));
+			}
+		}	
 
 		if (!CreateImage(base->GetPhysicalDevice()))
 			return false;
@@ -600,6 +610,7 @@ namespace Engine
 			std::cout << "Error -> Failed to create sampler!\n";
 		}
 	}
+
 	VkBuffer VKTexture2D::GetStagingBuffer() const
 	{
 		if (stagingBuffer)

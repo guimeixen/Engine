@@ -76,6 +76,7 @@ namespace Engine
 		void DeformTerrain();
 		bool IsEditable() const { return editingEnabled; }
 		bool IsBeingEdited() const { return isBeingEdited; }
+		void ToggleQuadTreeDebugView() { renderQuadTree = !renderQuadTree; }
 
 		void AddVegetation(const std::string &modelPath);
 		void ChangeVegetationModel(Vegetation &v, int lod, const std::string &newModelPath);
@@ -143,14 +144,14 @@ namespace Engine
 		glm::vec3 intersectionPoint;
 		DeformType deformType = DeformType::RAISE;
 		float brushRadius = 10.0f;
-		float brushStrength = 10.0f;
+		float brushStrength = 1.0f;
 		float flattenHeight = 0.0f;
 
 		unsigned int opaquePassID = 0;
 		unsigned int csmPassID = 0;
 
 		bool isTerrainDataUpdated = false;
-
+		bool renderQuadTree;
 		bool updateMaterialUBO = false;
 
 		std::vector<TerrainInstanceData> data;

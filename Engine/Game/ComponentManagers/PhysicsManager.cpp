@@ -1237,7 +1237,8 @@ namespace Engine
 					disabledRigidBodies--;
 
 					RigidBodyInstance rbi1 = rigidBodies[rbMap.at(e.id)];
-					rbi1.rb->EnableCollision();
+					//rbi1.rb->EnableCollision();
+					dynamicsWorld->addRigidBody(rbi1.rb->GetHandle(), Layer::DEFAULT, Layer::DEFAULT | Layer::OBSTACLE | Layer::TERRAIN | Layer::ENEMY);
 
 					return;
 				}
@@ -1258,7 +1259,8 @@ namespace Engine
 
 					disabledRigidBodies--;
 
-					rbi2.rb->EnableCollision();
+					//rbi2.rb->EnableCollision();
+					dynamicsWorld->addRigidBody(rbi2.rb->GetHandle(), Layer::DEFAULT, Layer::DEFAULT | Layer::OBSTACLE | Layer::TERRAIN | Layer::ENEMY);
 				}
 			}
 			else
@@ -1280,7 +1282,8 @@ namespace Engine
 
 				disabledRigidBodies++;
 
-				rbi1.rb->DisableCollision();
+				//rbi1.rb->DisableCollision();
+				dynamicsWorld->removeRigidBody(rbi1.rb->GetHandle());
 			}
 		}
 	}

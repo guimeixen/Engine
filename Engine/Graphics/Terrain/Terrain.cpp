@@ -6,6 +6,7 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/Buffers.h"
 #include "Graphics/VertexArray.h"
+#include "Graphics/Effects/DebugDrawManager.h"
 #include "Program/Input.h"
 #include "Game/Game.h"
 #include "Graphics/Model.h"
@@ -43,6 +44,7 @@ namespace Engine
 		resolution = 0;
 		intersectionPoint = glm::vec3(0.0f);
 		collidersRefPoint = glm::vec3(0.0f);
+		renderQuadTree = false;
 	}
 
 	Terrain::~Terrain()
@@ -379,9 +381,23 @@ namespace Engine
 		{
 			for (size_t x = 0; x < nodes[0].size(); x++)
 			{
-				nodes[z][x]->LODSelect(lodVisRanges, lodLevels - 1, camera, data);
+				TerrainNode* node = nodes[z][x];
+				node->LODSelect(lodVisRanges, lodLevels - 1, camera, data);
 			}
 		}
+
+		if (renderQuadTree)
+		{
+			for (size_t z = 0; z < nodes.size(); z++)
+			{
+				for (size_t x = 0; x < nodes[0].size(); x++)
+				{
+					TerrainNode* node = nodes[z][x];
+					node->LODSelectDebug(lodVisRanges, lodLevels - 1, camera, game);
+				}
+			}
+		}
+
 		isTerrainDataUpdated = false;
 	}
 
@@ -535,8 +551,8 @@ namespace Engine
 
 	void Terrain::DeformTerrain()
 	{
-		int x = (int)intersectionPoint.z;
-		int z = (int)intersectionPoint.x;
+		int x = (int)intersectionPoint.x;
+		int z = (int)intersectionPoint.z;
 
 		if (!InBounds(x, z))
 			return;
@@ -548,9 +564,9 @@ namespace Engine
 
 		if (deformType == DeformType::RAISE || deformType == DeformType::FLATTEN)
 		{
-			for (size_t xx = x - brushRadius; xx < x + brushRadius; xx++)
+			for (int xx = x - brushRadius; xx < x + brushRadius; xx++)
 			{
-				for (size_t zz = z - brushRadius; zz < z + brushRadius; zz++)
+				for (int zz = z - brushRadius; zz < z + brushRadius; zz++)
 				{
 					glm::vec2 d = glm::vec2((float)xx, (float)zz) - c;
 
@@ -558,7 +574,7 @@ namespace Engine
 					{
 						float dist = glm::length(glm::vec2(xx, zz) - c) * 3.14159f / brushRadius;
 
-						heights[xx * resolution + zz] += (0.5f + 0.5f * glm::cos(dist)) * brushStrength * deltaTime;
+						heights[xx * resolution + zz] += (0.5 + 0.5 * glm::cos(dist)) * brushStrength * deltaTime;
 
 						if (deformType == DeformType::FLATTEN && heights[xx * resolution + zz] > flattenHeight)
 						{
@@ -569,6 +585,15 @@ namespace Engine
 							heights[xx * resolution + zz] = 255.0f;
 					}
 				}
+			}
+		}
+
+		//heightmap->SetData(heightsF);
+		for (size_t i = 0; i < nodes.size(); i++)
+		{
+			for (size_t j = 0; j < nodes[0].size(); j++)
+			{
+				nodes[i][j]->UpdateHeights(heights, glm::vec2(x, z), brushRadius * 0.5f, resolution);
 			}
 		}
 	}
@@ -821,6 +846,8 @@ namespace Engine
 			heightmap = renderer->CreateTexture2D(path, params, true);
 			matInstance->textures[0] = heightmap;
 			renderer->UpdateMaterialInstance(matInstance);
+
+			game->GetRenderingPath()->UpdateTerrainEditTexture(heightmap);
 		}
 
 		if (!heightmap)
@@ -907,7 +934,6 @@ namespace Engine
 			std::cout << "Error! Failed to load obstacle map texture: Data/Textures/obstacle_map.png" << "\n";
 			return;
 		}
-
 		else if (obstacleMapWidth != resolution && obstacleMapHeight != resolution)
 		{
 			std::cout << "Error! Obstacle map must have the same dimensions as the terrain\n Terrain size: " << resolution << "\nObstacle map size: " << obstacleMapWidth << "\n";
@@ -1205,7 +1231,7 @@ namespace Engine
 
 	bool Terrain::InBounds(int x, int z)
 	{
-		if (x < 0 && x >= resolution && z < 0 && z >= resolution)
+		if (x < 0 || x >= resolution - 1 || z < 0 || z >= resolution - 1)
 			return false;
 
 		return true;

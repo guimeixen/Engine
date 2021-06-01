@@ -131,7 +131,7 @@ namespace Engine
 		depthAttachment.height = height;
 		depthAttachment.initialState = InitialState::CLEAR;
 
-		hdrPass.AddImageInput("terrainEdit");
+		hdrPass.AddImageInput("terrainImg");
 		hdrPass.AddImageInput("voxelTextureMipmapped", true);
 		hdrPass.AddBufferInput("voxelsIndirectBuffer", vctgi.GetIndirectBuffer());
 		hdrPass.AddBufferInput("voxelPositionsBuffer", vctgi.GetVoxelPositionsBuffer());
@@ -163,6 +163,17 @@ namespace Engine
 			bi.readToWrite = false;
 			bi.transitionToShaderRead = true;*/
 
+			/*if (game->GetTerrain() && game->GetTerrain()->IsBeingEdited())
+			{
+				BarrierImage bi = {};
+				bi.image = game->GetTerrain()->GetMaterialInstance()->textures[0];
+				bi.readToWrite = false;
+				bi.baseMip = 0;
+				bi.numMips = 1;
+
+				b.images.push_back(bi);
+			}*/
+
 			BarrierBuffer bb1 = {};
 			bb1.buffer = vctgi.GetIndirectBuffer();
 			bb1.readToWrite = false;
@@ -170,8 +181,7 @@ namespace Engine
 			BarrierBuffer bb2 = {};
 			bb2.buffer = vctgi.GetVoxelPositionsBuffer();
 			bb2.readToWrite = false;
-
-			//b.images.push_back(bi);
+			
 			b.buffers.push_back(bb1);
 			b.buffers.push_back(bb2);
 			b.srcStage = PipelineStage::COMPUTE;

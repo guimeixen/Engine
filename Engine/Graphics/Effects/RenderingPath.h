@@ -54,8 +54,8 @@ namespace Engine
 
 		void EnableTerrainEditing();
 		void DisableTerrainEditing();
-
-		void SetAssetTextureAtlas(Texture *texture);
+		void UpdateTerrainEditTexture(Texture* texture);
+		void SetAssetTextureAtlas(Texture* texture);
 
 		void SetMainCamera(Camera *camera);
 		Camera *GetMainCamera() const { return mainCamera; }

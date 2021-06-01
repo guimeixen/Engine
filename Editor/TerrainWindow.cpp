@@ -114,7 +114,7 @@ void TerrainWindow::Render()
 		{
 			currentTerrain->SetBrushRadius(brushRadius);
 		}
-		if (ImGui::SliderFloat("Brush strength", &brushStrength, 0.1f, 100.0f))
+		if (ImGui::SliderFloat("Brush strength", &brushStrength, 0.1f, 10.0f))
 		{
 			currentTerrain->SetBrushStrength(brushStrength);
 		}
