@@ -44,7 +44,13 @@ namespace Engine
 		resolution = 0;
 		intersectionPoint = glm::vec3(0.0f);
 		collidersRefPoint = glm::vec3(0.0f);
-		renderQuadTree = false;
+		renderQuadTree = false;	
+		heightScale = 1.0f;
+		terrainShapeID = -1;
+
+		editMode = TerrainEditMode::RAISE;
+		editingEnabled = false;
+		isBeingEdited = false;
 	}
 
 	Terrain::~Terrain()
@@ -562,7 +568,7 @@ namespace Engine
 
 		glm::vec2 c = glm::vec2((float)x, (float)z);
 
-		if (deformType == DeformType::RAISE || deformType == DeformType::FLATTEN)
+		if (editMode == TerrainEditMode::RAISE || editMode == TerrainEditMode::FLATTEN)
 		{
 			for (int xx = x - brushRadius; xx < x + brushRadius; xx++)
 			{
@@ -570,25 +576,66 @@ namespace Engine
 				{
 					glm::vec2 d = glm::vec2((float)xx, (float)zz) - c;
 
-					if ((d.x*d.x + d.y*d.y < brushRadius * brushRadius) && InBounds(xx, zz))
+					if ((d.x * d.x + d.y * d.y < brushRadius * brushRadius) && InBounds(xx, zz))
 					{
 						float dist = glm::length(glm::vec2(xx, zz) - c) * 3.14159f / brushRadius;
 
 						heights[xx * resolution + zz] += (0.5 + 0.5 * glm::cos(dist)) * brushStrength * deltaTime;
 
-						if (deformType == DeformType::FLATTEN && heights[xx * resolution + zz] > flattenHeight)
+						if (editMode == TerrainEditMode::FLATTEN && heights[xx * resolution + zz] > flattenHeight)
 						{
 							heights[xx * resolution + zz] = flattenHeight;
 						}
+					}
+				}
+			}
+		}
+		else if (editMode == TerrainEditMode::LOWER)
+		{
+			for (size_t xx = x - brushRadius; xx < x + brushRadius; xx++)
+			{
+				for (size_t zz = z - brushRadius; zz < z + brushRadius; zz++)
+				{
+					glm::vec2 d = glm::vec2((float)xx, (float)zz) - c;
 
-						if (heights[xx * resolution + zz] > 255.0f)
-							heights[xx * resolution + zz] = 255.0f;
+					if (d.x * d.x + d.y * d.y < brushRadius * brushRadius && InBounds(xx, zz))
+					{
+						float dist = glm::length(glm::vec2(xx, zz) - c) * 3.14159f / brushRadius;
+
+						heights[xx * resolution + zz] -= (0.5f + 0.5f * glm::cos(dist)) * brushStrength * deltaTime;
+					}
+				}
+			}
+		}
+		else if (editMode == TerrainEditMode::SMOOTH)
+		{
+			for (size_t xx = x - brushRadius; xx < x + brushRadius; xx++)
+			{
+				for (size_t zz = z - brushRadius; zz < z + brushRadius; zz++)
+				{
+					if (InBounds(xx, zz))
+					{
+						float height = heights[xx * resolution + zz];
+
+						if (InBounds(xx + 1, zz))
+							height += heights[(xx + 1) * resolution + zz];
+
+						if (InBounds(xx - 1, zz))
+							height += heights[(xx - 1) * resolution + zz];
+
+						if (InBounds(xx, zz + 1))
+							height += heights[xx * resolution + zz + 1];
+
+						if (InBounds(xx, zz - 1))
+							height += heights[xx * resolution + zz - 1];
+
+						heights[xx * resolution + zz] = height * 0.2f;
 					}
 				}
 			}
 		}
 
-		//heightmap->SetData(heightsF);
+
 		for (size_t i = 0; i < nodes.size(); i++)
 		{
 			for (size_t j = 0; j < nodes[0].size(); j++)

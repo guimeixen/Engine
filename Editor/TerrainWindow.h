@@ -1,9 +1,9 @@
 #pragma once
 
 #include "EditorWindow.h"
-#include "Graphics\Terrain\Terrain.h"
+#include "Graphics/Terrain/Terrain.h"
 
-#include "include\glm\glm.hpp"
+#include "include/glm/glm.hpp"
 
 #include <vector>
 
@@ -36,6 +36,7 @@ private:
 	float brushRadius = 1.0f;
 	float brushStrength = 1.0f;
 	float vegBrushRadius = 1.0f;
+	float flattenHeight;
 	std::string resStr;
 
 	std::vector<bool> selection;
@@ -50,5 +51,6 @@ private:
 	std::string texturesPopupNames[6];
 
 	std::vector<int> ids;
+	int terrainEditMode;
 };
 

@@ -83,7 +83,7 @@ layout(std140, set = 0, binding = FRAME_UBO) uniform FrameUniforms
 	vec2 vignetteParams;				// x -> intensity, y -> falloff
 	
 	vec4 terrainEditParams; 			// xy -> intersection point, z = 0  editing disabled z = 1 editing enabled, w - brush radius
-	vec4 terrainEditParams2;		// x - brushStrength
+	vec4 terrainEditParams2;		// x - brushStrength, y - edit mode (raise,lower,...), z - flatten height
 	
 	uint frameNumber;
 	uint cloudUpdateBlockSize;

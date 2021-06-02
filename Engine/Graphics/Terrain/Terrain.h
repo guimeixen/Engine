@@ -17,12 +17,13 @@ namespace Engine
 	class Collider;
 	class Buffer;
 
-	enum class DeformType
+	enum TerrainEditMode
 	{
 		RAISE,
 		LOWER,
 		FLATTEN,
-		SMOOTH
+		SMOOTH,
+		PAINT
 	};
 
 	struct TerrainInfo
@@ -74,9 +75,13 @@ namespace Engine
 		void EnableEditing();
 		void DisableEditing();
 		void DeformTerrain();
+		void SetEditMode(TerrainEditMode mode) { editMode = mode; }
 		bool IsEditable() const { return editingEnabled; }
 		bool IsBeingEdited() const { return isBeingEdited; }
 		void ToggleQuadTreeDebugView() { renderQuadTree = !renderQuadTree; }
+		TerrainEditMode GetCurrentEditMode() const { return editMode; }
+		void SetFlattenHeight(float height) { flattenHeight = height; }
+		float GetFlattenHeight() const { return flattenHeight; }
 
 		void AddVegetation(const std::string &modelPath);
 		void ChangeVegetationModel(Vegetation &v, int lod, const std::string &newModelPath);
@@ -131,18 +136,18 @@ namespace Engine
 		Renderer *renderer;
 		static const int lodLevels = 4;
 		int resolution;
-		float heightScale = 1.0f;
+		float heightScale;
 		float *heights;
 		Mesh mesh;
 		MaterialInstance *matInstance;
 		unsigned int baseShaderPassIndex;
 		Buffer *terrainInstancingBuffer;
-		int terrainShapeID = -1;
+		int terrainShapeID;
 
-		bool editingEnabled = false;
-		bool isBeingEdited = false;
+		bool editingEnabled;
+		bool isBeingEdited;
 		glm::vec3 intersectionPoint;
-		DeformType deformType = DeformType::RAISE;
+		TerrainEditMode editMode;
 		float brushRadius = 10.0f;
 		float brushStrength = 1.0f;
 		float flattenHeight = 0.0f;

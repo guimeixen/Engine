@@ -297,7 +297,26 @@ namespace Engine
 		{
 			const glm::vec3 &p = terrain->GetIntersectionPoint();
 			frameData.terrainEditParams = glm::vec4(p.x, p.z, terrain->IsBeingEdited() ? 1.0f : 0.0f, terrain->GetBrushRadius());
-			frameData.terrainEditParams2 = glm::vec4(terrain->GetBrushStrength(), 0.0f, 0.0f, 0.0f);
+			frameData.terrainEditParams2 = glm::vec4(terrain->GetBrushStrength(), 0.0f, terrain->GetFlattenHeight(), 0.0f);
+
+			TerrainEditMode mode = terrain->GetCurrentEditMode();
+
+			if (mode == TerrainEditMode::RAISE)
+			{
+				frameData.terrainEditParams2.y = 0.0f;
+			}
+			else if (mode == TerrainEditMode::LOWER)
+			{
+				frameData.terrainEditParams2.y = 1.0f;
+			}
+			else if (mode == TerrainEditMode::FLATTEN)
+			{
+				frameData.terrainEditParams2.y = 2.0f;
+			}
+			else if (mode == TerrainEditMode::SMOOTH)
+			{
+				frameData.terrainEditParams2.y = 3.0f;
+			}
 		}
 
 		frameData.deltaTime = game->GetDeltaTime();

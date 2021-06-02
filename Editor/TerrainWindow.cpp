@@ -20,6 +20,8 @@
 TerrainWindow::TerrainWindow()
 {
 	currentTerrain = nullptr;
+	terrainEditMode = 0;
+	flattenHeight = 0.0f;
 }
 
 void TerrainWindow::Init(Engine::Game *game, EditorManager *editorManager)
@@ -43,7 +45,7 @@ void TerrainWindow::Render()
 	{
 		isSelected = true;
 
-		currentTerrain = game->GetTerrain();	
+		currentTerrain = game->GetTerrain();
 
 		if (!currentTerrain)
 		{
@@ -55,118 +57,169 @@ void TerrainWindow::Render()
 		brushRadius = currentTerrain->GetBrushRadius();
 		brushStrength = currentTerrain->GetBrushStrength();
 		vegBrushRadius = currentTerrain->GetVegetationBrushRadius();
+		flattenHeight = currentTerrain->GetFlattenHeight();
 
-		if (ImGui::Button("Change material"))
+		if (ImGui::CollapsingHeader("Heightmap"))
 		{
-			std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+			resStr = "Current terrain resolution: " + std::to_string(currentTerrain->GetResolution());
+			ImGui::Text(resStr.c_str());
 
-			files.clear();
-			FindFilesInDirectory(dir, ".mat");
-
-			ImGui::OpenPopup("Choose material:");
-		}
-
-		if (ImGui::BeginPopup("Choose material:"))
-		{
-			for (size_t i = 0; i < files.size(); i++)
-			{
-				if (ImGui::Selectable(files[i].c_str()))
-					currentTerrain->SetMaterial(files[i]);
-			}
-
-			ImGui::EndPopup();
-		}
-
-		if (ImGui::Button("Load heightmap"))
-		{
-			std::string dir = editorManager->GetCurrentProjectDir() + "/*";
-
-			files.clear();
-			FindFilesInDirectory(dir, ".png");
-
-			ImGui::OpenPopup("Choose heightmap:");
-		}
-		if (ImGui::BeginPopup("Choose heightmap:"))
-		{
-			for (size_t i = 0; i < files.size(); i++)
-			{
-				if (ImGui::Selectable(files[i].c_str()))
-				{
-					currentTerrain->SetHeightmap(files[i]);
-				}
-			}
-
-			ImGui::EndPopup();
-		}
-
-		if (currentTerrain->IsEditable() == false)
-		{
-			if (ImGui::Button("Enable terrain editing"))
-				currentTerrain->EnableEditing();
-		}
-		else
-		{
-			if (ImGui::Button("Disable terrain editing"))
-				currentTerrain->DisableEditing();
-		}
-
-		if (ImGui::SliderFloat("Brush radius", &brushRadius, 0.1f, 50.0f))
-		{
-			currentTerrain->SetBrushRadius(brushRadius);
-		}
-		if (ImGui::SliderFloat("Brush strength", &brushStrength, 0.1f, 10.0f))
-		{
-			currentTerrain->SetBrushStrength(brushStrength);
-		}
-
-		Engine::MaterialInstance *matInstance = currentTerrain->GetMaterialInstance();
-		const std::vector<Engine::Texture*> &textures = matInstance->textures;
-		
-		int popupNamesID = 0;
-
-		// Start at 1 to skip the heightmap
-		for (size_t i = 1; i < textures.size(); i++)
-		{
-			//ImGui::Text(textures[i]->GetPath().c_str());
-			ImGui::Text(texturesPopupNames[i-1].c_str());
-			ImGui::SameLine();
-
-			if (ImGui::Button("Load..."))
+			if (ImGui::Button("Change heightmap"))
 			{
 				std::string dir = editorManager->GetCurrentProjectDir() + "/*";
 
 				files.clear();
-				FindFilesInDirectory(dir, ".dds");
 				FindFilesInDirectory(dir, ".png");
-				FindFilesInDirectory(dir, ".ktx");
 
-				ImGui::OpenPopup(texturesPopupNames[popupNamesID].c_str());				
+				ImGui::OpenPopup("Choose heightmap:");
 			}
-			if (ImGui::BeginPopup(texturesPopupNames[popupNamesID].c_str()))
+
+			if (ImGui::BeginDragDropTarget())
 			{
-				for (size_t j = 0; j < files.size(); j++)
+				const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_HEIGHTMAP_TO_TERRAIN");
+
+				if (payload)
 				{
-					if (ImGui::Selectable(files[j].c_str()))
+					const char* heightmapPath = (const char*)payload->Data;
+					Engine::Log::Print(Engine::LogLevel::LEVEL_INFO, "%s\n", heightmapPath);
+
+					currentTerrain->SetHeightmap(heightmapPath);
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			if (ImGui::BeginPopup("Choose heightmap:"))
+			{
+				for (size_t i = 0; i < files.size(); i++)
+				{
+					if (ImGui::Selectable(files[i].c_str()))
 					{
-						game->GetRenderer()->WaitIdle();
-
-						Engine::Texture *tex = textures[i];
-						const Engine::TextureParams &params = tex->GetTextureParams();
-						tex->RemoveReference();
-						game->GetRenderer()->RemoveTexture(tex);
-
-						tex = game->GetRenderer()->CreateTexture2D(files[j], params);
-						game->GetRenderer()->UpdateMaterialInstance(matInstance);
+						currentTerrain->SetHeightmap(files[i]);
 					}
 				}
 
 				ImGui::EndPopup();
-				popupNamesID++;
 			}
 		}
 
-		resStr = "Resolution: " + std::to_string(currentTerrain->GetResolution());
-		ImGui::Text(resStr.c_str());
+		if (ImGui::CollapsingHeader("Terrain Editing"))
+		{
+			if (currentTerrain->IsEditable() == false)
+			{
+				if (ImGui::Button("Enable terrain editing"))
+					currentTerrain->EnableEditing();
+			}
+			else
+			{
+				if (ImGui::Button("Disable terrain editing"))
+					currentTerrain->DisableEditing();
+
+				ImGui::Text("Terrain edit mode:");
+
+				if (ImGui::RadioButton("Raise", &terrainEditMode, 0))
+					currentTerrain->SetEditMode(Engine::TerrainEditMode::RAISE);
+
+				ImGui::SameLine();
+
+				if (ImGui::RadioButton("Lower", &terrainEditMode, 1))
+					currentTerrain->SetEditMode(Engine::TerrainEditMode::LOWER);
+
+				ImGui::SameLine();
+
+				if (ImGui::RadioButton("Flatten", &terrainEditMode, 2))
+					currentTerrain->SetEditMode(Engine::TerrainEditMode::FLATTEN);
+
+				ImGui::SameLine();
+
+				if (ImGui::RadioButton("Smooth", &terrainEditMode, 3))
+					currentTerrain->SetEditMode(Engine::TerrainEditMode::SMOOTH);
+
+				if (ImGui::SliderFloat("Brush radius", &brushRadius, 0.1f, 50.0f))
+				{
+					currentTerrain->SetBrushRadius(brushRadius);
+				}
+				if (ImGui::SliderFloat("Brush strength", &brushStrength, 0.1f, 10.0f))
+				{
+					currentTerrain->SetBrushStrength(brushStrength);
+				}
+
+				if (terrainEditMode == 2)
+				{
+					if (ImGui::SliderFloat("Flatten Height", &flattenHeight, 0.0f, 255.0f))
+						currentTerrain->SetFlattenHeight(flattenHeight);
+				}
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Material"))
+		{
+			if (ImGui::Button("Change material"))
+			{
+				std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+
+				files.clear();
+				FindFilesInDirectory(dir, ".mat");
+
+				ImGui::OpenPopup("Choose material:");
+			}
+
+			if (ImGui::BeginPopup("Choose material:"))
+			{
+				for (size_t i = 0; i < files.size(); i++)
+				{
+					if (ImGui::Selectable(files[i].c_str()))
+						currentTerrain->SetMaterial(files[i]);
+				}
+
+				ImGui::EndPopup();
+			}
+
+			Engine::MaterialInstance* matInstance = currentTerrain->GetMaterialInstance();
+			const std::vector<Engine::Texture*>& textures = matInstance->textures;
+
+			int popupNamesID = 0;
+
+			// Start at 1 to skip the heightmap
+			for (size_t i = 1; i < textures.size(); i++)
+			{
+				//ImGui::Text(textures[i]->GetPath().c_str());
+				ImGui::Text(texturesPopupNames[i - 1].c_str());
+				ImGui::SameLine();
+
+				if (ImGui::Button("Load..."))
+				{
+					std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+
+					files.clear();
+					FindFilesInDirectory(dir, ".dds");
+					FindFilesInDirectory(dir, ".png");
+					FindFilesInDirectory(dir, ".ktx");
+
+					ImGui::OpenPopup(texturesPopupNames[popupNamesID].c_str());
+				}
+				if (ImGui::BeginPopup(texturesPopupNames[popupNamesID].c_str()))
+				{
+					for (size_t j = 0; j < files.size(); j++)
+					{
+						if (ImGui::Selectable(files[j].c_str()))
+						{
+							game->GetRenderer()->WaitIdle();
+
+							Engine::Texture* tex = textures[i];
+							const Engine::TextureParams& params = tex->GetTextureParams();
+							tex->RemoveReference();
+							game->GetRenderer()->RemoveTexture(tex);
+
+							tex = game->GetRenderer()->CreateTexture2D(files[j], params);
+							game->GetRenderer()->UpdateMaterialInstance(matInstance);
+						}
+					}
+
+					ImGui::EndPopup();
+					popupNamesID++;
+				}
+			}
+		}
 
 		/*if (ImGui::DragFloat("Height scale (NOT WORKING)", &heightScale, 0.01f))
 		{
@@ -191,122 +244,120 @@ void TerrainWindow::Render()
 			}
 		}*/
 
-		popupOpen = false;
-
-		if (ImGui::DragFloat("Vegetation brush radius", &vegBrushRadius, 0.1f, 0.0f))
-		{
-			currentTerrain->SetVegetationBrushRadius(vegBrushRadius);
-		}
-
-		if (ImGui::Button("Reseat vegetation"))
-		{
-			currentTerrain->ReseatVegetation();
-		}
-
 		if (ImGui::CollapsingHeader("Vegetation"))
 		{
-			if (ImGui::Button("Add new"))
-			{
-				ImGui::OpenPopup("Choose model");
-				std::string dir = editorManager->GetCurrentProjectDir() + "/*";
-				files.clear();
-				FindFilesInDirectory(dir, ".obj");
-				FindFilesInDirectory(dir, ".fbx");
-				FindFilesInDirectory(dir, ".FBX");
-			}
-			if (ImGui::BeginPopup("Choose model"))
-			{
-				popupOpen = true;
-				if (files.size() > 0)
-					AddNewObject();
-				else
-					ImGui::Text("No models found on project folder.");
+			popupOpen = false;
 
-				ImGui::EndPopup();
+			if (ImGui::DragFloat("Vegetation brush radius", &vegBrushRadius, 0.1f, 0.0f))
+			{
+				currentTerrain->SetVegetationBrushRadius(vegBrushRadius);
 			}
 
-			std::vector<Engine::Vegetation> &veg = currentTerrain->GetVegetation();
-			if (ImGui::TreeNode("Selection"))
+			if (ImGui::Button("Reseat vegetation"))
 			{
-				if(veg.size() > selection.size())
-					selection.resize(veg.size());
+				currentTerrain->ReseatVegetation();
+			}
 
-				for (size_t i = 0; i < veg.size(); i++)
+			if (ImGui::CollapsingHeader("Vegetation list"))
+			{
+				if (ImGui::Button("Add new"))
 				{
-					if (ImGui::Selectable(veg[i].model->GetPath().c_str(), selection[i]))
-					{
-						selection[i] = !selection[i];
+					ImGui::OpenPopup("Choose model");
+					std::string dir = editorManager->GetCurrentProjectDir() + "/*";
+					files.clear();
+					FindFilesInDirectory(dir, ".obj");
+					FindFilesInDirectory(dir, ".fbx");
+					FindFilesInDirectory(dir, ".FBX");
+				}
+				if (ImGui::BeginPopup("Choose model"))
+				{
+					popupOpen = true;
+					if (files.size() > 0)
+						AddNewObject();
+					else
+						ImGui::Text("No models found on project folder.");
 
-						if (selection[i])
+					ImGui::EndPopup();
+				}
+
+				std::vector<Engine::Vegetation>& veg = currentTerrain->GetVegetation();
+				if (ImGui::TreeNode("Selection"))
+				{
+					if (veg.size() > selection.size())
+						selection.resize(veg.size());
+
+					for (size_t i = 0; i < veg.size(); i++)
+					{
+						if (ImGui::Selectable(veg[i].model->GetPath().c_str(), selection[i]))
 						{
-							selected = true;
-							id = i;
-						}
-						else
-						{
-							selected = false;
-							id = -1;
+							selection[i] = !selection[i];
+
+							if (selection[i])
+							{
+								selected = true;
+								id = i;
+							}
+							else
+							{
+								selected = false;
+								id = -1;
+							}
 						}
 					}
+					ImGui::TreePop();
 				}
-				ImGui::TreePop();
+
+				if (selected)
+				{
+					Engine::Vegetation& v = veg[id];
+					HandleVegModel(v);
+
+					ImGui::Text(std::to_string(v.count).c_str());
+
+					if (ImGui::DragInt("Density", &v.density, 0.1f, 1))
+					{
+						if (v.density < 1)
+							v.density = 1;
+					}
+					if (ImGui::DragFloat("Lod 1 start dist", &v.lod1Dist, 1.0f, 0.0f))
+					{
+						if (v.lod1Dist < 0.0f)
+							v.lod1Dist = 0.0f;
+					}
+					if (ImGui::DragFloat("Lod 2 start dist", &v.lod2Dist, 1.0f, 0.0f))
+					{
+						if (v.lod2Dist < 0.0f)
+							v.lod2Dist = 0.0f;
+					}
+					if (ImGui::DragFloat("Max Slope", &v.maxSlope, 0.05f, 0.0f, 1.0f))
+					{
+						if (v.maxSlope < 0.0f)
+							v.maxSlope = 0.0f;
+						else if (v.maxSlope > 1.0f)
+							v.maxSlope = 1.0f;
+					}
+					if (ImGui::DragFloat("Min Scale", &v.minScale, 0.05f, 0.0f))
+					{
+						if (v.minScale < 0.0f)
+							v.minScale = 0.0f;
+					}
+					if (ImGui::DragFloat("Max Scale", &v.maxScale, 0.05f, 0.0f))
+					{
+						if (v.maxScale < 0.0f)
+							v.maxScale = 0.0f;
+					}
+					ImGui::DragFloat("Height Offset", &v.heightOffset, 0.05f);
+					ImGui::Checkbox("Generate colliders", &v.generateColliders);
+					ImGui::Checkbox("Generate obstacles", &v.generateObstacles);
+
+					if (!choosingLOD2)
+						AddModelLOD1(v);
+
+					if (!choosingLOD1)
+						AddModelLOD2(v);
+				}
 			}
-
-			if (selected)
-			{
-				Engine::Vegetation &v = veg[id];
-				HandleVegModel(v);
-
-				ImGui::Text(std::to_string(v.count).c_str());
-
-				if (ImGui::DragInt("Density", &v.density, 0.1f, 1))
-				{
-					if (v.density < 1)
-						v.density = 1;
-				}
-				/*if (ImGui::DragFloat("Lod dist", &v.lodDist, 1.0f, 0.0f))
-				{
-					if (v.lodDist < 0.0f)
-						v.lodDist = 0.0f;
-				}*/
-				if (ImGui::DragFloat("Lod 1 start dist", &v.lod1Dist, 1.0f, 0.0f))
-				{
-					if (v.lod1Dist < 0.0f)
-						v.lod1Dist = 0.0f;
-				}
-				if (ImGui::DragFloat("Lod 2 start dist", &v.lod2Dist, 1.0f, 0.0f))
-				{
-					if (v.lod2Dist < 0.0f)
-						v.lod2Dist = 0.0f;
-				}
-				if (ImGui::DragFloat("Max Slope", &v.maxSlope, 0.05f, 0.0f, 1.0f))
-				{
-					if (v.maxSlope < 0.0f)
-						v.maxSlope = 0.0f;
-					else if (v.maxSlope > 1.0f)
-						v.maxSlope = 1.0f;
-				}
-				if (ImGui::DragFloat("Min Scale", &v.minScale, 0.05f, 0.0f))
-				{
-					if (v.minScale < 0.0f)
-						v.minScale = 0.0f;
-				}
-				if (ImGui::DragFloat("Max Scale", &v.maxScale, 0.05f, 0.0f))
-				{
-					if (v.maxScale < 0.0f)
-						v.maxScale = 0.0f;
-				}
-				ImGui::DragFloat("Height Offset", &v.heightOffset, 0.05f);
-				ImGui::Checkbox("Generate colliders", &v.generateColliders);
-				ImGui::Checkbox("Generate obstacles", &v.generateObstacles);
-
-				if(!choosingLOD2)
-					AddModelLOD1(v);
-
-				if (!choosingLOD1)
-					AddModelLOD2(v);
-			}
-		}
+		}		
 	}
 	EndWindow();
 }

@@ -259,6 +259,17 @@ void AssetsBrowserWindow::RenderThumbnails()
 				ImGui::EndDragDropSource();
 			}
 		}
+		else if (std::strstr(filesInCurrentDir[i].c_str(), ".png") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".jpg") > 0)
+		{
+			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.125f, 0.0f), ImVec2(0.25f, 0.125f));
+
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+			{
+				ImGui::SetDragDropPayload("DND_HEIGHTMAP_TO_TERRAIN", filesInCurrentDir[i].c_str(), filesInCurrentDir[i].length() + 1);
+				ImGui::Text(filesInCurrentDir[i].c_str() + lastSlashIdx);
+				ImGui::EndDragDropSource();
+			}
+		}
 		else if (std::strstr(filesInCurrentDir[i].c_str(), ".vert") > 0 || std::strstr(filesInCurrentDir[i].c_str(), ".frag") > 0)
 		{
 			ImGui::ImageButtonID((ImGuiID)i, iconTexture, ImVec2(thumbSize, thumbSize), ImVec2(0.5f, 0.0f), ImVec2(0.625f, 0.125f));
